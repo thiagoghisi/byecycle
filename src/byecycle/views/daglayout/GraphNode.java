@@ -39,5 +39,9 @@ public class GraphNode {
         _providers.add(provider);
     }
 
+    public boolean dependsUpon(GraphNode other) {
+        return _providers.contains(other);
+    }
+
 
 }
