@@ -12,15 +12,11 @@ public class NodeFigure extends Label {
 
     private static final Color NODE_COLOR = new Color(null, 240, 255, 210);
     
-    private final GraphNode _node;
-
     public NodeFigure(GraphNode node) {
         super(" " + node.name());
         setBorder(new LineBorder());
         setBackgroundColor(NODE_COLOR);
         setOpaque(true);
-        
-        _node = node;
     }
 
 }
