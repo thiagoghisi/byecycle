@@ -7,7 +7,6 @@ package byecycle.views.layout;
 import java.util.*;
 
 import org.eclipse.draw2d.*;
-import org.eclipse.draw2d.geometry.PointList;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Canvas;
@@ -26,7 +25,7 @@ public class GraphCanvas extends Canvas {
 
 	
 	private NodeFigure[] _nodeFigures;
-	private List _dependencies;
+	private List _graphElements;
 	
 	private final IFigure _graphFigure = new Figure();
 	private final XYLayout _contentsLayout = new XYLayout();
@@ -49,32 +48,16 @@ public class GraphCanvas extends Canvas {
 	}
 
 	private void tryToImproveLayoutBehindTheScenes() {
-		for (int i = 0; i < _nodeFigures.length; i++) {
-	        NodeFigure figure1 = _nodeFigures[i];
+		for (int i = 0; i < _graphElements.size(); i++) {
+	        GraphElement element1 = (GraphElement)_graphElements.get(i);
 	        
-            for (int j = i + 1; j < _nodeFigures.length; j++) {
-    	        NodeFigure figure2 = _nodeFigures[j];
+            for (int j = i + 1; j < _graphElements.size(); j++) {
+            	GraphElement element2 = (GraphElement)_graphElements.get(j);
 
-    	        figure1.reactTo(figure2);
+    	        element1.reactTo(element2);
             }
         }
-	    
-		for (int i = 0; i < _dependencies.size(); i++) {
-			Dependency dependency1 = (Dependency)_dependencies.get(i);
 
-			for (int j = i + 1; j < _dependencies.size(); j++) {
-				Dependency dependency2 = (Dependency)_dependencies.get(j);
-			
-				dependency1.reactTo(dependency2);
-			}
-
-			for (int j = 0; j < _nodeFigures.length; j++) {
-		        NodeFigure figure = _nodeFigures[j];
-		        dependency1.reactTo(figure);
-			}
-
-		}
-		
 		for (int i = 0; i < _nodeFigures.length; i++) {
             NodeFigure figure = _nodeFigures[i];
             figure.give();
@@ -119,7 +102,7 @@ public class GraphCanvas extends Canvas {
 	
 	private void initGraphFigure(Node[] nodeGraph) {
 		clearGraphFigure();
-		_dependencies = new ArrayList();
+		_graphElements = new ArrayList();
 
 		Map nodeFiguresByNode = new HashMap();
 		
@@ -137,7 +120,11 @@ public class GraphCanvas extends Canvas {
 		_nodeFigures = new NodeFigure[nodeFiguresByNode.size()];
 		Iterator it = nodeFiguresByNode.values().iterator();
 		int j = 0;
-		while (it.hasNext()) _nodeFigures[j++] = (NodeFigure)it.next();  
+		while (it.hasNext()) {
+			NodeFigure nodeFigure = (NodeFigure)it.next();
+			_nodeFigures[j++] = nodeFigure;
+			_graphElements.add(nodeFigure);
+		}
 	}
 
 	private void clearGraphFigure() {
@@ -154,14 +141,14 @@ public class GraphCanvas extends Canvas {
 
 		result = new NodeFigure(node);
 		nodeFiguresByNode.put(node, result);
-		_graphFigure.add(result);
+		_graphFigure.add(result.figure());
 		return result;
 	}
 
 	private void addDependencyFigure(NodeFigure dependentFigure,
 			NodeFigure providerFigure) {
-		Dependency dependency = new Dependency(dependentFigure, providerFigure);
-		_dependencies.add(dependency);
+		DependencyFigure dependency = new DependencyFigure(dependentFigure, providerFigure);
+		_graphElements.add(dependency);
 		_graphFigure.add(dependency.figure());
 	}
 

@@ -6,6 +6,7 @@ package byecycle.views.layout;
 import java.io.InputStream;
 import java.util.Random;
 
+import org.eclipse.draw2d.*;
 import org.eclipse.draw2d.Label;
 import org.eclipse.draw2d.LineBorder;
 import org.eclipse.draw2d.XYLayout;
@@ -17,7 +18,7 @@ import org.eclipse.swt.widgets.Display;
 
 import byecycle.dependencygraph.Node;
 
-public class NodeFigure extends Label {
+public class NodeFigure extends GraphElement {
 
     
 private static final int MARGIN = 2;
@@ -41,19 +42,24 @@ private static final int MARGIN = 2;
     };
 
     private static final Random RANDOM = new Random();
+    
+	private final Label _figure;
 
     
     NodeFigure(Node node) {
-        super(text(node), imageForNode(node));
-
-        setBorder(new LineBorder());
-        setBackgroundColor(randomPastelColor());
-        setOpaque(true);
-        
         _node = node;
+        _figure = produceFigure();
     }
-    
-    private static String text(Node node) {
+   
+    private Label produceFigure() {
+		Label result = new Label(text(_node), imageForNode(_node));
+        result.setBorder(new LineBorder());
+        result.setBackgroundColor(randomPastelColor());
+        result.setOpaque(true);
+        return result;
+	}
+
+	private static String text(Node node) {
         String result = node.name();
 	    if (node.kind().equals("package")) return result;
 	    return result.substring(result.lastIndexOf('.') + 1);
@@ -83,11 +89,12 @@ private static final int MARGIN = 2;
         return _node;
     }
 
-    void reactTo(NodeFigure other) {
-        if (other == this) throw new IllegalArgumentException();
+    protected void reactTo(GraphElement otherElement) {
+    	super.reactTo(otherElement);
 
-        reactTo(other, REPULSION);
-
+    	if (!(otherElement instanceof NodeFigure)) return;
+    	NodeFigure other = (NodeFigure)otherElement; 
+    	
         if (_node.dependsOn(other.node())) {
             reactTo(other, ATTRACTION);
             up();
@@ -109,23 +116,7 @@ private static final int MARGIN = 2;
     private void down() {
         _forceComponentY += DEPENDENCY_THRUST;
     }
-
     
-    
-    private void reactTo(NodeFigure other, Force force) {
-		Point p1 = position();
-		Point p2 = other.position();
-
-		float distance = (float)Math.max(p1.getDistance(p2), 2);
-		float intensity = force.intensityGiven(distance);
-
-        float xComponent = ((p2.x - p1.x) / distance) * intensity;
-        float yComponent = ((p2.y - p1.y) / distance) * intensity;
-
-        addForceComponents(xComponent, yComponent);
-        other.addForceComponents(-xComponent, -yComponent);
-	}
-
 	Point position() {
 		return new Point(_x, _y);
 	}
@@ -153,7 +144,7 @@ private static final int MARGIN = 2;
 	}
 
 	void positionYourselfIn(XYLayout layout) {
-		layout.setConstraint(this, new Rectangle(Math.round(_x), Math.round(_y), -1, -1));
+		layout.setConstraint(this.figure(), new Rectangle(Math.round(_x), Math.round(_y), -1, -1));
 	}
 
 	private boolean isMoving() {
@@ -167,8 +158,8 @@ private static final int MARGIN = 2;
     }
 
     private void stayAround() {
-    	Rectangle availableSpace = getParent().getClientArea();
-    	Rectangle me = getBounds();
+    	Rectangle availableSpace = figure().getParent().getClientArea();
+    	Rectangle me = figure().getBounds();
     	
     	int maxX = availableSpace.width - me.width - MARGIN;
     	int maxY = availableSpace.height - me.height - MARGIN;
@@ -184,5 +175,9 @@ private static final int MARGIN = 2;
         _x = x;
         _y = y;
     }
+
+	public IFigure figure() {
+		return _figure;
+	}
 
 }
