@@ -24,7 +24,7 @@ public class StandAlone {
 	private StandAlone() {
 		Shell shell = new Shell(_display);
 		shell.setText("Byecycle");
-		shell.setSize(400, 400);
+		shell.setSize(500, 500);
 		
 		GraphCanvas canvas = new GraphCanvas(shell);
 		canvas.setGraph(_graph);
@@ -44,8 +44,11 @@ public class StandAlone {
 
 
 	private Node[] graph() {
-		return Node.createGraph(new String[] { "Node1", "Node2", "Node3",
-		        "Node4", "Node5", "Node6", "Node7", "Node8", "Node9", "Node10", "Node11", "Node12", "Node13",  });
+	    String[] names = new String[15];
+	    for (int i = 0; i < names.length; i++) {
+            names[i] = "Node " + i;
+        }
+		return Node.createGraph(names);
 	}	
 
 }

@@ -18,14 +18,14 @@ import byecycle.dependencygraph.Node;
 
 public class NodeFigure extends Label {
 
-    protected static final float IMPETUS = 200; //TODO Play with this. :)
+    protected static final float IMPETUS = 300; //TODO Play with this. :)
     private static final float VISCOSITY = 0.95f;  //TODO Play with this. :)
     
     private static final float DEPENDENCY_THRUST = 0.0003f * IMPETUS;
 
     private static final Force ATTRACTION = new Force() {
         public float intensityGiven(float distance) {
-            return  -(10 - distance) * 0.00001f * IMPETUS; //TODO Play with this formula. Zero it to see REPULSION acting alone.
+            return  -(10 - distance) * 0.000005f * IMPETUS; //TODO Play with this formula. Zero it to see REPULSION acting alone.
             //return 0;
         }
     };
@@ -41,7 +41,8 @@ public class NodeFigure extends Label {
 
     
     public NodeFigure(Node node) {
-        super(" " + node.name(), imageForNode(node));
+        super(" " + text(node), imageForNode(node));
+
         setBorder(new LineBorder());
         setBackgroundColor(randomPastelColor());
         setOpaque(true);
@@ -49,6 +50,13 @@ public class NodeFigure extends Label {
         _node = node;
     }
     
+    private static String text(Node node) {
+        String result = node.name();
+	    if (!node.kind().equals("package"))
+	        result = result.substring(result.lastIndexOf('.') + 1);
+	    return result;
+    }
+
     private static Image imageForNode(Node node) {
 		InputStream resource = NodeFigure.class.getResourceAsStream("icons/" + node.kind() + ".gif");
 		return null == resource ? null : new Image(Display.getCurrent(), resource);
@@ -107,7 +115,7 @@ public class NodeFigure extends Label {
 		Point p1 = new Point(_x, _y);
 		Point p2 = new Point(other._x, other._y);
 
-		float distance = (float)Math.max(p1.getDistance(p2), 0.001);
+		float distance = (float)Math.max(p1.getDistance(p2), 2);
 		float intensity = force.intensityGiven(distance);
 
         float xComponent = ((p2.x - p1.x) / distance) * intensity;
@@ -123,8 +131,7 @@ public class NodeFigure extends Label {
     }
 
     private static float dampen(float value) {
-        //return Math.max(Math.min(value, 1), -1);
-        return value * VISCOSITY;
+        return Math.max(Math.min(value * VISCOSITY, 20), -20);
     }
 
     public void positionYourselfIn(XYLayout layout) {
@@ -133,10 +140,10 @@ public class NodeFigure extends Label {
 
     	_forceComponentX = dampen(_forceComponentX);
 		_forceComponentY = dampen(_forceComponentY);
-		
+
 		if (!moving()) nudgeNudge();
 
-		keepInBounds();
+		stayAround();
 	    layout.setConstraint(this, new Rectangle(Math.round(_x), Math.round(_y), -1, -1));
     }
 
@@ -150,12 +157,12 @@ public class NodeFigure extends Label {
         _forceComponentY = (RANDOM.nextFloat() - 0.5f) * 0.1f * IMPETUS;
     }
 
-    private void keepInBounds() {
-        if (_x <   0) _x =   0;
-        if (_x > 300) _x = 300;
+    private void stayAround() {
+        if (_x <   5) _x =   5;
+        if (_x > 400) _x = 400;
 
-        if (_y <   0) _y =   0;
-        if (_y > 300) _y = 300;
+        if (_y <   5) _y =   5;
+        if (_y > 400) _y = 400;
     }
 
     public void position(float x, float y) {

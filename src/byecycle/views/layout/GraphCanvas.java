@@ -1,7 +1,10 @@
 package byecycle.views.layout;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
@@ -51,8 +54,7 @@ public class GraphCanvas extends Canvas {
 		randomizeLayout();
 	}
 	
-
-	private void randomizeLayout() {
+    private void randomizeLayout() {
 		for (int i = 0; i < _graph.length; i++) {
 			Node node = _graph[i];
 			int x = 180 + _random.nextInt(41);

@@ -77,15 +77,21 @@ public class PackageDependencyAnalysis {
 	class DependencyVisitor extends ASTVisitor {
 		
 		Node _currentNode;
+        private String _currentPackageName;
 		
 		public boolean visit(TypeDeclaration node) {
 			Node saved = _currentNode;
+			String savedPackage = _currentPackageName;
+			
 			_currentNode = getNode(node.resolveBinding().getQualifiedName(), node.isInterface() ? INTERFACE : CLASS);
+			_currentPackageName = node.resolveBinding().getPackage().getName();
+			
 			for (Iterator iter = node.bodyDeclarations().iterator(); iter.hasNext();) {
 				ASTNode child = (ASTNode) iter.next();
 				child.accept(this);
 			}
 			_currentNode = saved;
+			_currentPackageName = savedPackage;
 			return false;
 		}
 		
@@ -116,9 +122,15 @@ public class PackageDependencyAnalysis {
 				type = type.getElementType();
 			if (type.isPrimitive())
 				return;
-			if (type.getQualifiedName().equals(""))
+            if (type.getQualifiedName().equals(""))
 				return; //TODO: Check why this happens.
-			_currentNode.addProvider(getNode(type.getPackage().getName(), PACKAGE));
+            
+			String packageName = type.getPackage().getName();
+			if (packageName.equals(_currentPackageName))
+			    return;
+			if (packageName.equals("java.lang"))
+			    return;
+            _currentNode.addProvider(getNode(packageName, PACKAGE));
 		}
 
 	}
