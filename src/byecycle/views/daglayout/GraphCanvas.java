@@ -28,7 +28,7 @@ public class GraphCanvas extends Canvas {
 
 	private GraphNode[] _graph;
 	
-	private final IFigure _graphFigure = new Figure();
+	private IFigure _graphFigure;
 
 	private final XYLayout _contentsLayout = new XYLayout();
 
@@ -50,7 +50,8 @@ public class GraphCanvas extends Canvas {
 		improveLayout();
 	}
 	
-	void improveLayout() {
+
+	public void improveLayout() {
 		NodeFigure figure1 = randomNodeFigure();
 		NodeFigure figure2 = randomNodeFigure();
 		if (figure1 == figure2)
@@ -111,6 +112,8 @@ public class GraphCanvas extends Canvas {
 	}
 	
 	private void initGraphFigure() {
+		_graphFigure = new Figure();
+		
 		for (int i = 0; i < _graph.length; i++) {
 			GraphNode node = _graph[i];
 			IFigure dependentFigure = produceNodeFigureFor(node);

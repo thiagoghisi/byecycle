@@ -72,9 +72,13 @@ public class ByecycleView extends ViewPart implements ISelectionListener {
 					try {
 						Collection nodes = new PackageDependencyAnalysis(selectedPackage, null).nodes().values();
 						final GraphNode[] graph = (GraphNode[]) nodes.toArray(new GraphNode[nodes.size()]);
+						dumpGraph(graph);
 						UIJob updateJob = new UIJob("graph update") {
 							public IStatus runInUIThread(IProgressMonitor monitor) {
 								_canvas.setGraph(graph);
+								for (int i=0; i<100; ++i) {
+									_canvas.improveLayout();
+								}
 								return Status.OK_STATUS;
 							}
 						};
@@ -87,6 +91,13 @@ public class ByecycleView extends ViewPart implements ISelectionListener {
 				}
 			};
 			job.schedule();
+		}
+	}
+	
+	private void dumpGraph(GraphNode[] graph) {
+		System.out.println("*********");
+		for (int i=0; i<graph.length; ++i) {
+			System.out.println(graph[i].name());
 		}
 	}
 }
