@@ -39,7 +39,7 @@ public class GraphNode {
         _providers.add(provider);
     }
 
-    public boolean dependsUpon(GraphNode other) {
+    public boolean dependsOn(GraphNode other) {
         return _providers.contains(other);
     }
 

@@ -104,7 +104,9 @@ public class DagLayout {
         NodeFigure figure2 = randomNodeFigure();
         if (figure1 == figure2) return;
         move(figure1, figure2);
+
         makeInvertedDependenciesRed();
+        _graphFigure.repaint();
     }
 
     private NodeFigure randomNodeFigure() {
@@ -113,12 +115,12 @@ public class DagLayout {
     }
 
     private void move(NodeFigure figure1, NodeFigure figure2) {
-        if (figure1.node().dependsUpon(figure2.node()) || figure2.node().dependsUpon(figure1.node()))
+        if (figure1.node().dependsOn(figure2.node()) || figure2.node().dependsOn(figure1.node()))
             attract(figure1, figure2);
         else
             repel(figure1, figure2);
-
         _graphFigure.setLayoutManager(_contentsLayout);
+        _graphFigure.revalidate();
     }
 
     private void repel(NodeFigure figure1, NodeFigure figure2) {
@@ -151,6 +153,7 @@ public class DagLayout {
                 );
             }
         }
+        _graphFigure.revalidate();
     }
 
 }
