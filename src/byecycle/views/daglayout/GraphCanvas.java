@@ -28,7 +28,7 @@ public class GraphCanvas extends Canvas {
 
 	private GraphNode[] _graph;
 	
-	private IFigure _graphFigure;
+	private final IFigure _graphFigure = new Figure();
 
 	private final XYLayout _contentsLayout = new XYLayout();
 
@@ -41,15 +41,27 @@ public class GraphCanvas extends Canvas {
 	public GraphCanvas(Composite parent) {
 		super(parent, SWT.FILL | SWT.NO_BACKGROUND);
 		_lws = new LightweightSystem(this);
+		_lws.setContents(_graphFigure);
 	}
 
 	public void setGraph(GraphNode[] graph) {
+		clearGraphFigure();
+		
 		_graph = graph;
 		
 		initGraphFigure();	
 		improveLayout();
 	}
 	
+
+	private void clearGraphFigure() {
+		_nodeFiguresByNode.clear();
+		Object[] children = _graphFigure.getChildren().toArray();
+		for (int i = 0; i < children.length; i++) {
+			IFigure figure = (IFigure) children[i];
+			_graphFigure.remove(figure);
+		}
+	}
 
 	public void improveLayout() {
 		NodeFigure figure1 = randomNodeFigure();
@@ -112,7 +124,6 @@ public class GraphCanvas extends Canvas {
 	}
 	
 	private void initGraphFigure() {
-		_graphFigure = new Figure();
 		
 		for (int i = 0; i < _graph.length; i++) {
 			GraphNode node = _graph[i];
@@ -124,8 +135,6 @@ public class GraphCanvas extends Canvas {
 				addDependencyFigure(dependentFigure, providerFigure);
 			}
 		}
-
-		_lws.setContents(_graphFigure);
 	}
 
 	private void addDependencyFigure(IFigure dependentFigure,
