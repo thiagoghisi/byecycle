@@ -21,8 +21,7 @@ public class DagLayout {
     private final GraphNode[] _graph = graph();
 
     private final Display _display = new Display(); //Has to be initialized before the _graphFigure although there is no explicit dependency, or else ColorConstants. :(
-    private final Color _nodeColor = new Color(null, 240, 255, 210);
-    private final Figure _graphFigure = graphFigure();
+    private final IFigure _graphFigure = graphFigure();
     // private final Display display = new Display(); //Uncomment this line to get the error and comment the same line above.
     private final XYLayout _contentsLayout = new XYLayout();
     
@@ -50,22 +49,15 @@ public class DagLayout {
         return GraphNode.create(new String[]{"Node1", "Node2", "Node3", "Node4"});
     }
 
-    private Figure graphFigure() {
-        Figure result = new Figure();
+    private IFigure graphFigure() {
+        IFigure result = new Figure();
         
         for (int i = 0; i < _graph.length; i++)
-            result.add(nodeFigure(_graph[i].name()));
+            result.add(new NodeFigure(_graph[i]));
         
         return result;
     }
 
-    private Figure nodeFigure(String text) {
-        Label result = new Label(" " + text);
-        result.setBorder(new LineBorder());
-        result.setBackgroundColor(_nodeColor);
-        result.setOpaque(true);
-        return result;
-    }
 
     int i; 
     private void improveLayout() {
