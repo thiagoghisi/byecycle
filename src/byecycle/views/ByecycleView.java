@@ -24,6 +24,7 @@ import byecycle.views.layout.GraphCanvas;
 public class ByecycleView extends ViewPart implements ISelectionListener {
 
 	private GraphCanvas _canvas;
+	private IViewSite _site;
 	
 	/**
 	 * The constructor.
@@ -33,7 +34,13 @@ public class ByecycleView extends ViewPart implements ISelectionListener {
 	
 	public void init(IViewSite site) throws PartInitException {
 		super.init(site);
-		site.getPage().addSelectionListener(this);
+		_site = site;
+		_site.getPage().addSelectionListener(this);
+	}
+	
+	public void dispose() {
+		//_site.getPage().removeSelectionListener(this);
+		super.dispose();
 	}
 
 	/**
@@ -70,10 +77,10 @@ public class ByecycleView extends ViewPart implements ISelectionListener {
 			Job job = new Job("'" + selectedPackage.getElementName() + "' analysis") {
 				protected IStatus run(IProgressMonitor monitor) {
 					try {
-						Collection nodes = new PackageDependencyAnalysis(selectedPackage, null).nodes().values();
+						Collection nodes = new PackageDependencyAnalysis(selectedPackage, monitor).nodes().values();
 						final Node[] graph = (Node[]) nodes.toArray(new Node[nodes.size()]);
 						dumpGraph(graph);
-						UIJob updateJob = new UIJob("graph update") {
+						UIJob job = new UIJob("package analysis display") {
 							public IStatus runInUIThread(IProgressMonitor monitor) {
 								_canvas.setGraph(graph);
 								for (int i=0; i<100; ++i) {
@@ -82,8 +89,7 @@ public class ByecycleView extends ViewPart implements ISelectionListener {
 								return Status.OK_STATUS;
 							}
 						};
-						updateJob.schedule();
-						
+						job.schedule();
 					} catch (Exception x) {
 						x.printStackTrace();
 					}

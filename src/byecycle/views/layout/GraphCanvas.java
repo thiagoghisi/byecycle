@@ -86,8 +86,7 @@ public class GraphCanvas extends Canvas {
             NodeFigure figure = produceNodeFigureFor(_graph[i]);
             figure.positionYourselfIn(_contentsLayout);
         }
-
-		_graphFigure.setLayoutManager(_contentsLayout);
+		
 		_graphFigure.revalidate();
 		_graphFigure.repaint();
 	}
@@ -110,7 +109,6 @@ public class GraphCanvas extends Canvas {
 								: ColorConstants.black);
 			}
 		}
-		_graphFigure.revalidate();
 	}
 	
 	private void initGraphFigure() {
@@ -124,6 +122,7 @@ public class GraphCanvas extends Canvas {
 				addDependencyFigure(dependentFigure, providerFigure);
 			}
 		}
+		_graphFigure.setLayoutManager(_contentsLayout);
 	}
 
 	private void addDependencyFigure(IFigure dependentFigure,

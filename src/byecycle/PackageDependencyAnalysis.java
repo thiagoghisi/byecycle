@@ -52,6 +52,9 @@ public class PackageDependencyAnalysis {
 			node.accept(visitor);
 			
 			monitor.worked(1);
+			if (monitor.isCanceled()) {
+				break;
+			}
 		}
 	}
 	
