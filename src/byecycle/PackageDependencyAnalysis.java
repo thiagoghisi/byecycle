@@ -7,7 +7,6 @@ import java.util.Map;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jdt.core.ICompilationUnit;
-import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
@@ -32,7 +31,7 @@ public class PackageDependencyAnalysis {
 
 	private final Map _nodes = new HashMap();
 	
-	public PackageDependencyAnalysis(IPackageFragment pkg, IProgressMonitor monitor) throws JavaModelException {
+	public PackageDependencyAnalysis(ICompilationUnit[] compilationUnits, IProgressMonitor monitor) throws JavaModelException {
 		
 		if (null == monitor) {
 			monitor = new NullProgressMonitor();
@@ -41,11 +40,10 @@ public class PackageDependencyAnalysis {
 		ASTParser parser = ASTParser.newParser(AST.JLS2);
 
 		DependencyVisitor visitor = new DependencyVisitor();
-		ICompilationUnit[] units = pkg.getCompilationUnits();
 		
-		monitor.beginTask("package analysis", units.length);
-		for (int i = 0; i < units.length; i++) {
-			ICompilationUnit each = units[i];
+		monitor.beginTask("dependency analysis", compilationUnits.length);
+		for (int i = 0; i < compilationUnits.length; i++) {
+			ICompilationUnit each = compilationUnits[i];
 			parser.setResolveBindings(true);
 			parser.setSource(each);
 			
