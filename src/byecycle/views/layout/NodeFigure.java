@@ -35,16 +35,12 @@ public class NodeFigure extends GraphElement {
 
     private static final Random RANDOM = new Random();
     
-	private final Label _figure;
-
-    
-    NodeFigure(Node node, StressMeter stressMeter) {
+	NodeFigure(Node node, StressMeter stressMeter) {
         _node = node;
-        _figure = produceFigure();
         _stressMeter = stressMeter;
     }
    
-    private Label produceFigure() {
+    IFigure produceFigure() {
 		Label result = new Label(text(_node), imageForNode(_node));
         result.setBorder(new LineBorder());
         result.setBackgroundColor(randomPastelColor());
@@ -73,7 +69,7 @@ public class NodeFigure extends GraphElement {
     private final Node _node;
 
 	private float _currentX;
-	private float _currentY;
+	        float _currentY;
 
 	private float _targetX;
 	private float _targetY;
@@ -194,10 +190,6 @@ public class NodeFigure extends GraphElement {
         _candidateX = x;
         _candidateY = y;
     }
-
-	IFigure figure() {
-		return _figure;
-	}
 
 	void lockOnTarget() {
 		_targetX = _candidateX;

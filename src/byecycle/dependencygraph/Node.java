@@ -26,7 +26,7 @@ public class Node {
     }
 
     private static void produceRandomDependencies(Node[] graph) {
-        int dependenciesToCreate = (int)(graph.length * 1.5);
+        int dependenciesToCreate = (int)(graph.length * 1.1);
         
     	while (dependenciesToCreate-- > 0) {
     	    Node node1 = drawOneFrom(graph);

@@ -7,12 +7,17 @@ import org.eclipse.draw2d.*;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.PointList;
+import org.eclipse.swt.graphics.Color;
 
 
 class DependencyFigure extends GraphElement {
 
 	private final NodeFigure _dependent;
 	private final NodeFigure _provider;
+
+	private PolylineConnection _arrow;
+	private ChopboxAnchor _sourceAnchor;
+	private ChopboxAnchor _targetAnchor;
 
 	DependencyFigure(NodeFigure dependent, NodeFigure provider) {
 		_dependent = dependent;
@@ -34,10 +39,13 @@ class DependencyFigure extends GraphElement {
         _provider.addForceComponents(halfX, halfY);
     }
 	
-	IFigure figure() {
-		PolylineConnection result = new PolylineConnection();
-		result.setSourceAnchor(new ChopboxAnchor(_dependent.figure()));
-		result.setTargetAnchor(new ChopboxAnchor(_provider.figure()));
+	IFigure produceFigure() {
+		_arrow = new PolylineConnection();
+
+		_sourceAnchor = new ChopboxAnchor(_dependent.figure());
+		_targetAnchor = new ChopboxAnchor(_provider.figure());
+		_arrow.setSourceAnchor(_sourceAnchor);
+		_arrow.setTargetAnchor(_targetAnchor);
 
 		PolygonDecoration arrowHead = new PolygonDecoration();
 		PointList decorationPointList = new PointList();
@@ -46,9 +54,26 @@ class DependencyFigure extends GraphElement {
 		decorationPointList.addPoint(-1, 0);
 		decorationPointList.addPoint(-1, -1);
 		arrowHead.setTemplate(decorationPointList);
-		result.setTargetDecoration(arrowHead);
+		_arrow.setTargetDecoration(arrowHead);
 		
-		return result;
+		return _arrow;
+	}
+
+	public void drawArrow() {
+		IFigure source = _dependent.figure();
+		IFigure target = _provider.figure();
+		if (source.intersects(target.getBounds())) {
+			IFigure temp = source;
+			source = target;
+			target = temp;
+		}
+		_sourceAnchor.setOwner(source);
+		_targetAnchor.setOwner(target);
+		
+		Color redOrBlack = _dependent._currentY > _provider._currentY
+			? ColorConstants.red
+			: ColorConstants.black;
+		_arrow.setForegroundColor(redOrBlack);
 	}
 
 }

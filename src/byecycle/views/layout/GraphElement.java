@@ -3,6 +3,8 @@
 
 package byecycle.views.layout;
 
+import org.eclipse.draw2d.IFigure;
+import org.eclipse.draw2d.Label;
 import org.eclipse.draw2d.geometry.Point;
 
 
@@ -16,6 +18,8 @@ abstract class GraphElement {
             //return distance < 50 ? -100 : -100 / (distance * distance);
         }
     };
+
+    private IFigure _figure;
 
 	abstract Point candidatePosition();
 
@@ -41,4 +45,13 @@ abstract class GraphElement {
 		other.addForceComponents(-xComponent, -yComponent);
 	}
 
+	IFigure figure() {
+		return _figure == null
+			? _figure = produceFigure()
+			: _figure;
+	}
+
+	abstract IFigure produceFigure();
+
+	
 }

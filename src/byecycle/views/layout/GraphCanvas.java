@@ -8,7 +8,6 @@ import java.util.*;
 
 import org.eclipse.draw2d.*;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 
@@ -24,8 +23,9 @@ public class GraphCanvas extends Canvas implements StressMeter {
 	}
 
 	
+	private final List _graphElements = new ArrayList();
 	private NodeFigure[] _nodeFigures;
-	private List _graphElements;
+	private DependencyFigure[] _dependencyFigures;
 	
 	private final IFigure _graphFigure = new Figure();
 	private final XYLayout _contentsLayout = new XYLayout();
@@ -37,7 +37,8 @@ public class GraphCanvas extends Canvas implements StressMeter {
 
 
 	public void setGraph(Node[] nodeGraph) {
-		initGraphFigure(nodeGraph);
+		initGraphElements(nodeGraph);
+		initGraphFigure();
 		randomizeLayout();
 		_smallestStressEver = Float.MAX_VALUE;
 	}
@@ -98,14 +99,13 @@ public class GraphCanvas extends Canvas implements StressMeter {
 
             if (figure.isMoving()) moving++;
         }
-		System.out.println(moving);
+		
 		if (moving == 0) {
 			randomNodeFigure().nudgeNudge();
 		}
 	}
 
 	private boolean betterTargetFound() {
-		System.out.println(" " + _smallestStressEver +"  "+ _currentStress);
 		boolean result = _currentStress < _smallestStressEver;
 		if (result) _smallestStressEver = _currentStress;
 		_currentStress = 0;
@@ -118,25 +118,23 @@ public class GraphCanvas extends Canvas implements StressMeter {
 
 
 	private void makeInvertedDependenciesRed() {
-		Iterator children = _graphFigure.getChildren().iterator();
-		while (children.hasNext()) {
-			IFigure child = (IFigure) children.next();
-
-			if (child instanceof PolylineConnection) {   //TODO Optimize. Iterate only on the PolylineConnections. 
-				PolylineConnection dependency = (PolylineConnection) child;
-				Color redOrBlack = dependency.getStart().y > dependency.getEnd().y
-					? ColorConstants.red
-					: ColorConstants.black;
-				dependency.setForegroundColor(redOrBlack);
-			}
-		}
+		for (int i = 0; i < _dependencyFigures.length; i++)
+			_dependencyFigures[i].drawArrow();
 	}
 	
-	private void initGraphFigure(Node[] nodeGraph) {
+	private void initGraphFigure() {
 		clearGraphFigure();
-		_graphElements = new ArrayList();
 
+		Iterator elements = _graphElements.iterator();
+		while (elements.hasNext()) {
+			GraphElement element = (GraphElement)elements.next();
+			_graphFigure.add(element.figure());
+		}
+	}
+
+	private void initGraphElements(Node[] nodeGraph) {
 		Map nodeFiguresByNode = new HashMap();
+		List dependencyFigures = new ArrayList();
 		
 		for (int i = 0; i < nodeGraph.length; i++) {
 			Node node = nodeGraph[i];
@@ -145,18 +143,19 @@ public class GraphCanvas extends Canvas implements StressMeter {
 			while (providers.hasNext()) {
 				Node provider = (Node)providers.next();
 				NodeFigure providerFigure = produceNodeFigureFor(provider, nodeFiguresByNode);
-				addDependencyFigure(dependentFigure, providerFigure);
+				dependencyFigures.add(new DependencyFigure(dependentFigure, providerFigure));
 			}
 		}
 
+		_graphElements.clear();
+		_graphElements.addAll(nodeFiguresByNode.values());
+		_graphElements.addAll(dependencyFigures);
+
+		_dependencyFigures = new DependencyFigure[dependencyFigures.size()];
+		System.arraycopy(dependencyFigures.toArray(), 0, _dependencyFigures, 0, _dependencyFigures.length);
+
 		_nodeFigures = new NodeFigure[nodeFiguresByNode.size()];
-		Iterator it = nodeFiguresByNode.values().iterator();
-		int j = 0;
-		while (it.hasNext()) {
-			NodeFigure nodeFigure = (NodeFigure)it.next();
-			_nodeFigures[j++] = nodeFigure;
-			_graphElements.add(nodeFigure);
-		}
+		System.arraycopy(nodeFiguresByNode.values().toArray(), 0, _nodeFigures, 0, _nodeFigures.length);
 	}
 
 	private void clearGraphFigure() {
@@ -173,15 +172,7 @@ public class GraphCanvas extends Canvas implements StressMeter {
 
 		result = new NodeFigure(node, this);
 		nodeFiguresByNode.put(node, result);
-		_graphFigure.add(result.figure());
 		return result;
-	}
-
-	private void addDependencyFigure(NodeFigure dependentFigure,
-			NodeFigure providerFigure) {
-		DependencyFigure dependency = new DependencyFigure(dependentFigure, providerFigure);
-		_graphElements.add(dependency);
-		_graphFigure.add(dependency.figure());
 	}
 
 	private void randomizeLayout() {
