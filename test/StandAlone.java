@@ -1,3 +1,4 @@
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 
@@ -24,11 +25,14 @@ public class StandAlone {
 		Shell shell = new Shell(_display);
 		shell.setText("Byecycle");
 		shell.setSize(400, 400);
-		shell.open();
 		
 		GraphCanvas canvas = new GraphCanvas(shell);
-		canvas.setSize(400, 400);
 		canvas.setGraph(_graph);
+		
+		FillLayout layout = new FillLayout();
+		shell.setLayout(layout);
+
+		shell.open();
 
 		while (!shell.isDisposed()) {
 			while (!_display.readAndDispatch()) {

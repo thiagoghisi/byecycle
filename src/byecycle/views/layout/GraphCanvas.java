@@ -71,6 +71,10 @@ public class GraphCanvas extends Canvas {
 	}
 
 	public void improveLayout() {
+		
+		if (null == _graph) {
+			return;
+		}
 
 	    int interactions = _graph.length ^ 2;
 	    while (interactions-- > 0) {

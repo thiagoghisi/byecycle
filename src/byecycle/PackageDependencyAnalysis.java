@@ -1,6 +1,7 @@
 package byecycle;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -9,6 +10,7 @@ import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.AST;
+import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.ClassInstanceCreation;
@@ -17,23 +19,24 @@ import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.SimpleType;
+import org.eclipse.jdt.core.dom.TypeDeclaration;
 
 import byecycle.dependencygraph.Node;
 
 
 public class PackageDependencyAnalysis {
+	
+	public static final String PACKAGE = "package";
+	
+	public static final String TYPE = "type";
 
 	private final Map _nodes = new HashMap();
 	
-	private final Node _root;
-
 	public PackageDependencyAnalysis(IPackageFragment pkg, IProgressMonitor monitor) throws JavaModelException {
 		
 		if (null == monitor) {
 			monitor = new NullProgressMonitor();
 		}
-		
-		_root = getNode(pkg.getElementName());
 
 		ASTParser parser = ASTParser.newParser(AST.JLS2);
 
@@ -58,24 +61,33 @@ public class PackageDependencyAnalysis {
 		}
 	}
 	
-	public Node root() {
-		return _root;
-	}
-	
 	public Map nodes() {
 		return _nodes;
 	}
 
-	private Node getNode(String packageName) {
-		Node node = (Node)_nodes.get(packageName);
+	private Node getNode(String nodeName, String kind) {
+		Node node = (Node)_nodes.get(nodeName);
 		if (null == node) {
-			node = new Node(packageName);
-			_nodes.put(packageName, node);
+			node = new Node(nodeName, kind);
+			_nodes.put(nodeName, node);
 		}
 		return node;
 	}
 
 	class DependencyVisitor extends ASTVisitor {
+		
+		Node _currentNode;
+		
+		public boolean visit(TypeDeclaration node) {
+			Node saved = _currentNode;
+			_currentNode = getNode(node.resolveBinding().getQualifiedName(), TYPE);
+			for (Iterator iter = node.bodyDeclarations().iterator(); iter.hasNext();) {
+				ASTNode child = (ASTNode) iter.next();
+				child.accept(this);
+			}
+			_currentNode = saved;
+			return false;
+		}
 		
 		public boolean visit(SimpleType node) {
 			addProvider(node.resolveBinding());
@@ -106,7 +118,7 @@ public class PackageDependencyAnalysis {
 				return;
 			if (type.getQualifiedName().equals(""))
 				return; //TODO: Check why this happens.
-			_root.addProvider(getNode(type.getPackage().getName()));
+			_currentNode.addProvider(getNode(type.getPackage().getName(), PACKAGE));
 		}
 
 	}

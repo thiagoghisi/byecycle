@@ -39,7 +39,7 @@ public class ByecycleView extends ViewPart implements ISelectionListener {
 	}
 	
 	public void dispose() {
-		//_site.getPage().removeSelectionListener(this);
+		_site.getPage().removeSelectionListener(this);
 		super.dispose();
 	}
 
@@ -49,7 +49,42 @@ public class ByecycleView extends ViewPart implements ISelectionListener {
 	 */
 	public void createPartControl(Composite parent) {
 		_canvas = new GraphCanvas(parent);
-		_canvas.setGraph(graph());
+		
+		Job updateJob = new Job("byecyle update job") {
+			protected IStatus run(IProgressMonitor monitor) {
+				try {
+					improveLayoutLoop(monitor);
+				} catch (Exception x) {
+					x.printStackTrace();
+				}
+				return Status.OK_STATUS;
+			}
+
+			private void improveLayoutLoop(IProgressMonitor monitor) throws InterruptedException {
+				while (true) {
+					if (_canvas.isDisposed() || monitor.isCanceled()) {
+						break;
+					}
+					Thread.sleep(100);
+					UIJob job = new UIJob("package analysis display") {
+						public IStatus runInUIThread(IProgressMonitor monitor) {
+							try {
+								_canvas.improveLayout();
+							} catch (Exception x) {
+								x.printStackTrace();
+							}
+							return Status.OK_STATUS;
+						}
+					};
+					job.setSystem(true);
+					job.schedule();
+
+				}
+			}
+		};
+		updateJob.setPriority(Job.LONG);
+		updateJob.setSystem(true);
+		updateJob.schedule();
 	}
 
 	/**
@@ -58,12 +93,6 @@ public class ByecycleView extends ViewPart implements ISelectionListener {
 	public void setFocus() {
 		//viewer.getControl().setFocus();
 	}
-
-	private Node[] graph() {
-		return Node.createGraph(new String[] { "Node1", "Node2", "Node3",
-				"Node4" });
-	}
-
 	
 	public void selectionChanged(IWorkbenchPart part, ISelection selection) {
 		if (!(selection instanceof IStructuredSelection)) {
@@ -78,18 +107,17 @@ public class ByecycleView extends ViewPart implements ISelectionListener {
 				protected IStatus run(IProgressMonitor monitor) {
 					try {
 						Collection nodes = new PackageDependencyAnalysis(selectedPackage, monitor).nodes().values();
-						final Node[] graph = (Node[]) nodes.toArray(new Node[nodes.size()]);
-						dumpGraph(graph);
-						UIJob job = new UIJob("package analysis display") {
-							public IStatus runInUIThread(IProgressMonitor monitor) {
-								_canvas.setGraph(graph);
-								for (int i=0; i<100; ++i) {
-									_canvas.improveLayout();
+						if (!monitor.isCanceled()) {
+							final Node[] graph = (Node[]) nodes.toArray(new Node[nodes.size()]);
+							//dumpGraph(graph);
+							UIJob job = new UIJob("package analysis display") {
+								public IStatus runInUIThread(IProgressMonitor monitor) {
+									_canvas.setGraph(graph);
+									return Status.OK_STATUS;
 								}
-								return Status.OK_STATUS;
-							}
-						};
-						job.schedule();
+							};
+							job.schedule();
+						}
 					} catch (Exception x) {
 						x.printStackTrace();
 					}
