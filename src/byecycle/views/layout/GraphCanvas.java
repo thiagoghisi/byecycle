@@ -15,7 +15,7 @@ import org.eclipse.swt.widgets.Composite;
 import byecycle.dependencygraph.Node;
 
 
-public class GraphCanvas extends Canvas {
+public class GraphCanvas extends Canvas implements StressMeter {
 
 	public GraphCanvas(Composite parent) {
 		super(parent, SWT.FILL | SWT.NO_BACKGROUND);
@@ -31,20 +31,43 @@ public class GraphCanvas extends Canvas {
 	private final XYLayout _contentsLayout = new XYLayout();
 	
 	private final Random _random = new Random();
+	private float _currentStress;
+	private float _smallestStressEver;
+	private boolean _animating = false;
 
 
 
 	public void setGraph(Node[] nodeGraph) {
 		initGraphFigure(nodeGraph);
 		randomizeLayout();
+		_smallestStressEver = Float.MAX_VALUE;
 	}
 	
 	public void tryToImproveLayout() {
 		if (_nodeFigures == null) return;
 
-		tryToImproveLayoutBehindTheScenes();
+		if (_animating) {
+			animate();
+		} else {
+			tryToImproveLayoutBehindTheScenes();
+			if (isLayoutBetter()) _animating = true;
+			_graphFigure.repaint(); //TODO Remove this line and find a way to make the GUI respond. It freezes when called by StandAlone but might work inside Eclipse.
+		}
+	}
 
-		if (isLayoutBetter()) render();
+	private void animate() {
+		boolean done = true;
+		for (int i = 0; i < _nodeFigures.length; i++) {
+			NodeFigure figure = _nodeFigures[i];
+	 		done = figure.positionYourselfIn(_contentsLayout) && done;
+	    }
+
+		_animating = !done;
+		makeInvertedDependenciesRed();
+		
+		_graphFigure.revalidate();
+		_graphFigure.repaint();
+		
 	}
 
 	private void tryToImproveLayoutBehindTheScenes() {
@@ -65,19 +88,10 @@ public class GraphCanvas extends Canvas {
 	}
 
 	private boolean isLayoutBetter() {
-		return true;
-	}
-
-	private void render() {
-		for (int i = 0; i < _nodeFigures.length; i++) {
-            NodeFigure figure = _nodeFigures[i];
-    		figure.positionYourselfIn(_contentsLayout);
-        }
-
-		makeInvertedDependenciesRed();
-		
-		_graphFigure.revalidate();
-		_graphFigure.repaint();
+		boolean result = _currentStress < _smallestStressEver;
+		if (result) _smallestStressEver = _currentStress;
+		_currentStress = 0;
+		return result;
 	}
 
 	private NodeFigure randomNodeFigure() {
@@ -139,7 +153,7 @@ public class GraphCanvas extends Canvas {
 		NodeFigure result = (NodeFigure) nodeFiguresByNode.get(node);
 		if (result != null)	return result;
 
-		result = new NodeFigure(node);
+		result = new NodeFigure(node, this);
 		nodeFiguresByNode.put(node, result);
 		_graphFigure.add(result.figure());
 		return result;
@@ -160,5 +174,9 @@ public class GraphCanvas extends Canvas {
 			nodeFigure.position(x, y);
 		}
     }
+
+	public void accumulateStress(float stress) {
+		_currentStress += Math.abs(stress);
+	}
 
 }

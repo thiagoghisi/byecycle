@@ -21,7 +21,7 @@ import byecycle.dependencygraph.Node;
 public class NodeFigure extends GraphElement {
 
     
-private static final int MARGIN = 2;
+	private static final int MARGIN = 2;
 	private static final float IMPETUS = 300; //TODO Play with this. :)
     private static final float VISCOSITY = 0.95f;  //TODO Play with this. :)
     
@@ -46,9 +46,10 @@ private static final int MARGIN = 2;
 	private final Label _figure;
 
     
-    NodeFigure(Node node) {
+    NodeFigure(Node node, StressMeter stressMeter) {
         _node = node;
         _figure = produceFigure();
+        _stressMeter = stressMeter;
     }
    
     private Label produceFigure() {
@@ -81,10 +82,15 @@ private static final int MARGIN = 2;
 
     private float _x;
     private float _y;
+	private float _previousX;
+	private float _previousY;
 
     private float _forceComponentX;
     private float _forceComponentY;
+    
+	private final StressMeter _stressMeter;
 
+	
     Node node() {
         return _node;
     }
@@ -124,6 +130,8 @@ private static final int MARGIN = 2;
 	void addForceComponents(float x, float y) {
         _forceComponentX += x;
         _forceComponentY += y;
+        _stressMeter.accumulateStress(x);
+        _stressMeter.accumulateStress(y);
     }
 
     private static float dampen(float value) {
@@ -143,8 +151,17 @@ private static final int MARGIN = 2;
 		stayAround();
 	}
 
-	void positionYourselfIn(XYLayout layout) {
-		layout.setConstraint(this.figure(), new Rectangle(Math.round(_x), Math.round(_y), -1, -1));
+	boolean positionYourselfIn(XYLayout layout) {
+		if (_x == _previousX && _y == _previousY) return true;
+		
+		float dx = Math.max(Math.min(_x - _previousX, 3), -3);
+		float dy = Math.max(Math.min(_y - _previousY, 3), -3);
+		
+		_previousX += dx;
+		_previousY += dy;
+		
+		layout.setConstraint(this.figure(), new Rectangle(Math.round(_previousX), Math.round(_previousY), -1, -1));
+		return false;
 	}
 
 	private boolean isMoving() {
@@ -174,6 +191,9 @@ private static final int MARGIN = 2;
     void position(float x, float y) {
         _x = x;
         _y = y;
+        
+        _previousX = _x;
+        _previousY = _y;
     }
 
 	public IFigure figure() {
