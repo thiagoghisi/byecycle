@@ -35,7 +35,7 @@ private static final int MARGIN = 2;
 
     static final Force REPULSION = new Force() {
         public float intensityGiven(float distance) {
-            return -IMPETUS * 0.7f / (distance * distance);  //TODO Play with this formula.
+            return -IMPETUS * 0.13f / (distance * distance);  //TODO Play with this formula.
             //return distance < 50 ? -100 : -100 / (distance * distance);
         }
     };

@@ -22,7 +22,7 @@ class Dependency {
     void reactTo(Dependency other) {
         if (other == this) throw new IllegalArgumentException();
 
-        //reactTo(other, NodeFigure.REPULSION);
+        reactTo(other, NodeFigure.REPULSION);
 	}
 
 
@@ -32,6 +32,20 @@ class Dependency {
 
 	
     private void reactTo(NodeFigure other, Force force) {
+		Point p1 = position();
+		Point p2 = other.position();
+
+		float distance = (float)Math.max(p1.getDistance(p2), 2);
+		float intensity = force.intensityGiven(distance);
+
+        float xComponent = ((p2.x - p1.x) / distance) * intensity;
+        float yComponent = ((p2.y - p1.y) / distance) * intensity;
+
+        addForceComponents(xComponent, yComponent);
+        other.addForceComponents(-xComponent, -yComponent);
+	}
+
+    private void reactTo(Dependency other, Force force) {
 		Point p1 = position();
 		Point p2 = other.position();
 
