@@ -158,11 +158,17 @@ public class NodeFigure extends Label {
     }
 
     private void stayAround() {
+    	Rectangle clientArea = getParent().getClientArea();
+    	Rectangle bounds = getBounds();
+    	
+    	int maxX = clientArea.width - bounds.width;
+    	int maxY = clientArea.height - bounds.height;
+    	
         if (_x <   5) _x =   5;
-        if (_x > 400) _x = 400;
+        if (_x > maxX) _x = maxX;
 
         if (_y <   5) _y =   5;
-        if (_y > 400) _y = 400;
+        if (_y > maxY) _y = maxY;
     }
 
     public void position(float x, float y) {
