@@ -4,6 +4,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 import org.eclipse.draw2d.ChopboxAnchor;
+import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.LightweightSystem;
@@ -12,6 +13,7 @@ import org.eclipse.draw2d.PolylineConnection;
 import org.eclipse.draw2d.XYLayout;
 import org.eclipse.draw2d.geometry.PointList;
 import org.eclipse.draw2d.geometry.Rectangle;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 
@@ -23,7 +25,7 @@ public class DagLayout {
 
     private final GraphNode[] _graph = graph();
 
-    private final Display _display = new Display(); //Has to be initialized before the _graphFigure although there is no explicit dependency, or else ColorConstants. :(
+    private final Display _display = new Display(); //Has to be initialized before the _graphFigure although there is no explicit dependency, or else ColorConstants will throw a NullPointerException. :(
     private final IFigure _graphFigure = new Figure();
     // private final Display display = new Display(); //Uncomment this line to get the error and comment the same line above.
     private final XYLayout _contentsLayout = new XYLayout();
@@ -110,6 +112,19 @@ public class DagLayout {
         _contentsLayout.setConstraint(nodeFigure, new Rectangle(i + 300, i + 100, -1, -1));
         
         _graphFigure.setLayoutManager(_contentsLayout);
+        
+        Iterator children = _graphFigure.getChildren().iterator();
+        while (children.hasNext()) {
+            IFigure child = (IFigure)children.next();
+            
+            if (child instanceof PolylineConnection) {
+                PolylineConnection dependency = (PolylineConnection)child;
+                if (dependency.getStart().y > dependency.getEnd().y)
+                    dependency.setForegroundColor(ColorConstants.red);
+            }
+            
+
+        }
     }
 
 }
