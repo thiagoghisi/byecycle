@@ -26,14 +26,14 @@ private static final int MARGIN = 2;
     
     private static final float DEPENDENCY_THRUST = 0.0003f * IMPETUS;
 
-    private static final Force ATTRACTION = new Force() {
+    static final Force ATTRACTION = new Force() {
         public float intensityGiven(float distance) {
             return  -(10 - distance) * 0.000005f * IMPETUS; //TODO Play with this formula. Zero it to see REPULSION acting alone.
             //return 0;
         }
     };
 
-    private static final Force REPULSION = new Force() {
+    static final Force REPULSION = new Force() {
         public float intensityGiven(float distance) {
             return -IMPETUS * 0.7f / (distance * distance);  //TODO Play with this formula.
             //return distance < 50 ? -100 : -100 / (distance * distance);
@@ -113,8 +113,8 @@ private static final int MARGIN = 2;
     
     
     private void reactTo(NodeFigure other, Force force) {
-		Point p1 = new Point(_x, _y);
-		Point p2 = new Point(other._x, other._y);
+		Point p1 = position();
+		Point p2 = other.position();
 
 		float distance = (float)Math.max(p1.getDistance(p2), 2);
 		float intensity = force.intensityGiven(distance);
@@ -126,7 +126,11 @@ private static final int MARGIN = 2;
         other.addForceComponents(-xComponent, -yComponent);
 	}
 
-	private void addForceComponents(float x, float y) {
+	Point position() {
+		return new Point(_x, _y);
+	}
+
+	void addForceComponents(float x, float y) {
         _forceComponentX += x;
         _forceComponentY += y;
     }

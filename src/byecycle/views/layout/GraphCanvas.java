@@ -26,7 +26,7 @@ public class GraphCanvas extends Canvas {
 
 	
 	private NodeFigure[] _nodeFigures;
-	private Dependency[] _dependencies = new Dependency[]{};
+	private List _dependencies;
 	
 	private final IFigure _graphFigure = new Figure();
 	private final XYLayout _contentsLayout = new XYLayout();
@@ -59,11 +59,11 @@ public class GraphCanvas extends Canvas {
             }
         }
 	    
-		for (int i = 0; i < _dependencies.length; i++) {
-			Dependency dependency1 = _dependencies[i];
+		for (int i = 0; i < _dependencies.size(); i++) {
+			Dependency dependency1 = (Dependency)_dependencies.get(i);
 
-			for (int j = i + 1; j < _dependencies.length; j++) {
-				Dependency dependency2 = _dependencies[j];
+			for (int j = i + 1; j < _dependencies.size(); j++) {
+				Dependency dependency2 = (Dependency)_dependencies.get(j);
 			
 				dependency1.reactTo(dependency2);
 			}
@@ -119,18 +119,18 @@ public class GraphCanvas extends Canvas {
 	
 	private void initGraphFigure(Node[] nodeGraph) {
 		clearGraphFigure();
+		_dependencies = new ArrayList();
 
 		Map nodeFiguresByNode = new HashMap();
 		
 		for (int i = 0; i < nodeGraph.length; i++) {
 			Node node = nodeGraph[i];
-			IFigure dependentFigure = produceNodeFigureFor(node, nodeFiguresByNode);
+			NodeFigure dependentFigure = produceNodeFigureFor(node, nodeFiguresByNode);
 			Iterator providers = node.providers();
 			while (providers.hasNext()) {
 				Node provider = (Node)providers.next();
-				IFigure providerFigure = produceNodeFigureFor(provider, nodeFiguresByNode);
+				NodeFigure providerFigure = produceNodeFigureFor(provider, nodeFiguresByNode);
 				addDependencyFigure(dependentFigure, providerFigure);
-				//TODO add dependency to _dependencies.
 			}
 		}
 
@@ -158,22 +158,11 @@ public class GraphCanvas extends Canvas {
 		return result;
 	}
 
-	private void addDependencyFigure(IFigure dependentFigure,
-			IFigure providerFigure) {
-		PolylineConnection dependency = new PolylineConnection();
-		dependency.setSourceAnchor(new ChopboxAnchor(dependentFigure));
-		dependency.setTargetAnchor(new ChopboxAnchor(providerFigure));
-
-		PolygonDecoration arrowHead = new PolygonDecoration();
-		PointList decorationPointList = new PointList();
-		decorationPointList.addPoint(0, 0);
-		decorationPointList.addPoint(-1, 1);
-		decorationPointList.addPoint(-1, 0);
-		decorationPointList.addPoint(-1, -1);
-		arrowHead.setTemplate(decorationPointList);
-		dependency.setTargetDecoration(arrowHead);
-
-		_graphFigure.add(dependency);
+	private void addDependencyFigure(NodeFigure dependentFigure,
+			NodeFigure providerFigure) {
+		Dependency dependency = new Dependency(dependentFigure, providerFigure);
+		_dependencies.add(dependency);
+		_graphFigure.add(dependency.figure());
 	}
 
 	private void randomizeLayout() {
