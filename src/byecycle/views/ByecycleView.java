@@ -2,6 +2,10 @@ package byecycle.views;
 
 import java.util.Collection;
 
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -11,6 +15,7 @@ import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.ViewPart;
+import org.eclipse.ui.progress.UIJob;
 
 import byecycle.PackageDependencyAnalysis;
 import byecycle.views.daglayout.GraphCanvas;
@@ -61,12 +66,27 @@ public class ByecycleView extends ViewPart implements ISelectionListener {
 		IStructuredSelection structured = (IStructuredSelection) selection;
 		Object selected = structured.getFirstElement();
 		if (selected instanceof IPackageFragment) {
-			try {
-				Collection nodes = new PackageDependencyAnalysis((IPackageFragment) selected, null).nodes().values();
-				_canvas.setGraph((GraphNode[]) nodes.toArray(new GraphNode[nodes.size()]));
-			} catch (Exception x) {
-				x.printStackTrace();
-			}
+			final IPackageFragment selectedPackage = (IPackageFragment) selected;
+			Job job = new Job("'" + selectedPackage.getElementName() + "' analysis") {
+				protected IStatus run(IProgressMonitor monitor) {
+					try {
+						Collection nodes = new PackageDependencyAnalysis(selectedPackage, null).nodes().values();
+						final GraphNode[] graph = (GraphNode[]) nodes.toArray(new GraphNode[nodes.size()]);
+						UIJob updateJob = new UIJob("graph update") {
+							public IStatus runInUIThread(IProgressMonitor monitor) {
+								_canvas.setGraph(graph);
+								return Status.OK_STATUS;
+							}
+						};
+						updateJob.schedule();
+						
+					} catch (Exception x) {
+						x.printStackTrace();
+					}
+					return Status.OK_STATUS;
+				}
+			};
+			job.schedule();
 		}
 	}
 }

@@ -39,7 +39,7 @@ public class GraphCanvas extends Canvas {
 	private final Random _random = new Random();
 
 	public GraphCanvas(Composite parent) {
-		super(parent, SWT.FILL);
+		super(parent, SWT.FILL | SWT.NO_BACKGROUND);
 		_lws = new LightweightSystem(this);
 	}
 

@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.JavaModelException;
@@ -27,19 +28,29 @@ public class PackageDependencyAnalysis {
 
 	public PackageDependencyAnalysis(IPackageFragment pkg, IProgressMonitor monitor) throws JavaModelException {
 		
+		if (null == monitor) {
+			monitor = new NullProgressMonitor();
+		}
+		
 		_root = getNode(pkg.getElementName());
 
 		ASTParser parser = ASTParser.newParser(AST.JLS2);
 
 		DependencyVisitor visitor = new DependencyVisitor();
 		ICompilationUnit[] units = pkg.getCompilationUnits();
+		
+		monitor.beginTask("package analysis", units.length);
 		for (int i = 0; i < units.length; i++) {
 			ICompilationUnit each = units[i];
 			parser.setResolveBindings(true);
 			parser.setSource(each);
 			
+			monitor.subTask(each.getElementName());
+			
 			CompilationUnit node = (CompilationUnit) parser.createAST(monitor); 
 			node.accept(visitor);
+			
+			monitor.worked(1);
 		}
 	}
 	
