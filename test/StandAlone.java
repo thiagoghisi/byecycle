@@ -49,6 +49,38 @@ public class StandAlone {
             names[i] = "Node " + i;
         }
 		return Node.createGraph(names);
+		
+/*
+		Node transaction = new Node("Transaction", "interface");
+
+		Node prevayler = new Node("Prevayler", "interface");
+		prevayler.addProvider(transaction);
+
+		Node impl = new Node("impl", "package");
+		impl.addProvider(prevayler);
+		impl.addProvider(transaction);
+
+		Node factory = new Node("Factory", "class");
+		factory.addProvider(impl);
+		factory.addProvider(prevayler);
+
+		
+		Node prevaylerpackage = new Node("prevayler", "package");
+
+		Node prevaylerdemo = new Node("prevaylerx.demos", "package");
+		prevaylerdemo.addProvider(prevaylerpackage);
+		
+		Node prevaylertest = new Node("prevaylerx.tests", "package");
+		prevaylertest.addProvider(prevaylerpackage);
+		
+		Node prevaylerplugin = new Node("prevaylerx.plugins.queries", "package");
+		prevaylerplugin.addProvider(prevaylerpackage);
+		
+		
+		return new Node[]{transaction, prevayler, impl, factory,
+				prevaylerpackage, prevaylertest, prevaylerdemo, prevaylerplugin};
+*/
+
 	}	
 
 }
