@@ -18,15 +18,22 @@ import byecycle.dependencygraph.Node;
 
 public class NodeFigure extends Label {
 
+    protected static final float IMPETUS = 200; //TODO Play with this. :)
+    private static final float VISCOSITY = 0.95f;  //TODO Play with this. :)
+    
+    private static final float DEPENDENCY_THRUST = 0.0003f * IMPETUS;
+
     private static final Force ATTRACTION = new Force() {
         public float intensityGiven(float distance) {
-            return distance < 50 ? 0 : distance / 100; //TODO Play with this formula. Zero it to see REPULSION acting alone.
+            return  -(10 - distance) * 0.00001f * IMPETUS; //TODO Play with this formula. Zero it to see REPULSION acting alone.
+            //return 0;
         }
     };
 
     private static final Force REPULSION = new Force() {
         public float intensityGiven(float distance) {
-            return -1400 / (distance * distance);  //TODO Play with this formula.
+            return -IMPETUS / (distance * distance);  //TODO Play with this formula.
+            //return distance < 50 ? -100 : -100 / (distance * distance);
         }
     };
 
@@ -67,15 +74,35 @@ public class NodeFigure extends Label {
     }
 
     public void reactTo(NodeFigure other) {
+//        if (other == this) throw new IllegalArgumentException();
         if (other == this) return;
 
-		reactTo(other, REPULSION);
+        reactTo(other, REPULSION);
 
-        if (_node.dependsOn(other.node()) || other.node().dependsOn(_node))
-    		reactTo(other, ATTRACTION);
-		
+        if (_node.dependsOn(other.node())) {
+            reactTo(other, ATTRACTION);
+            up();
+            other.down();
+        }
+        
+        if (other.node().dependsOn(_node)) {
+            reactTo(other, ATTRACTION);
+            down();
+            other.up();
+        }
+
 	}
 
+    private void up() {
+        _forceComponentY -= DEPENDENCY_THRUST;
+    }
+
+    private void down() {
+        _forceComponentY += DEPENDENCY_THRUST;
+    }
+
+    
+    
     private void reactTo(NodeFigure other, Force force) {
 		Point p1 = new Point(_x, _y);
 		Point p2 = new Point(other._x, other._y);
@@ -87,6 +114,7 @@ public class NodeFigure extends Label {
         float yComponent = ((p2.y - p1.y) / distance) * intensity;
 
         addForceComponents(xComponent, yComponent);
+        other.addForceComponents(-xComponent, -yComponent);
 	}
 
 	private void addForceComponents(float x, float y) {
@@ -94,18 +122,40 @@ public class NodeFigure extends Label {
         _forceComponentY += y;
     }
 
-    private static float damped(float value) {
-        return Math.max(Math.min(value, 1), -1);
+    private static float dampen(float value) {
+        //return Math.max(Math.min(value, 1), -1);
+        return value * VISCOSITY;
     }
 
     public void positionYourselfIn(XYLayout layout) {
-    	_x += damped(_forceComponentX);
-    	_y += damped(_forceComponentY);
-    	
-		_forceComponentX = 0;
-		_forceComponentY = 0;
+    	_x += _forceComponentX;
+    	_y += _forceComponentY;
 
-		layout.setConstraint(this, new Rectangle(Math.round(_x), Math.round(_y), -1, -1));
+    	_forceComponentX = dampen(_forceComponentX);
+		_forceComponentY = dampen(_forceComponentY);
+		
+		if (!moving()) nudgeNudge();
+
+		keepInBounds();
+	    layout.setConstraint(this, new Rectangle(Math.round(_x), Math.round(_y), -1, -1));
+    }
+
+    private boolean moving() {
+        return _forceComponentX + _forceComponentY > 1;
+    }
+
+    private void nudgeNudge() {
+        if (RANDOM.nextInt(3000) != 0) return;
+        _forceComponentX = (RANDOM.nextFloat() - 0.5f) * 0.1f * IMPETUS;
+        _forceComponentY = (RANDOM.nextFloat() - 0.5f) * 0.1f * IMPETUS;
+    }
+
+    private void keepInBounds() {
+        if (_x <   0) _x =   0;
+        if (_x > 300) _x = 300;
+
+        if (_y <   0) _y =   0;
+        if (_y > 300) _y = 300;
     }
 
     public void position(float x, float y) {

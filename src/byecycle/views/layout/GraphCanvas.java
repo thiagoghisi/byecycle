@@ -73,17 +73,18 @@ public class GraphCanvas extends Canvas {
 
 	public void improveLayout() {
 		
-		if (null == _graph) {
+		if (_graph == null)
 			return;
-		}
 
-	    int interactions = _graph.length ^ 2;
-	    while (interactions-- > 0) {
-	        NodeFigure figure1 = randomNodeFigure();
-	        NodeFigure figure2 = randomNodeFigure();
+		for (int i = 0; i < _graph.length; i++) {
+	        NodeFigure figure1 = produceNodeFigureFor(_graph[i]);
 	        
-	        figure1.reactTo(figure2);
-	    }
+            for (int j = i + 1; j < _graph.length; j++) {
+    	        NodeFigure figure2 = produceNodeFigureFor(_graph[j]);
+
+    	        figure1.reactTo(figure2);
+            }
+        }
 	    
 		makeInvertedDependenciesRed();
 
