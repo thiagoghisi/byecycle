@@ -39,6 +39,7 @@ public class GraphCanvas extends Canvas {
 		super(parent, SWT.FILL | SWT.NO_BACKGROUND);
 		_lws = new LightweightSystem(this);
 		_lws.setContents(_graphFigure);
+		_graphFigure.setLayoutManager(_contentsLayout);
 	}
 
 	public void setGraph(Node[] graph) {
@@ -126,7 +127,6 @@ public class GraphCanvas extends Canvas {
 				addDependencyFigure(dependentFigure, providerFigure);
 			}
 		}
-		_graphFigure.setLayoutManager(_contentsLayout);
 	}
 
 	private void addDependencyFigure(IFigure dependentFigure,
