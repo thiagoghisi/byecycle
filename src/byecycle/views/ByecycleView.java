@@ -1,39 +1,34 @@
 package byecycle.views;
 
-import java.util.Iterator;
+import java.util.Collection;
 
-import org.eclipse.draw2d.Figure;
-import org.eclipse.draw2d.Label;
-import org.eclipse.draw2d.LightweightSystem;
-import org.eclipse.draw2d.LineBorder;
-import org.eclipse.draw2d.XYLayout;
-import org.eclipse.draw2d.geometry.Rectangle;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.widgets.Canvas;
+import org.eclipse.jdt.core.IPackageFragment;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.ISelectionListener;
+import org.eclipse.ui.IViewSite;
+import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.ViewPart;
 
+import byecycle.PackageDependencyAnalysis;
+import byecycle.views.daglayout.GraphCanvas;
 import byecycle.views.daglayout.GraphNode;
 
-public class ByecycleView extends ViewPart {
+public class ByecycleView extends ViewPart implements ISelectionListener {
 
-	private Canvas _canvas;
-
-	private LightweightSystem _lws;
-
-	private final GraphNode[] _graph = graph();
-
-	private final Color _nodeColor = new Color(null, 240, 255, 210);
-
-	private final Figure _graphFigure = graphFigure();
-
-	private final XYLayout _contentsLayout = new XYLayout();
-
+	private GraphCanvas _canvas;
+	
 	/**
 	 * The constructor.
 	 */
 	public ByecycleView() {
+	}
+	
+	public void init(IViewSite site) throws PartInitException {
+		super.init(site);
+		site.getPage().addSelectionListener(this);
 	}
 
 	/**
@@ -41,10 +36,8 @@ public class ByecycleView extends ViewPart {
 	 * it.
 	 */
 	public void createPartControl(Composite parent) {
-		_canvas = new Canvas(parent, SWT.NO_BACKGROUND);
-		_lws = new LightweightSystem(_canvas);
-		_lws.setContents(_graphFigure);
-		improveLayout();
+		_canvas = new GraphCanvas(parent);
+		_canvas.setGraph(graph());
 	}
 
 	/**
@@ -59,43 +52,21 @@ public class ByecycleView extends ViewPart {
 				"Node4" });
 	}
 
-	private Figure graphFigure() {
-		Figure result = new Figure();
+	
+	public void selectionChanged(IWorkbenchPart part, ISelection selection) {
+		if (!(selection instanceof IStructuredSelection)) {
+			return;
+		}
 
-		for (int i = 0; i < _graph.length; i++)
-			result.add(nodeFigure(_graph[i].name()));
-
-		return result;
-	}
-
-	private Figure nodeFigure(String text) {
-		Label result = new Label(" " + text);
-		result.setBorder(new LineBorder());
-		result.setBackgroundColor(_nodeColor);
-		result.setOpaque(true);
-		return result;
-	}
-
-	int i;
-	private void improveLayout() {
-		Figure child;
-		Iterator iterator = _graphFigure.getChildren().iterator();
-
-		child = (Figure) iterator.next();
-		_contentsLayout.setConstraint(child, new Rectangle(i, i, -1, -1));
-
-		child = (Figure) iterator.next();
-		_contentsLayout.setConstraint(child, new Rectangle(i + 15, i + 15, -1,
-				-1));
-
-		child = (Figure) iterator.next();
-		_contentsLayout.setConstraint(child, new Rectangle(i + 30, i + 30, -1,
-				-1));
-
-		child = (Figure) iterator.next();
-		_contentsLayout.setConstraint(child, new Rectangle(i + 45, i + 45, -1,
-				-1));
-
-		_graphFigure.setLayoutManager(_contentsLayout);
+		IStructuredSelection structured = (IStructuredSelection) selection;
+		Object selected = structured.getFirstElement();
+		if (selected instanceof IPackageFragment) {
+			try {
+				Collection nodes = new PackageDependencyAnalysis((IPackageFragment) selected, null).nodes().values();
+				_canvas.setGraph((GraphNode[]) nodes.toArray(new GraphNode[nodes.size()]));
+			} catch (Exception x) {
+				x.printStackTrace();
+			}
+		}
 	}
 }
