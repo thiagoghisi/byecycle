@@ -1,3 +1,6 @@
+//Copyright (C) 2004 Klaus Wuestefeld and Rodrigo B de Oliveira.
+//This is free software. See the license distributed along with this file.
+
 package byecycle.views;
 
 import java.util.Collection;
@@ -74,7 +77,7 @@ public class ByecycleView extends ViewPart implements ISelectionListener {
 					UIJob job = new UIJob("package analysis display") {
 						public IStatus runInUIThread(IProgressMonitor monitor) {
 							try {
-								_canvas.improveLayout();
+								_canvas.tryToImproveLayout();
 							} catch (Exception x) {
 								x.printStackTrace();
 							}

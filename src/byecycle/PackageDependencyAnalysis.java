@@ -1,3 +1,7 @@
+//Copyright (C) 2004 Klaus Wuestefeld and Rodrigo B de Oliveira and Kent Beck.
+//This is free software. See the license distributed along with this file.
+
+
 package byecycle;
 
 import java.util.HashMap;

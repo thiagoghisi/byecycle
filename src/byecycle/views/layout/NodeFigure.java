@@ -1,4 +1,5 @@
 //Copyright (C) 2004 Klaus Wuestefeld and Rodrigo B de Oliveira.
+//This is free software. See the license distributed along with this file.
 
 package byecycle.views.layout;
 
@@ -18,7 +19,9 @@ import byecycle.dependencygraph.Node;
 
 public class NodeFigure extends Label {
 
-    protected static final float IMPETUS = 300; //TODO Play with this. :)
+    
+private static final int MARGIN = 2;
+	private static final float IMPETUS = 300; //TODO Play with this. :)
     private static final float VISCOSITY = 0.95f;  //TODO Play with this. :)
     
     private static final float DEPENDENCY_THRUST = 0.0003f * IMPETUS;
@@ -32,7 +35,7 @@ public class NodeFigure extends Label {
 
     private static final Force REPULSION = new Force() {
         public float intensityGiven(float distance) {
-            return -IMPETUS / (distance * distance);  //TODO Play with this formula.
+            return -IMPETUS * 0.7f / (distance * distance);  //TODO Play with this formula.
             //return distance < 50 ? -100 : -100 / (distance * distance);
         }
     };
@@ -40,7 +43,7 @@ public class NodeFigure extends Label {
     private static final Random RANDOM = new Random();
 
     
-    public NodeFigure(Node node) {
+    NodeFigure(Node node) {
         super(text(node), imageForNode(node));
 
         setBorder(new LineBorder());
@@ -76,13 +79,12 @@ public class NodeFigure extends Label {
     private float _forceComponentX;
     private float _forceComponentY;
 
-    public Node node() {
+    Node node() {
         return _node;
     }
 
-    public void reactTo(NodeFigure other) {
+    void reactTo(NodeFigure other) {
         if (other == this) throw new IllegalArgumentException();
-        //if (other == this) return;
 
         reactTo(other, REPULSION);
 
@@ -133,8 +135,9 @@ public class NodeFigure extends Label {
         return Math.max(Math.min(value * VISCOSITY, 20), -20);
     }
 
-    public void positionYourselfIn(XYLayout layout) {
-    	_x += _forceComponentX;
+    /** "To yield to physical force." Dictionary.com */
+    void give() {
+		_x += _forceComponentX;
     	_y += _forceComponentY;
 
     	_forceComponentX = dampen(_forceComponentX);
@@ -143,10 +146,13 @@ public class NodeFigure extends Label {
 		if (!isMoving()) nudgeNudge();
 
 		stayAround();
-	    layout.setConstraint(this, new Rectangle(Math.round(_x), Math.round(_y), -1, -1));
-    }
+	}
 
-    private boolean isMoving() {
+	void positionYourselfIn(XYLayout layout) {
+		layout.setConstraint(this, new Rectangle(Math.round(_x), Math.round(_y), -1, -1));
+	}
+
+	private boolean isMoving() {
         return _forceComponentX + _forceComponentY > 1;
     }
 
@@ -160,17 +166,17 @@ public class NodeFigure extends Label {
     	Rectangle availableSpace = getParent().getClientArea();
     	Rectangle me = getBounds();
     	
-    	int maxX = availableSpace.width - me.width;
-    	int maxY = availableSpace.height - me.height;
+    	int maxX = availableSpace.width - me.width - MARGIN;
+    	int maxY = availableSpace.height - me.height - MARGIN;
     	
-        if (_x <    5) _x =    5;
-        if (_x > maxX) _x = maxX;
+        if (_x < MARGIN) _x = MARGIN;
+        if (_x >   maxX) _x = maxX;
 
-        if (_y <    5) _y =    5;
-        if (_y > maxY) _y = maxY;
+        if (_y < MARGIN) _y = MARGIN;
+        if (_y >   maxY) _y = maxY;
     }
 
-    public void position(float x, float y) {
+    void position(float x, float y) {
         _x = x;
         _y = y;
     }

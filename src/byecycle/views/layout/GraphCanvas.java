@@ -1,3 +1,7 @@
+//Copyright (C) 2004 Klaus Wuestefeld and Rodrigo B de Oliveira.
+//This is free software. See the license distributed along with this file.
+
+
 package byecycle.views.layout;
 
 import java.util.*;
@@ -21,7 +25,8 @@ public class GraphCanvas extends Canvas {
 	}
 
 	
-	private NodeFigure[] _graph;
+	private NodeFigure[] _nodeFigures;
+	private Dependency[] _dependencies = new Dependency[]{};
 	
 	private final IFigure _graphFigure = new Figure();
 	private final XYLayout _contentsLayout = new XYLayout();
@@ -29,56 +34,80 @@ public class GraphCanvas extends Canvas {
 	private final Random _random = new Random();
 
 
+
 	public void setGraph(Node[] nodeGraph) {
-		clearGraphFigure();
-		
 		initGraphFigure(nodeGraph);
 		randomizeLayout();
 	}
 	
-    private void clearGraphFigure() {
-		Object[] children = _graphFigure.getChildren().toArray();
-		for (int i = 0; i < children.length; i++) {
-			IFigure figure = (IFigure) children[i];
-			_graphFigure.remove(figure);
-		}
+	public void tryToImproveLayout() {
+		if (_nodeFigures == null) return;
+
+		tryToImproveLayoutBehindTheScenes();
+
+		if (isLayoutBetter()) render();
 	}
 
-	public void improveLayout() {
-		if (_graph == null) return;
-
-		for (int i = 0; i < _graph.length; i++) {
-	        NodeFigure figure1 = _graph[i];
+	private void tryToImproveLayoutBehindTheScenes() {
+		for (int i = 0; i < _nodeFigures.length; i++) {
+	        NodeFigure figure1 = _nodeFigures[i];
 	        
-            for (int j = i + 1; j < _graph.length; j++) {
-    	        NodeFigure figure2 = _graph[j];
+            for (int j = i + 1; j < _nodeFigures.length; j++) {
+    	        NodeFigure figure2 = _nodeFigures[j];
 
     	        figure1.reactTo(figure2);
             }
         }
 	    
-		makeInvertedDependenciesRed();
+		for (int i = 0; i < _dependencies.length; i++) {
+			Dependency dependency1 = _dependencies[i];
 
-		for (int i = 0; i < _graph.length; i++) {
-            NodeFigure figure = _graph[i];
-            figure.positionYourselfIn(_contentsLayout);
+			for (int j = i + 1; j < _dependencies.length; j++) {
+				Dependency dependency2 = _dependencies[j];
+			
+				dependency1.reactTo(dependency2);
+			}
+
+			for (int j = 0; j < _nodeFigures.length; j++) {
+		        NodeFigure figure = _nodeFigures[j];
+		        dependency1.reactTo(figure);
+			}
+
+		}
+		
+		for (int i = 0; i < _nodeFigures.length; i++) {
+            NodeFigure figure = _nodeFigures[i];
+            figure.give();
         }
+	}
+
+	private boolean isLayoutBetter() {
+		return true;
+	}
+
+	private void render() {
+		for (int i = 0; i < _nodeFigures.length; i++) {
+            NodeFigure figure = _nodeFigures[i];
+    		figure.positionYourselfIn(_contentsLayout);
+        }
+
+		makeInvertedDependenciesRed();
 		
 		_graphFigure.revalidate();
 		_graphFigure.repaint();
 	}
 
 	private NodeFigure randomNodeFigure() {
-		return _graph[_random.nextInt(_graph.length)];
+		return _nodeFigures[_random.nextInt(_nodeFigures.length)];
 	}
 
 
 	private void makeInvertedDependenciesRed() {
-		Iterator children = _graphFigure.getChildren().iterator();  //TODO Optimize.
+		Iterator children = _graphFigure.getChildren().iterator();
 		while (children.hasNext()) {
 			IFigure child = (IFigure) children.next();
 
-			if (child instanceof PolylineConnection) {
+			if (child instanceof PolylineConnection) {   //TODO Optimize. Iterate only on the PolylineConnections. 
 				PolylineConnection dependency = (PolylineConnection) child;
 				Color redOrBlack = dependency.getStart().y > dependency.getEnd().y
 					? ColorConstants.red
@@ -89,6 +118,8 @@ public class GraphCanvas extends Canvas {
 	}
 	
 	private void initGraphFigure(Node[] nodeGraph) {
+		clearGraphFigure();
+
 		Map nodeFiguresByNode = new HashMap();
 		
 		for (int i = 0; i < nodeGraph.length; i++) {
@@ -99,13 +130,22 @@ public class GraphCanvas extends Canvas {
 				Node provider = (Node)providers.next();
 				IFigure providerFigure = produceNodeFigureFor(provider, nodeFiguresByNode);
 				addDependencyFigure(dependentFigure, providerFigure);
+				//TODO add dependency to _dependencies.
 			}
 		}
 
-		_graph = new NodeFigure[nodeFiguresByNode.size()];
+		_nodeFigures = new NodeFigure[nodeFiguresByNode.size()];
 		Iterator it = nodeFiguresByNode.values().iterator();
 		int j = 0;
-		while (it.hasNext()) _graph[j++] = (NodeFigure)it.next();  
+		while (it.hasNext()) _nodeFigures[j++] = (NodeFigure)it.next();  
+	}
+
+	private void clearGraphFigure() {
+		Object[] children = _graphFigure.getChildren().toArray();
+		for (int i = 0; i < children.length; i++) {
+			IFigure figure = (IFigure) children[i];
+			_graphFigure.remove(figure);
+		}
 	}
 
 	private NodeFigure produceNodeFigureFor(Node node, Map nodeFiguresByNode) {
@@ -137,8 +177,8 @@ public class GraphCanvas extends Canvas {
 	}
 
 	private void randomizeLayout() {
-		for (int i = 0; i < _graph.length; i++) {
-			NodeFigure nodeFigure = _graph[i];
+		for (int i = 0; i < _nodeFigures.length; i++) {
+			NodeFigure nodeFigure = _nodeFigures[i];
 			int x = 180 + _random.nextInt(41);
 			int y = 180 + _random.nextInt(41);
 			nodeFigure.position(x, y);

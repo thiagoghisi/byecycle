@@ -42,7 +42,7 @@ public class StandAlone {
 
 		while (!shell.isDisposed()) {
 			while (!_display.readAndDispatch()) {
-				canvas.improveLayout();
+				canvas.tryToImproveLayout();
 				_display.sleep();
 			}
 		}

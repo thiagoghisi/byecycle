@@ -1,5 +1,5 @@
-//Copyright (C) 2005 Klaus Wuestefeld, Rodrigo B de Oliveira and Kent Beck
-//This is free software. It is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the license distributed along with this file for more details.
+//Copyright (C) 2004 Klaus Wuestefeld and Rodrigo B de Oliveira.
+//This is free software. See the license distributed along with this file.
 
 package byecycle.views.layout;
 
