@@ -18,13 +18,14 @@ import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.SimpleType;
 
-import byecycle.views.daglayout.GraphNode;
+import byecycle.dependencygraph.Node;
+
 
 public class PackageDependencyAnalysis {
 
 	private final Map _nodes = new HashMap();
 	
-	private final GraphNode _root;
+	private final Node _root;
 
 	public PackageDependencyAnalysis(IPackageFragment pkg, IProgressMonitor monitor) throws JavaModelException {
 		
@@ -54,7 +55,7 @@ public class PackageDependencyAnalysis {
 		}
 	}
 	
-	public GraphNode root() {
+	public Node root() {
 		return _root;
 	}
 	
@@ -62,10 +63,10 @@ public class PackageDependencyAnalysis {
 		return _nodes;
 	}
 
-	private GraphNode getNode(String packageName) {
-		GraphNode node = (GraphNode)_nodes.get(packageName);
+	private Node getNode(String packageName) {
+		Node node = (Node)_nodes.get(packageName);
 		if (null == node) {
-			node = new GraphNode(packageName);
+			node = new Node(packageName);
 			_nodes.put(packageName, node);
 		}
 		return node;

@@ -1,15 +1,16 @@
-package byecycle.views.daglayout;
-
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 
-public class DagLayout {
+import byecycle.dependencygraph.Node;
+import byecycle.views.layout.GraphCanvas;
+
+public class StandAlone {
 
 	public static void main(String args[]) {
-		new DagLayout();
+		new StandAlone();
 	}
 
-	private final GraphNode[] _graph = graph();
+	private final Node[] _graph = graph();
 
 	private final Display _display = new Display(); //Has to be initialized
 													// before the _graphFigure
@@ -19,7 +20,7 @@ public class DagLayout {
 													// throw a
 													// NullPointerException. :(
 
-	private DagLayout() {
+	private StandAlone() {
 		Shell shell = new Shell(_display);
 		shell.setText("Byecycle");
 		shell.setSize(400, 400);
@@ -38,9 +39,9 @@ public class DagLayout {
 	}
 
 
-	private GraphNode[] graph() {
-		return GraphNode.create(new String[] { "Node1", "Node2", "Node3",
-				"Node4" });
+	private Node[] graph() {
+		return Node.createGraph(new String[] { "Node1", "Node2", "Node3",
+		        "Node4", "Node5", "Node6", "Node7", "Node8", "Node9", "Node10", "Node11", "Node12", "Node13",  });
 	}	
 
 }

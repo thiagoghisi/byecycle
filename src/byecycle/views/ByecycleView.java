@@ -18,8 +18,8 @@ import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.progress.UIJob;
 
 import byecycle.PackageDependencyAnalysis;
-import byecycle.views.daglayout.GraphCanvas;
-import byecycle.views.daglayout.GraphNode;
+import byecycle.dependencygraph.Node;
+import byecycle.views.layout.GraphCanvas;
 
 public class ByecycleView extends ViewPart implements ISelectionListener {
 
@@ -52,8 +52,8 @@ public class ByecycleView extends ViewPart implements ISelectionListener {
 		//viewer.getControl().setFocus();
 	}
 
-	private GraphNode[] graph() {
-		return GraphNode.create(new String[] { "Node1", "Node2", "Node3",
+	private Node[] graph() {
+		return Node.createGraph(new String[] { "Node1", "Node2", "Node3",
 				"Node4" });
 	}
 
@@ -71,7 +71,7 @@ public class ByecycleView extends ViewPart implements ISelectionListener {
 				protected IStatus run(IProgressMonitor monitor) {
 					try {
 						Collection nodes = new PackageDependencyAnalysis(selectedPackage, null).nodes().values();
-						final GraphNode[] graph = (GraphNode[]) nodes.toArray(new GraphNode[nodes.size()]);
+						final Node[] graph = (Node[]) nodes.toArray(new Node[nodes.size()]);
 						dumpGraph(graph);
 						UIJob updateJob = new UIJob("graph update") {
 							public IStatus runInUIThread(IProgressMonitor monitor) {
@@ -94,7 +94,7 @@ public class ByecycleView extends ViewPart implements ISelectionListener {
 		}
 	}
 	
-	private void dumpGraph(GraphNode[] graph) {
+	private void dumpGraph(Node[] graph) {
 		System.out.println("*********");
 		for (int i=0; i<graph.length; ++i) {
 			System.out.println(graph[i].name());

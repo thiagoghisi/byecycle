@@ -1,4 +1,4 @@
-package byecycle.views.daglayout;
+package byecycle.views.layout;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -13,20 +13,17 @@ import org.eclipse.draw2d.LightweightSystem;
 import org.eclipse.draw2d.PolygonDecoration;
 import org.eclipse.draw2d.PolylineConnection;
 import org.eclipse.draw2d.XYLayout;
-import org.eclipse.draw2d.geometry.Dimension;
-import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.PointList;
-import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 
-/**
- * @author rodrigob
- */
+import byecycle.dependencygraph.Node;
+
+
 public class GraphCanvas extends Canvas {
 
-	private GraphNode[] _graph;
+    private Node[] _graph;
 	
 	private final IFigure _graphFigure = new Figure();
 
@@ -36,7 +33,7 @@ public class GraphCanvas extends Canvas {
 	
 	private final LightweightSystem _lws;
 	
-	private final Random _random = new Random();
+	private final Random _random = new Random(0);
 
 	public GraphCanvas(Composite parent) {
 		super(parent, SWT.FILL | SWT.NO_BACKGROUND);
@@ -44,17 +41,27 @@ public class GraphCanvas extends Canvas {
 		_lws.setContents(_graphFigure);
 	}
 
-	public void setGraph(GraphNode[] graph) {
+	public void setGraph(Node[] graph) {
 		clearGraphFigure();
 		
 		_graph = graph;
 		
-		initGraphFigure();	
-		improveLayout();
+		initGraphFigure();
+		randomizeLayout();
 	}
 	
 
-	private void clearGraphFigure() {
+	private void randomizeLayout() {
+		for (int i = 0; i < _graph.length; i++) {
+			Node node = _graph[i];
+			int x = 180 + _random.nextInt(41);
+			int y = 180 + _random.nextInt(41);
+			NodeFigure nodeFigure = produceNodeFigureFor(node);
+			nodeFigure.position(x, y);
+		}
+    }
+
+    private void clearGraphFigure() {
 		_nodeFiguresByNode.clear();
 		Object[] children = _graphFigure.getChildren().toArray();
 		for (int i = 0; i < children.length; i++) {
@@ -64,51 +71,34 @@ public class GraphCanvas extends Canvas {
 	}
 
 	public void improveLayout() {
-		NodeFigure figure1 = randomNodeFigure();
-		NodeFigure figure2 = randomNodeFigure();
-		if (figure1 == figure2)
-			return;
-		move(figure1, figure2);
 
+	    int interactions = _graph.length ^ 2;
+	    while (interactions-- > 0) {
+	        NodeFigure figure1 = randomNodeFigure();
+	        NodeFigure figure2 = randomNodeFigure();
+	        
+	        figure1.reactTo(figure2);
+	    }
+	    
 		makeInvertedDependenciesRed();
+
+		for (int i = 0; i < _graph.length; i++) {
+            NodeFigure figure = produceNodeFigureFor(_graph[i]);
+            figure.positionYourselfIn(_contentsLayout);
+        }
+
+		_graphFigure.setLayoutManager(_contentsLayout);
+		_graphFigure.revalidate();
 		_graphFigure.repaint();
 	}
 
 	private NodeFigure randomNodeFigure() {
-		GraphNode node = _graph[_random.nextInt(_graph.length)];
-		return produceNodeFigureFor(node);
+		return produceNodeFigureFor(Node.drawOneFrom(_graph));
 	}
 
-	private void move(NodeFigure figure1, NodeFigure figure2) {
-		if (figure1.node().dependsOn(figure2.node())
-				|| figure2.node().dependsOn(figure1.node()))
-			attract(figure1, figure2);
-		else
-			repel(figure1, figure2);
-		_graphFigure.setLayoutManager(_contentsLayout);
-		_graphFigure.revalidate();
-	}
-
-	private void repel(NodeFigure figure1, NodeFigure figure2) {
-		Point location1 = figure1.getBounds().getLocation();
-		Point location2 = figure2.getBounds().getLocation();
-
-		Dimension xyDifference = location1.getDifference(location2);
-
-		double force = 1 / Math.min(location1.getDistance2(location2), 0.001);
-
-		// TODO Auto-generated method stub
-
-		_contentsLayout.setConstraint(figure1, new Rectangle(_random
-				.nextInt(300), _random.nextInt(300), -1, -1));
-	}
-
-	private void attract(NodeFigure figure1, NodeFigure figure2) {
-		// TODO Auto-generated method stub
-	}
 
 	private void makeInvertedDependenciesRed() {
-		Iterator children = _graphFigure.getChildren().iterator();
+		Iterator children = _graphFigure.getChildren().iterator();  //TODO Optimize.
 		while (children.hasNext()) {
 			IFigure child = (IFigure) children.next();
 
@@ -124,13 +114,12 @@ public class GraphCanvas extends Canvas {
 	}
 	
 	private void initGraphFigure() {
-		
 		for (int i = 0; i < _graph.length; i++) {
-			GraphNode node = _graph[i];
+			Node node = _graph[i];
 			IFigure dependentFigure = produceNodeFigureFor(node);
 			Iterator providers = node.providers();
 			while (providers.hasNext()) {
-				IFigure providerFigure = produceNodeFigureFor((GraphNode) providers
+				IFigure providerFigure = produceNodeFigureFor((Node) providers
 						.next());
 				addDependencyFigure(dependentFigure, providerFigure);
 			}
@@ -155,7 +144,7 @@ public class GraphCanvas extends Canvas {
 		_graphFigure.add(dependency);
 	}
 
-	private NodeFigure produceNodeFigureFor(GraphNode node) {
+	private NodeFigure produceNodeFigureFor(Node node) {
 		NodeFigure result = (NodeFigure) _nodeFiguresByNode.get(node);
 		if (result != null)
 			return result;
