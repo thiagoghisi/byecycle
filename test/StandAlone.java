@@ -50,7 +50,7 @@ public class StandAlone {
 
 
 	private Node[] graph() {
-	    String[] names = new String[15];
+	    String[] names = new String[30];
 	    for (int i = 0; i < names.length; i++) {
             names[i] = "Node " + i;
         }
@@ -58,7 +58,7 @@ public class StandAlone {
 		
 
 /*
-		Node transaction = new Node("Transaction", "indterface");
+		Node transaction = new Node("Transaction", "interface");
 
 		Node prevayler = new Node("Prevayler", "interface");
 		prevayler.addProvider(transaction);
@@ -86,8 +86,8 @@ public class StandAlone {
 		
 		return new Node[]{transaction, prevayler, impl, factory,
 				prevaylerpackage, prevaylertest, prevaylerdemo, prevaylerplugin};
-*/
 
+*/
 		
 		/*
 

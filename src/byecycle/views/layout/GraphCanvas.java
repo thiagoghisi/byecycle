@@ -33,8 +33,7 @@ public class GraphCanvas extends Canvas implements StressMeter {
 	private final Random _random = new Random();
 	private float _currentStress;
 	private float _smallestStressEver;
-	private boolean _animating = false;
-
+	private final List _nodesInPursuit = new LinkedList();
 
 
 	public void setGraph(Node[] nodeGraph) {
@@ -46,31 +45,42 @@ public class GraphCanvas extends Canvas implements StressMeter {
 	public void tryToImproveLayout() {
 		if (_nodeFigures == null) return;
 
-		if (_animating) {
-			animate();
-		} else {
-			tryToImproveLayoutBehindTheScenes();
-			if (isLayoutBetter()) _animating = true;
-			_graphFigure.repaint(); //TODO Remove this line and find a way to make the GUI respond. It freezes when called by StandAlone but might work inside Eclipse.
+		int guiRelief = 0;
+
+		do {
+			seekBetterTargetStep();
+			if (betterTargetFound())  //TODO Comment this line to see the animation.
+				lockOnNewTarget();
+		} while (_nodesInPursuit.isEmpty() && guiRelief++ < 50);
+		
+		pursueTargetStep();
+	}
+
+	private void lockOnNewTarget() {
+		_nodesInPursuit.clear();
+		
+		for (int i = 0; i < _nodeFigures.length; i++) {
+			NodeFigure node = _nodeFigures[i];
+			node.lockOnTarget();
+			if (!node.onTarget()) _nodesInPursuit.add(node);
 		}
 	}
 
-	private void animate() {
-		boolean done = true;
-		for (int i = 0; i < _nodeFigures.length; i++) {
-			NodeFigure figure = _nodeFigures[i];
-	 		done = figure.positionYourselfIn(_contentsLayout) && done;
-	    }
+	private void pursueTargetStep() {
+		Iterator it = _nodesInPursuit.iterator();
+		while (it.hasNext()) {
+			NodeFigure node = (NodeFigure)it.next();
+			node.pursueTarget(_contentsLayout);
+	 		if (node.onTarget()) it.remove();
+		}
 
-		_animating = !done;
 		makeInvertedDependenciesRed();
 		
 		_graphFigure.revalidate();
 		_graphFigure.repaint();
-		
 	}
 
-	private void tryToImproveLayoutBehindTheScenes() {
+	private void seekBetterTargetStep() {
 		for (int i = 0; i < _graphElements.size(); i++) {
 	        GraphElement element1 = (GraphElement)_graphElements.get(i);
 	        
@@ -81,13 +91,21 @@ public class GraphCanvas extends Canvas implements StressMeter {
             }
         }
 
+		int moving = 0;		
 		for (int i = 0; i < _nodeFigures.length; i++) {
             NodeFigure figure = _nodeFigures[i];
             figure.give();
+
+            if (figure.isMoving()) moving++;
         }
+		System.out.println(moving);
+		if (moving == 0) {
+			randomNodeFigure().nudgeNudge();
+		}
 	}
 
-	private boolean isLayoutBetter() {
+	private boolean betterTargetFound() {
+		System.out.println(" " + _smallestStressEver +"  "+ _currentStress);
 		boolean result = _currentStress < _smallestStressEver;
 		if (result) _smallestStressEver = _currentStress;
 		_currentStress = 0;

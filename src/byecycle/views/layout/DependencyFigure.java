@@ -19,9 +19,9 @@ class DependencyFigure extends GraphElement {
 		_provider = provider;
 	}
 
-    Point position() {
-		Point p1 = _dependent.position();
-		Point p2 = _provider.position();
+    Point candidatePosition() {
+		Point p1 = _dependent.candidatePosition();
+		Point p2 = _provider.candidatePosition();
 		int centerX = (p1.x + p2.x) / 2;
 		int centerY = (p1.y + p2.y) / 2;
 		return new Point(centerX, centerY);

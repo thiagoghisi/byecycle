@@ -21,23 +21,15 @@ import byecycle.dependencygraph.Node;
 public class NodeFigure extends GraphElement {
 
     
-	private static final int MARGIN = 2;
-	private static final float IMPETUS = 300; //TODO Play with this. :)
-    private static final float VISCOSITY = 0.95f;  //TODO Play with this. :)
+	private static final int MARGIN_PIXELS = 2;
+	private static final float VISCOSITY = 0.85f;  //TODO Play with this. :)
     
     private static final float DEPENDENCY_THRUST = 0.0003f * IMPETUS;
 
     static final Force ATTRACTION = new Force() {
         public float intensityGiven(float distance) {
-            return  -(10 - distance) * 0.000005f * IMPETUS; //TODO Play with this formula. Zero it to see REPULSION acting alone.
+            return  -(10 - distance) * 0.000002f * IMPETUS; //TODO Play with this formula. Zero it to see REPULSION acting alone.
             //return 0;
-        }
-    };
-
-    static final Force REPULSION = new Force() {
-        public float intensityGiven(float distance) {
-            return -IMPETUS * 0.13f / (distance * distance);  //TODO Play with this formula.
-            //return distance < 50 ? -100 : -100 / (distance * distance);
         }
     };
 
@@ -80,11 +72,14 @@ public class NodeFigure extends GraphElement {
 
     private final Node _node;
 
-    private float _x;
-    private float _y;
-	private float _previousX;
-	private float _previousY;
+	private float _currentX;
+	private float _currentY;
 
+	private float _targetX;
+	private float _targetY;
+
+	private float _candidateX;
+    private float _candidateY;
     private float _forceComponentX;
     private float _forceComponentY;
     
@@ -102,29 +97,39 @@ public class NodeFigure extends GraphElement {
     	NodeFigure other = (NodeFigure)otherElement; 
     	
         if (_node.dependsOn(other.node())) {
-            reactTo(other, ATTRACTION);
-            up();
-            other.down();
+            reactToProvider(other);
         }
         
         if (other.node().dependsOn(_node)) {
-            reactTo(other, ATTRACTION);
-            down();
-            other.up();
+            other.reactToProvider(this);
         }
 
 	}
 
-    private void up() {
-        _forceComponentY -= DEPENDENCY_THRUST;
+    private void reactToProvider(NodeFigure other) {
+		reactTo(other, ATTRACTION);
+
+		float dY = Math.abs(other._candidateY - _candidateY);  
+		boolean inverted = other._candidateY < _candidateY;
+		
+		float thrust = DEPENDENCY_THRUST * (inverted
+			? 1 + (dY / 20)
+			: 10 / (10 + dY)
+		);
+		up(thrust);
+		other.down(thrust);
+	}
+
+	private void up(float thrust) {
+        addForceComponents(0, -thrust);
     }
 
-    private void down() {
-        _forceComponentY += DEPENDENCY_THRUST;
+    private void down(float thrust) {
+        addForceComponents(0, thrust);
     }
     
-	Point position() {
-		return new Point(_x, _y);
+	Point candidatePosition() {
+		return new Point(_candidateX, _candidateY);
 	}
 
 	void addForceComponents(float x, float y) {
@@ -140,64 +145,77 @@ public class NodeFigure extends GraphElement {
 
     /** "To yield to physical force." Dictionary.com */
     void give() {
-		_x += _forceComponentX;
-    	_y += _forceComponentY;
+		_candidateX += _forceComponentX;
+    	_candidateY += _forceComponentY;
 
     	_forceComponentX = dampen(_forceComponentX);
 		_forceComponentY = dampen(_forceComponentY);
 
-		if (!isMoving()) nudgeNudge();
-
+	//	if (!isMoving()) nudgeNudge();
+		
 		stayAround();
 	}
 
-	boolean positionYourselfIn(XYLayout layout) {
-		if (_x == _previousX && _y == _previousY) return true;
-		
-		float dx = Math.max(Math.min(_x - _previousX, 3), -3);
-		float dy = Math.max(Math.min(_y - _previousY, 3), -3);
-		
-		_previousX += dx;
-		_previousY += dy;
-		
-		layout.setConstraint(this.figure(), new Rectangle(Math.round(_previousX), Math.round(_previousY), -1, -1));
-		return false;
+	boolean isMoving() {
+        return _forceComponentX > 0.1 || _forceComponentY > 0.1;
+    }
+
+    void nudgeNudge() {
+        addForceComponents(nudge(), nudge());
+    }
+
+    private float nudge() {
+		return (RANDOM.nextFloat() - 0.5f) * 0.1f * IMPETUS;
 	}
 
-	private boolean isMoving() {
-        return _forceComponentX + _forceComponentY > 1;
-    }
-
-    private void nudgeNudge() {
-        if (RANDOM.nextInt(3000) != 0) return;
-        _forceComponentX = (RANDOM.nextFloat() - 0.5f) * 0.1f * IMPETUS;
-        _forceComponentY = (RANDOM.nextFloat() - 0.5f) * 0.1f * IMPETUS;
-    }
-
-    private void stayAround() {
+	private void stayAround() {
+    	addForceComponents( (-_candidateX * 0.0000002f) * IMPETUS, (-_candidateY * 0.0000002f) * IMPETUS);
+    	
     	Rectangle availableSpace = figure().getParent().getClientArea();
     	Rectangle me = figure().getBounds();
     	
-    	int maxX = availableSpace.width - me.width - MARGIN;
-    	int maxY = availableSpace.height - me.height - MARGIN;
+    	int maxX = availableSpace.width - me.width - MARGIN_PIXELS;
+    	int maxY = availableSpace.height - me.height - MARGIN_PIXELS;
     	
-        if (_x < MARGIN) _x = MARGIN;
-        if (_x >   maxX) _x = maxX;
+        if (_candidateX < MARGIN_PIXELS) _candidateX = MARGIN_PIXELS;
+        if (_candidateX >   maxX) _candidateX = maxX;
 
-        if (_y < MARGIN) _y = MARGIN;
-        if (_y >   maxY) _y = maxY;
+        if (_candidateY < MARGIN_PIXELS) _candidateY = MARGIN_PIXELS;
+        if (_candidateY >   maxY) _candidateY = maxY;
     }
 
     void position(float x, float y) {
-        _x = x;
-        _y = y;
-        
-        _previousX = _x;
-        _previousY = _y;
+        _currentX = x;
+        _currentY = y;
+
+        _targetX = x;
+		_targetY = y;
+
+        _candidateX = x;
+        _candidateY = y;
     }
 
-	public IFigure figure() {
+	IFigure figure() {
 		return _figure;
+	}
+
+	void lockOnTarget() {
+		_targetX = _candidateX;
+		_targetY = _candidateY;
+	}
+
+	void pursueTarget(XYLayout layout) {
+		float dX = Math.max(Math.min(_targetX - _currentX, 3), -3);
+		float dY = Math.max(Math.min(_targetY - _currentY, 3), -3);
+		
+		_currentX += dX;
+		_currentY += dY;
+		
+		layout.setConstraint(this.figure(), new Rectangle(Math.round(_currentX), Math.round(_currentY), -1, -1));
+	}
+
+	boolean onTarget() {
+		return _currentX ==_targetX && _currentY == _targetY;
 	}
 
 }
