@@ -39,7 +39,7 @@ public class Node {
     }
 
     public Node(String name) {
-        this(name, "Normal");
+        this(name, "class");
     }
 
     public Node(String name, String kind) {

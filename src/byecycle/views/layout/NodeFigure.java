@@ -2,6 +2,7 @@
 
 package byecycle.views.layout;
 
+import java.io.InputStream;
 import java.util.Random;
 
 import org.eclipse.draw2d.Label;
@@ -10,6 +11,8 @@ import org.eclipse.draw2d.XYLayout;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.widgets.Display;
 
 import byecycle.dependencygraph.Node;
 
@@ -31,7 +34,7 @@ public class NodeFigure extends Label {
 
     
     public NodeFigure(Node node) {
-        super(" " + node.name());
+        super(" " + node.name(), imageForNode(node));
         setBorder(new LineBorder());
         setBackgroundColor(randomPastelColor());
         setOpaque(true);
@@ -39,7 +42,12 @@ public class NodeFigure extends Label {
         _node = node;
     }
     
-    private Color randomPastelColor() {
+    private static Image imageForNode(Node node) {
+		InputStream resource = NodeFigure.class.getResourceAsStream("icons/" + node.kind() + ".gif");
+		return null == resource ? null : new Image(Display.getCurrent(), resource);
+	}
+
+	private Color randomPastelColor() {
         int r = 210 + RANDOM.nextInt(46);
         int g = 210 + RANDOM.nextInt(46);
         int b = 210 + RANDOM.nextInt(46);

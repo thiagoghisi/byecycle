@@ -27,7 +27,9 @@ public class PackageDependencyAnalysis {
 	
 	public static final String PACKAGE = "package";
 	
-	public static final String TYPE = "type";
+	public static final String CLASS = "class";
+	
+	public static final String INTERFACE = "interface";
 
 	private final Map _nodes = new HashMap();
 	
@@ -78,7 +80,7 @@ public class PackageDependencyAnalysis {
 		
 		public boolean visit(TypeDeclaration node) {
 			Node saved = _currentNode;
-			_currentNode = getNode(node.resolveBinding().getQualifiedName(), TYPE);
+			_currentNode = getNode(node.resolveBinding().getQualifiedName(), node.isInterface() ? INTERFACE : CLASS);
 			for (Iterator iter = node.bodyDeclarations().iterator(); iter.hasNext();) {
 				ASTNode child = (ASTNode) iter.next();
 				child.accept(this);
