@@ -18,7 +18,7 @@ public class DagLayout {
         new DagLayout();
     }
 
-    private final DirectedGraph _graph = graph();
+    private final GraphNode[] _graph = graph();
 
     private final Display _display = new Display(); //Has to be initialized before the _graphFigure although there is no explicit dependency, or else ColorConstants. :(
     private final Color _nodeColor = new Color(null, 240, 255, 210);
@@ -46,17 +46,16 @@ public class DagLayout {
         }
     }
 
-    private DirectedGraph graph() {
-        return new DirectedGraph(new String[]{"Node1", "Node2", "Node3", "Node4"});
+    private GraphNode[] graph() {
+        return GraphNode.create(new String[]{"Node1", "Node2", "Node3", "Node4"});
     }
 
     private Figure graphFigure() {
-        final Figure result = new Figure();
-        _graph.visitNodes(new DirectedGraph.NodeVisitor(){
-            public void visit(Node node) {
-                result.add(nodeFigure(node.name()));
-            }
-        });
+        Figure result = new Figure();
+        
+        for (int i = 0; i < _graph.length; i++)
+            result.add(nodeFigure(_graph[i].name()));
+        
         return result;
     }
 
