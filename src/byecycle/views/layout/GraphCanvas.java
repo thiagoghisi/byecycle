@@ -1,20 +1,11 @@
 package byecycle.views.layout;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
-import org.eclipse.draw2d.ChopboxAnchor;
-import org.eclipse.draw2d.ColorConstants;
-import org.eclipse.draw2d.Figure;
-import org.eclipse.draw2d.IFigure;
-import org.eclipse.draw2d.LightweightSystem;
-import org.eclipse.draw2d.PolygonDecoration;
-import org.eclipse.draw2d.PolylineConnection;
-import org.eclipse.draw2d.XYLayout;
+import org.eclipse.draw2d.*;
 import org.eclipse.draw2d.geometry.PointList;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 
@@ -23,46 +14,29 @@ import byecycle.dependencygraph.Node;
 
 public class GraphCanvas extends Canvas {
 
-    private Node[] _graph;
-	
-	private final IFigure _graphFigure = new Figure();
-
-	private final XYLayout _contentsLayout = new XYLayout();
-
-	private final Map _nodeFiguresByNode = new HashMap();
-	
-	private final LightweightSystem _lws;
-	
-	private final Random _random = new Random(0);
-
 	public GraphCanvas(Composite parent) {
 		super(parent, SWT.FILL | SWT.NO_BACKGROUND);
-		_lws = new LightweightSystem(this);
-		_lws.setContents(_graphFigure);
+		new LightweightSystem(this).setContents(_graphFigure);
 		_graphFigure.setLayoutManager(_contentsLayout);
 	}
 
-	public void setGraph(Node[] graph) {
+	
+	private NodeFigure[] _graph;
+	
+	private final IFigure _graphFigure = new Figure();
+	private final XYLayout _contentsLayout = new XYLayout();
+	
+	private final Random _random = new Random();
+
+
+	public void setGraph(Node[] nodeGraph) {
 		clearGraphFigure();
 		
-		_graph = graph;
-		
-		initGraphFigure();
+		initGraphFigure(nodeGraph);
 		randomizeLayout();
 	}
 	
-    private void randomizeLayout() {
-		for (int i = 0; i < _graph.length; i++) {
-			Node node = _graph[i];
-			int x = 180 + _random.nextInt(41);
-			int y = 180 + _random.nextInt(41);
-			NodeFigure nodeFigure = produceNodeFigureFor(node);
-			nodeFigure.position(x, y);
-		}
-    }
-
     private void clearGraphFigure() {
-		_nodeFiguresByNode.clear();
 		Object[] children = _graphFigure.getChildren().toArray();
 		for (int i = 0; i < children.length; i++) {
 			IFigure figure = (IFigure) children[i];
@@ -71,15 +45,13 @@ public class GraphCanvas extends Canvas {
 	}
 
 	public void improveLayout() {
-		
-		if (_graph == null)
-			return;
+		if (_graph == null) return;
 
 		for (int i = 0; i < _graph.length; i++) {
-	        NodeFigure figure1 = produceNodeFigureFor(_graph[i]);
+	        NodeFigure figure1 = _graph[i];
 	        
             for (int j = i + 1; j < _graph.length; j++) {
-    	        NodeFigure figure2 = produceNodeFigureFor(_graph[j]);
+    	        NodeFigure figure2 = _graph[j];
 
     	        figure1.reactTo(figure2);
             }
@@ -88,7 +60,7 @@ public class GraphCanvas extends Canvas {
 		makeInvertedDependenciesRed();
 
 		for (int i = 0; i < _graph.length; i++) {
-            NodeFigure figure = produceNodeFigureFor(_graph[i]);
+            NodeFigure figure = _graph[i];
             figure.positionYourselfIn(_contentsLayout);
         }
 		
@@ -97,7 +69,7 @@ public class GraphCanvas extends Canvas {
 	}
 
 	private NodeFigure randomNodeFigure() {
-		return produceNodeFigureFor(Node.drawOneFrom(_graph));
+		return _graph[_random.nextInt(_graph.length)];
 	}
 
 
@@ -108,25 +80,42 @@ public class GraphCanvas extends Canvas {
 
 			if (child instanceof PolylineConnection) {
 				PolylineConnection dependency = (PolylineConnection) child;
-				dependency
-						.setForegroundColor(dependency.getStart().y > dependency
-								.getEnd().y ? ColorConstants.red
-								: ColorConstants.black);
+				Color redOrBlack = dependency.getStart().y > dependency.getEnd().y
+					? ColorConstants.red
+					: ColorConstants.black;
+				dependency.setForegroundColor(redOrBlack);
 			}
 		}
 	}
 	
-	private void initGraphFigure() {
-		for (int i = 0; i < _graph.length; i++) {
-			Node node = _graph[i];
-			IFigure dependentFigure = produceNodeFigureFor(node);
+	private void initGraphFigure(Node[] nodeGraph) {
+		Map nodeFiguresByNode = new HashMap();
+		
+		for (int i = 0; i < nodeGraph.length; i++) {
+			Node node = nodeGraph[i];
+			IFigure dependentFigure = produceNodeFigureFor(node, nodeFiguresByNode);
 			Iterator providers = node.providers();
 			while (providers.hasNext()) {
-				IFigure providerFigure = produceNodeFigureFor((Node) providers
-						.next());
+				Node provider = (Node)providers.next();
+				IFigure providerFigure = produceNodeFigureFor(provider, nodeFiguresByNode);
 				addDependencyFigure(dependentFigure, providerFigure);
 			}
 		}
+
+		_graph = new NodeFigure[nodeFiguresByNode.size()];
+		Iterator it = nodeFiguresByNode.values().iterator();
+		int j = 0;
+		while (it.hasNext()) _graph[j++] = (NodeFigure)it.next();  
+	}
+
+	private NodeFigure produceNodeFigureFor(Node node, Map nodeFiguresByNode) {
+		NodeFigure result = (NodeFigure) nodeFiguresByNode.get(node);
+		if (result != null)	return result;
+
+		result = new NodeFigure(node);
+		nodeFiguresByNode.put(node, result);
+		_graphFigure.add(result);
+		return result;
 	}
 
 	private void addDependencyFigure(IFigure dependentFigure,
@@ -147,16 +136,13 @@ public class GraphCanvas extends Canvas {
 		_graphFigure.add(dependency);
 	}
 
-	private NodeFigure produceNodeFigureFor(Node node) {
-		NodeFigure result = (NodeFigure) _nodeFiguresByNode.get(node);
-		if (result != null)
-			return result;
-
-		result = new NodeFigure(node);
-		_nodeFiguresByNode.put(node, result);
-		_graphFigure.add(result);
-		return result;
-	}
-
+	private void randomizeLayout() {
+		for (int i = 0; i < _graph.length; i++) {
+			NodeFigure nodeFigure = _graph[i];
+			int x = 180 + _random.nextInt(41);
+			int y = 180 + _random.nextInt(41);
+			nodeFigure.position(x, y);
+		}
+    }
 
 }

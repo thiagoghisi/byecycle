@@ -41,7 +41,7 @@ public class NodeFigure extends Label {
 
     
     public NodeFigure(Node node) {
-        super(" " + text(node), imageForNode(node));
+        super(text(node), imageForNode(node));
 
         setBorder(new LineBorder());
         setBackgroundColor(randomPastelColor());
@@ -52,9 +52,8 @@ public class NodeFigure extends Label {
     
     private static String text(Node node) {
         String result = node.name();
-	    if (!node.kind().equals("package"))
-	        result = result.substring(result.lastIndexOf('.') + 1);
-	    return result;
+	    if (node.kind().equals("package")) return result;
+	    return result.substring(result.lastIndexOf('.') + 1);
     }
 
     private static Image imageForNode(Node node) {
@@ -82,8 +81,8 @@ public class NodeFigure extends Label {
     }
 
     public void reactTo(NodeFigure other) {
-//        if (other == this) throw new IllegalArgumentException();
-        if (other == this) return;
+        if (other == this) throw new IllegalArgumentException();
+        //if (other == this) return;
 
         reactTo(other, REPULSION);
 
@@ -141,13 +140,13 @@ public class NodeFigure extends Label {
     	_forceComponentX = dampen(_forceComponentX);
 		_forceComponentY = dampen(_forceComponentY);
 
-		if (!moving()) nudgeNudge();
+		if (!isMoving()) nudgeNudge();
 
 		stayAround();
 	    layout.setConstraint(this, new Rectangle(Math.round(_x), Math.round(_y), -1, -1));
     }
 
-    private boolean moving() {
+    private boolean isMoving() {
         return _forceComponentX + _forceComponentY > 1;
     }
 
@@ -158,16 +157,16 @@ public class NodeFigure extends Label {
     }
 
     private void stayAround() {
-    	Rectangle clientArea = getParent().getClientArea();
-    	Rectangle bounds = getBounds();
+    	Rectangle availableSpace = getParent().getClientArea();
+    	Rectangle me = getBounds();
     	
-    	int maxX = clientArea.width - bounds.width;
-    	int maxY = clientArea.height - bounds.height;
+    	int maxX = availableSpace.width - me.width;
+    	int maxY = availableSpace.height - me.height;
     	
-        if (_x <   5) _x =   5;
+        if (_x <    5) _x =    5;
         if (_x > maxX) _x = maxX;
 
-        if (_y <   5) _y =   5;
+        if (_y <    5) _y =    5;
         if (_y > maxY) _y = maxY;
     }
 

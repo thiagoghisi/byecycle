@@ -1,3 +1,7 @@
+import java.util.*;
+import java.util.List;
+import java.util.ArrayList;
+
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
@@ -11,6 +15,8 @@ public class StandAlone {
 		new StandAlone();
 	}
 
+	private final List _nodes = new ArrayList();
+	
 	private final Node[] _graph = graph();
 
 	private final Display _display = new Display(); //Has to be initialized
@@ -44,14 +50,15 @@ public class StandAlone {
 
 
 	private Node[] graph() {
-	    String[] names = new String[15];
+	    String[] names = new String[30];
 	    for (int i = 0; i < names.length; i++) {
             names[i] = "Node " + i;
         }
 		return Node.createGraph(names);
 		
+
 /*
-		Node transaction = new Node("Transaction", "interface");
+		Node transaction = new Node("Transaction", "indterface");
 
 		Node prevayler = new Node("Prevayler", "interface");
 		prevayler.addProvider(transaction);
@@ -81,6 +88,61 @@ public class StandAlone {
 				prevaylerpackage, prevaylertest, prevaylerdemo, prevaylerplugin};
 */
 
+		
+		/*
+
+		createDependency("Não Relacional", "Negócio");
+		createDependency("Software Livre", "Negócio");
+		createDependency("Empresas Pequenas", "Negócio");
+		createDependency("Negócio", "CNPJ");
+		createDependency("CNPJ", "Falar c Contador");
+		createDependency("Negócio", "Vendas");
+		createDependency("Vendas", "Serviço/Produto");
+		createDependency("Negócio", "Serviço/Produto");
+		createDependency("Serviço/Produto", "Desenvolvimento");
+		createDependency("Serviço/Produto", "Idéia");
+		createDependency("Desenvolvimento", "Dedicação");
+		createDependency("Vendas", "Dedicação");
+		
+		
+		
+		
+		
+		
+		
+		Node[] result = new Node[_nodes.size()];
+		for (int i = 0; i < result.length; i++) {
+			result[i] = (Node)_nodes.get(i);
+		}
+		return result;
+		
+		*/
+	}
+
+
+	private void createDependency(String dependent, String provider) {
+		produceNode(dependent).addProvider(produceNode(provider));
+		
+	}
+
+
+	private Node produceNode(String name) {
+		name = " " + name;
+		Iterator i = _nodes.iterator();
+		while (i.hasNext()) {
+			Node candidate = (Node)i.next();
+			if (candidate.name().equals(name)) return candidate;
+		}
+		return createNode(name);
+	}
+
+
+	private Node createNode(String name) {
+		Node result = new Node(name, "no type");
+		_nodes.add(result);
+		return result;
 	}	
 
+
+	
 }
