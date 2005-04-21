@@ -148,8 +148,7 @@ public class NodeFigure extends GraphElement {
 	void addForceComponents(float x, float y) {
         _forceComponentX += x;
         _forceComponentY += y;
-        _stressMeter.accumulateStress(x);
-        _stressMeter.accumulateStress(y);
+        _stressMeter.addStress((float)Math.sqrt((x*x) + (y*y)));
     }
 
     private static float dampen(float value) {

@@ -6,6 +6,6 @@ package byecycle.views.layout;
 
 interface StressMeter {
 
-	void accumulateStress(float stress);
+	void addStress(float stress);
 	
 }

@@ -184,8 +184,8 @@ public class GraphCanvas extends Canvas implements StressMeter {
 		}
     }
 
-	public void accumulateStress(float stress) {
-		_currentStress += Math.abs(stress);
+	public void addStress(float stress) {
+		_currentStress += stress;
 	}
 
 }
