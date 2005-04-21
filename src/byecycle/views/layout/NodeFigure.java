@@ -25,6 +25,12 @@ public class NodeFigure extends GraphElement {
 	private static final float VISCOSITY = 0.85f;  //TODO Play with this. :)
     
     private static final float DEPENDENCY_THRUST = 0.0003f * IMPETUS;
+	public static final Force STRONG_REPULSION = new Force() {
+        public float intensityGiven(float distance) {
+            return -IMPETUS * 9.3f / (float)(Math.pow(distance, 2.7));  //TODO Play with this formula.
+            //return distance < 50 ? -100 : -100 / (distance * distance);
+        }
+    };
 
     static final Force ATTRACTION = new Force() {
         public float intensityGiven(float distance) {
@@ -99,10 +105,21 @@ public class NodeFigure extends GraphElement {
         if (other.node().dependsOn(_node)) {
             other.reactToProvider(this);
         }
+	    if (collidesWith(other)) reactTo(other, NodeFigure.STRONG_REPULSION); 
 
 	}
 
-    private void reactToProvider(NodeFigure other) {
+    private boolean collidesWith(NodeFigure other) {
+		Point c1 = candidatePosition();
+		Point c2 = other.candidatePosition(); 
+	
+		Rectangle r1 = new Rectangle(c1, figure().getBounds().getSize());
+		Rectangle r2 = new Rectangle(c2, other.figure().getBounds().getSize());
+    	
+    	return r1.intersects(r2); //TODO: Use size of r1.getIntersection(r2) to determine the force.
+    }
+
+	private void reactToProvider(NodeFigure other) {
 		reactTo(other, ATTRACTION);
 
 		float dY = Math.abs(other._candidateY - _candidateY);  
