@@ -156,7 +156,7 @@ public class NodeFigure extends GraphElement {
         return Math.max(Math.min(value * VISCOSITY, 20), -20);
     }
 
-    /** "To yield to physical force." Dictionary.com */
+    /** "Give: To yield to physical force." Dictionary.com */
     void give() {
 		_candidateX += _forceComponentX;
     	_candidateY += _forceComponentY;
@@ -164,8 +164,6 @@ public class NodeFigure extends GraphElement {
     	_forceComponentX = dampen(_forceComponentX);
 		_forceComponentY = dampen(_forceComponentY);
 
-	//	if (!isMoving()) nudgeNudge();
-		
 		stayAround();
 	}
 
