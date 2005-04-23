@@ -13,6 +13,7 @@
       </library>
    </runtime>
 
+
    <requires>
       <import plugin="org.eclipse.ui"/>
       <import plugin="org.eclipse.jdt"/>
