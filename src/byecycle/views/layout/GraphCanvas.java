@@ -36,7 +36,7 @@ public class GraphCanvas extends Canvas implements StressMeter {
 	private final List _nodesInPursuit = new LinkedList();
 
 
-	public void setGraph(Node[] nodeGraph) {
+	public void setGraph(Iterable<Node> nodeGraph) {
 		initGraphElements(nodeGraph);
 		initGraphFigure();
 		randomizeLayout();
@@ -50,7 +50,7 @@ public class GraphCanvas extends Canvas implements StressMeter {
 
 		do {
 			seekBetterTargetStep();
-			if (betterTargetFound())  //TODO Comment this line to see the animation.
+			//if (betterTargetFound())  //TODO Comment this line to see the animation.
 				lockOnNewTarget();
 		} while (_nodesInPursuit.isEmpty() && guiRelief++ < 50);
 		
@@ -132,12 +132,11 @@ public class GraphCanvas extends Canvas implements StressMeter {
 		}
 	}
 
-	private void initGraphElements(Node[] nodeGraph) {
+	private void initGraphElements(Iterable<Node> nodeGraph) {
 		Map nodeFiguresByNode = new HashMap();
 		List dependencyFigures = new ArrayList();
 		
-		for (int i = 0; i < nodeGraph.length; i++) {
-			Node node = nodeGraph[i];
+		for (Node node : nodeGraph) {
 			NodeFigure dependentFigure = produceNodeFigureFor(node, nodeFiguresByNode);
 			Iterator providers = node.providers();
 			while (providers.hasNext()) {

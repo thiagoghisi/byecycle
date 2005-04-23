@@ -11,6 +11,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IPackageFragment;
+import org.eclipse.jdt.core.dom.IBinding;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.widgets.Composite;
@@ -56,45 +57,26 @@ public class ByecycleView extends ViewPart implements ISelectionListener {
 		
 		scheduleImproveLayoutJob();
 	}
-
+	
 	private void scheduleImproveLayoutJob() {
-		Job improveLayoutJob = new Job("byecyle update job") {
-			protected IStatus run(IProgressMonitor monitor) {
+		UIJob job = new UIJob("package analysis display") {
+			public IStatus runInUIThread(IProgressMonitor monitor) {
 				try {
-					improveLayoutLoop(monitor);
+					if (!_canvas.isDisposed() && !monitor.isCanceled()) {
+						_canvas.tryToImproveLayout();
+						Thread.sleep(100);
+						scheduleImproveLayoutJob();
+					}
 				} catch (Exception x) {
 					x.printStackTrace();
 				}
 				return Status.OK_STATUS;
 			}
-
-			private void improveLayoutLoop(IProgressMonitor monitor) throws InterruptedException {
-				while (true) {
-					if (_canvas.isDisposed() || monitor.isCanceled()) {
-						break;
-					}
-					Thread.sleep(100);
-					UIJob job = new UIJob("package analysis display") {
-						public IStatus runInUIThread(IProgressMonitor monitor) {
-							try {
-								_canvas.tryToImproveLayout();
-							} catch (Exception x) {
-								x.printStackTrace();
-							}
-							return Status.OK_STATUS;
-						}
-					};
-					job.setSystem(true);
-					job.schedule();
-
-				}
-			}
 		};
-		improveLayoutJob.setPriority(Job.LONG);
-		improveLayoutJob.setSystem(true);
-		improveLayoutJob.schedule();
+		job.setSystem(true);
+		job.schedule();
 	}
-
+	
 	/**
 	 * Passing the focus request to the viewer's control.
 	 */
@@ -127,14 +109,13 @@ public class ByecycleView extends ViewPart implements ISelectionListener {
 		Job job = new Job("'" + elementName + "' analysis") {
 			protected IStatus run(IProgressMonitor monitor) {
 				try {
-					Collection nodes = new PackageDependencyAnalysis(compilationUnits, monitor).nodes().values();
+					final Collection<Node<IBinding> > nodes = new PackageDependencyAnalysis(compilationUnits, monitor).dependencyGraph();
 					if (!monitor.isCanceled()) {
-						final Node[] graph = (Node[]) nodes.toArray(new Node[nodes.size()]);
 						//dumpGraph(graph);
 						UIJob job = new UIJob("package analysis display") {
 							public IStatus runInUIThread(IProgressMonitor monitor) {
 								try {
-									_canvas.setGraph(graph);
+									_canvas.setGraph((Collection<Node>)nodes);
 								} catch (Exception x) {
 									x.printStackTrace();
 								}

@@ -3,21 +3,24 @@
 
 package byecycle.dependencygraph;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
-public class Node {
+public class Node<PayloadType> {
     
     private final static Random RANDOM = new Random();
 
-    public static Node[] createGraph(String[] names) {
-        Node[] result = new Node[names.length];
-        
+    public static <PayloadType> Collection<Node<PayloadType> > createGraph(String[] names) {
+		
+		List<Node<PayloadType> > result = new ArrayList<Node<PayloadType>>(); 
         Node previous = null;
         for (int i = 0; i < names.length; i++) {
-            result[i] = new Node(names[i]);
+            result.add(new Node<PayloadType>(names[i]));
         }
 
         produceRandomDependencies(result);
@@ -25,8 +28,8 @@ public class Node {
         return result;
     }
 
-    private static void produceRandomDependencies(Node[] graph) {
-        int dependenciesToCreate = (int)(graph.length * 1.1);
+    private static <PayloadType> void produceRandomDependencies(List<Node<PayloadType>> graph) {
+        int dependenciesToCreate = (int)(graph.size() * 1.1);
         
     	while (dependenciesToCreate-- > 0) {
     	    Node node1 = drawOneFrom(graph);
@@ -37,8 +40,8 @@ public class Node {
     	}
     }
 
-    public static Node drawOneFrom(Node[] hat) {
-        return hat[RANDOM.nextInt(hat.length)];
+    public static <PayloadType> Node<PayloadType> drawOneFrom(List<Node<PayloadType>> hat) {
+        return hat.get(RANDOM.nextInt(hat.size()));
     }
 
     public Node(String name) {
@@ -52,7 +55,8 @@ public class Node {
 
     private final String _name;
     private final String _kind;
-    private final Set _providers = new HashSet();
+    private final Set<Node> _providers = new HashSet<Node>();
+	private PayloadType _payload;
 
     public String name() {
         return _name;
@@ -62,7 +66,7 @@ public class Node {
         return _kind;
     }
 
-    public Iterator providers() {
+    public Iterator<Node> providers() {
         return _providers.iterator();
     }
 
@@ -77,5 +81,13 @@ public class Node {
     public void clearProviders() {
         _providers.clear();
     }
+
+	public void payload(PayloadType payload) {
+		_payload = payload;
+	}
+	
+	public PayloadType payload() {
+		return _payload;
+	}
 
 }

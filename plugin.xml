@@ -25,35 +25,16 @@
    <extension
          point="org.eclipse.ui.views">
       <category
-            name="Bycycle"
+            name="Byecycle"
             id="byecycle">
       </category>
       <view
-            name="Byecycle View"
+            name="Dependencies"
             icon="icons/sample.gif"
             category="byecycle"
             class="byecycle.views.ByecycleView"
             id="byecycle.views.ByecycleView">
       </view>
-   </extension>
-   <extension
-         point="org.eclipse.ui.popupMenus">
-      <objectContribution
-            objectClass="org.eclipse.jdt.IPackage"
-            id="byecycle.contribution1">
-         <menu
-               label="Byecycle"
-               path="additions"
-               id="byecycle.menu1">
-            <separator name="group1"/>
-         </menu>
-         <action
-               enablesFor="1"
-               label="Browse in byecycle view"
-               class="byecycle.popup.actions.BrowsePackageAction"
-               menubarPath="byecycle.menu1/group1"
-               id="byecycle.newAction"/>
-      </objectContribution>
    </extension>
 
 </plugin>

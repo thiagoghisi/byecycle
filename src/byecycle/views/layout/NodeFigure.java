@@ -27,7 +27,7 @@ public class NodeFigure extends GraphElement {
     private static final float DEPENDENCY_THRUST = 0.0003f * IMPETUS;
 	public static final Force STRONG_REPULSION = new Force() {
         public float intensityGiven(float distance) {
-            return -IMPETUS * 9.3f / (float)(Math.pow(distance, 2.7));  //TODO Play with this formula.
+            return -IMPETUS * .93f / (float)(Math.pow(distance, 1 /*2.7*/));  //TODO Play with this formula.
             //return distance < 50 ? -100 : -100 / (distance * distance);
         }
     };

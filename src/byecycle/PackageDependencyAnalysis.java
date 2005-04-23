@@ -4,6 +4,7 @@
 
 package byecycle;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -19,6 +20,7 @@ import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.ClassInstanceCreation;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.Expression;
+import org.eclipse.jdt.core.dom.IBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.SimpleType;
@@ -35,7 +37,7 @@ public class PackageDependencyAnalysis {
 	
 	public static final String INTERFACE = "interface";
 
-	private final Map _nodes = new HashMap();
+	private final Map<IBinding, Node<IBinding> > _nodes = new HashMap<IBinding, Node<IBinding> >();
 	
 	public PackageDependencyAnalysis(ICompilationUnit[] compilationUnits, IProgressMonitor monitor) throws JavaModelException {
 		
@@ -43,7 +45,7 @@ public class PackageDependencyAnalysis {
 			monitor = new NullProgressMonitor();
 		}
 
-		ASTParser parser = ASTParser.newParser(AST.JLS2);
+		ASTParser parser = ASTParser.newParser(AST.JLS3);
 
 		DependencyVisitor visitor = new DependencyVisitor();
 		
@@ -65,15 +67,16 @@ public class PackageDependencyAnalysis {
 		}
 	}
 	
-	public Map nodes() {
-		return _nodes;
+	public Collection<Node<IBinding> > dependencyGraph() {
+		return _nodes.values();
 	}
 
-	private Node getNode(String nodeName, String kind) {
-		Node node = (Node)_nodes.get(nodeName);
+	private Node getNode(IBinding binding, String nodeName, String kind) {
+		Node<IBinding> node = _nodes.get(binding);
 		if (null == node) {
-			node = new Node(nodeName, kind);
-			_nodes.put(nodeName, node);
+			node = new Node<IBinding>(nodeName, kind);
+			node.payload(binding);
+			_nodes.put(binding, node);
 		}
 		return node;
 	}
@@ -87,8 +90,9 @@ public class PackageDependencyAnalysis {
 			Node saved = _currentNode;
 			String savedPackage = _currentPackageName;
 			
-			_currentNode = getNode(node.resolveBinding().getQualifiedName(), node.isInterface() ? INTERFACE : CLASS);
-			_currentPackageName = node.resolveBinding().getPackage().getName();
+			ITypeBinding binding = node.resolveBinding();
+			_currentNode = getNode(binding, binding.getQualifiedName(), node.isInterface() ? INTERFACE : CLASS);
+			_currentPackageName = binding.getPackage().getName();
 			
 			for (Iterator iter = node.bodyDeclarations().iterator(); iter.hasNext();) {
 				ASTNode child = (ASTNode) iter.next();
@@ -134,7 +138,7 @@ public class PackageDependencyAnalysis {
 			    return;
 			if (packageName.equals("java.lang"))
 			    return;
-            _currentNode.addProvider(getNode(packageName, PACKAGE));
+            _currentNode.addProvider(getNode(type.getPackage(), packageName, PACKAGE));
 		}
 
 	}

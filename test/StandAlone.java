@@ -15,9 +15,9 @@ public class StandAlone {
 		new StandAlone();
 	}
 
-	private final List _nodes = new ArrayList();
+	private final List<Node<Object> > _nodes = new ArrayList<Node<Object> >();
 	
-	private final Node[] _graph = graph();
+	private final Collection<Node<Object> > _graph = graph();
 
 	private final Display _display = new Display(); //Has to be initialized
 													// before the _graphFigure
@@ -33,7 +33,7 @@ public class StandAlone {
 		shell.setSize(500, 500);
 		
 		GraphCanvas canvas = new GraphCanvas(shell);
-		canvas.setGraph(_graph);
+		canvas.setGraph((Iterable<Node>)_graph);
 		
 		FillLayout layout = new FillLayout();
 		shell.setLayout(layout);
@@ -49,7 +49,7 @@ public class StandAlone {
 	}
 
 
-	private Node[] graph() {
+	private Collection<Node<Object> > graph() {
 	    String[] names = new String[30];
 	    for (int i = 0; i < names.length; i++) {
             names[i] = "Node " + i;
@@ -126,19 +126,18 @@ public class StandAlone {
 	}
 
 
-	private Node produceNode(String name) {
+	private Node<Object> produceNode(String name) {
 		name = " " + name;
-		Iterator i = _nodes.iterator();
+		Iterator<Node<Object>> i = _nodes.iterator();
 		while (i.hasNext()) {
-			Node candidate = (Node)i.next();
+			Node<Object> candidate = i.next();
 			if (candidate.name().equals(name)) return candidate;
 		}
 		return createNode(name);
-	}
-
-
-	private Node createNode(String name) {
-		Node result = new Node(name, "no type");
+	}	
+	
+	private Node<Object> createNode(String name) {
+		Node<Object> result = new Node<Object>(name, "no type");
 		_nodes.add(result);
 		return result;
 	}	
