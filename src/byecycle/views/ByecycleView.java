@@ -4,16 +4,24 @@
 package byecycle.views;
 
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.ICompilationUnit;
+import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IPackageFragment;
+import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.dom.IBinding;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.IViewSite;
@@ -26,10 +34,12 @@ import byecycle.PackageDependencyAnalysis;
 import byecycle.dependencygraph.Node;
 import byecycle.views.layout.GraphCanvas;
 
-public class ByecycleView extends ViewPart implements ISelectionListener {
+public class ByecycleView extends ViewPart implements ISelectionListener, ISelectionProvider {
 
 	private GraphCanvas _canvas;
 	private IViewSite _site;
+	private Set<ISelectionChangedListener> _selectionListeners = new HashSet<ISelectionChangedListener>();
+	private ISelection _selection;
 	
 	/**
 	 * The constructor.
@@ -41,6 +51,7 @@ public class ByecycleView extends ViewPart implements ISelectionListener {
 		super.init(site);
 		_site = site;
 		_site.getPage().addSelectionListener(this);
+		_site.setSelectionProvider(this);
 	}
 	
 	public void dispose() {
@@ -53,8 +64,11 @@ public class ByecycleView extends ViewPart implements ISelectionListener {
 	 * it.
 	 */
 	public void createPartControl(Composite parent) {
-		_canvas = new GraphCanvas(parent);
-		
+		_canvas = new GraphCanvas(parent, new GraphCanvas.Listener() {
+			public void nodeSelected(Node node) {
+				setSelection(node);
+			}
+		});
 		scheduleImproveLayoutJob();
 	}
 	
@@ -87,8 +101,9 @@ public class ByecycleView extends ViewPart implements ISelectionListener {
 	public void selectionChanged(IWorkbenchPart part, ISelection selection) {
 		if (!(selection instanceof IStructuredSelection)) {
 			return;
-		}
-
+		}		
+		
+		_selection = selection;
 		IStructuredSelection structured = (IStructuredSelection) selection;
 		Object selected = structured.getFirstElement();
 		
@@ -99,6 +114,9 @@ public class ByecycleView extends ViewPart implements ISelectionListener {
 			} else if (selected instanceof ICompilationUnit) {
 				ICompilationUnit compilationUnit = (ICompilationUnit)selected;
 				analyze(compilationUnit.getElementName(), new ICompilationUnit[] { compilationUnit });
+			} else if (selected instanceof IType) {
+				IType type = (IType)selected;
+				analyze(type.getElementName(), new ICompilationUnit[] { type.getCompilationUnit() });
 			}
 		} catch (Exception x) {
 			x.printStackTrace();
@@ -140,4 +158,48 @@ public class ByecycleView extends ViewPart implements ISelectionListener {
 			System.out.println(graph[i].name());
 		}
 	}
+	
+	public void addSelectionChangedListener(ISelectionChangedListener listener) {
+		_selectionListeners.add(listener);
+	}
+
+	public ISelection getSelection() {
+		return _selection;
+	}
+
+	public void removeSelectionChangedListener(ISelectionChangedListener listener) {
+		_selectionListeners.remove(listener);
+	}
+	
+	void setSelection(Node selection) {
+		if (null == selection) {
+			// drill up
+			IStructuredSelection structured = (IStructuredSelection)selection;
+			IJavaElement element = (IJavaElement)structured.getFirstElement();
+			setSelection(new StructuredSelection(element.getParent()));
+		} else {
+			// drill down
+			Node<IBinding> typedNode = (Node<IBinding>)selection;
+			IBinding binding = typedNode.payload();
+			IJavaElement element = binding.getJavaElement();
+			if (null != element) {
+				setSelection(new StructuredSelection(element));
+			}
+		}
+	}
+
+	public void setSelection(ISelection selection) {
+		if (selection == _selection) return;
+		
+		_selection = selection;
+		fireSelectionChanged();
+	}
+
+	private void fireSelectionChanged() {
+		SelectionChangedEvent event = new SelectionChangedEvent(this, _selection);
+		for (ISelectionChangedListener listener : _selectionListeners) {
+			listener.selectionChanged(event);
+		}
+	}
+
 }

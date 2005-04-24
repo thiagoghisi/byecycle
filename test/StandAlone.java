@@ -32,7 +32,7 @@ public class StandAlone {
 		shell.setText("Byecycle");
 		shell.setSize(500, 500);
 		
-		GraphCanvas canvas = new GraphCanvas(shell);
+		GraphCanvas canvas = new GraphCanvas(shell, null);
 		canvas.setGraph((Iterable<Node>)_graph);
 		
 		FillLayout layout = new FillLayout();
