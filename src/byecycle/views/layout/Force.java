@@ -7,4 +7,6 @@ public interface Force {
 
     float intensityGiven(float distance);
 
+	void actUpon(GraphElement element1, GraphElement element2);
+
 }

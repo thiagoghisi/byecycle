@@ -23,20 +23,31 @@ public class NodeFigure extends GraphElement {
     
 	private static final int MARGIN_PIXELS = 2;
 	private static final float VISCOSITY = 0.85f;  //TODO Play with this. :)
+	private static final float IMPETUS = 900;
     
-    private static final float DEPENDENCY_THRUST = 0.0003f * IMPETUS;
+    private static final float DEPENDENCY_THRUST = 0.0003f;
 	public static final Force STRONG_REPULSION = new Force() {
         public float intensityGiven(float distance) {
-            return -IMPETUS * .93f / (float)(Math.pow(distance, 1 /*2.7*/));  //TODO Play with this formula.
-            //return distance < 50 ? -100 : -100 / (distance * distance);
+        	return 0;
+            //return -0.00000003f / (float)(Math.pow(distance, 1 /*2.7*/));  //TODO Play with this formula.
         }
+
+		public void actUpon(GraphElement element1, GraphElement element2) {
+			// TODO Auto-generated method stub
+			
+		}
     };
 
     static final Force ATTRACTION = new Force() {
         public float intensityGiven(float distance) {
-            return  -(10 - distance) * 0.000002f * IMPETUS; //TODO Play with this formula. Zero it to see REPULSION acting alone.
-            //return 0;
+            //return  -(10 - distance) * 0.000002f; //TODO Play with this formula. Zero it to see REPULSION acting alone.
+            return 0;
         }
+
+		public void actUpon(GraphElement element1, GraphElement element2) {
+			// TODO Auto-generated method stub
+			
+		}
     };
 
     private static final Random RANDOM = new Random();
@@ -86,7 +97,6 @@ public class NodeFigure extends GraphElement {
     private float _forceComponentY;
     
 	private final StressMeter _stressMeter;
-
 	
     Node node() {
         return _node;
@@ -113,7 +123,7 @@ public class NodeFigure extends GraphElement {
 		Point c1 = candidatePosition();
 		Point c2 = other.candidatePosition(); 
 	
-		Rectangle r1 = new Rectangle(c1, figure().getBounds().getSize());
+		Rectangle r1 = new Rectangle(c1, figure().getBounds().getSize()); //TODO Optimize. Create only once and reuse.
 		Rectangle r2 = new Rectangle(c2, other.figure().getBounds().getSize());
     	
     	return r1.intersects(r2); //TODO: Use size of r1.getIntersection(r2) to determine the force.
@@ -146,8 +156,8 @@ public class NodeFigure extends GraphElement {
 	}
 
 	void addForceComponents(float x, float y) {
-        _forceComponentX += x;
-        _forceComponentY += y;
+        _forceComponentX += x * IMPETUS;
+        _forceComponentY += y * IMPETUS;
         _stressMeter.addStress((float)Math.sqrt((x*x) + (y*y)));
     }
 
@@ -172,14 +182,15 @@ public class NodeFigure extends GraphElement {
 
     void nudgeNudge() {
         addForceComponents(nudge(), nudge());
+        System.out.println("Nudge: " + nudge());
     }
 
     private float nudge() {
-		return (RANDOM.nextFloat() - 0.5f) * 0.1f * IMPETUS;
+		return (RANDOM.nextFloat() - 0.5f) * 0.1f;
 	}
 
 	private void stayAround() {
-    	addForceComponents( (-_candidateX * 0.0000002f) * IMPETUS, (-_candidateY * 0.0000002f) * IMPETUS);
+    	addForceComponents( (-_candidateX * 0.0000002f), (-_candidateY * 0.0000002f));
     	
     	Rectangle availableSpace = figure().getParent().getClientArea();
     	Rectangle me = figure().getBounds();
@@ -211,8 +222,8 @@ public class NodeFigure extends GraphElement {
 	}
 
 	void pursueTarget(XYLayout layout) {
-		float dX = Math.max(Math.min(_targetX - _currentX, 3), -3);
-		float dY = Math.max(Math.min(_targetY - _currentY, 3), -3);
+		float dX = Math.max(Math.min(_targetX - _currentX, 300), -300); //TODO: Back to 3 and -3.
+		float dY = Math.max(Math.min(_targetY - _currentY, 300), -300); //TODO: Back to 3 and -3.
 		
 		_currentX += dX;
 		_currentY += dY;

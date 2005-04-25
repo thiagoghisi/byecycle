@@ -9,15 +9,6 @@ import org.eclipse.draw2d.geometry.Point;
 
 abstract class GraphElement {
 
-	protected static final float IMPETUS = 900;
-
-	protected static final Force WEAK_REPULSION = new Force() {
-        public float intensityGiven(float distance) {
-            return -IMPETUS * 0.93f / (float)(Math.pow(distance, 2.7));  //TODO Play with this formula.
-            //return distance < 50 ? -100 : -100 / (distance * distance);
-        }
-    };
-
     private IFigure _figure;
 
 	abstract Point candidatePosition();
@@ -26,8 +17,6 @@ abstract class GraphElement {
 
 	protected void reactTo(GraphElement other) {
 	     if (other == this) throw new IllegalArgumentException();
-	     
-	     reactTo(other, WEAK_REPULSION);
 	}
 
 	protected void reactTo(GraphElement other, Force force) {
@@ -51,6 +40,5 @@ abstract class GraphElement {
 	}
 
 	abstract IFigure produceFigure();
-
 	
 }

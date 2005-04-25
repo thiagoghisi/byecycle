@@ -32,13 +32,18 @@ public class StandAlone {
 		shell.setText("Byecycle");
 		shell.setSize(500, 500);
 		
-		GraphCanvas canvas = new GraphCanvas(shell, null);
-		canvas.setGraph((Iterable<Node>)_graph);
-		
 		FillLayout layout = new FillLayout();
 		shell.setLayout(layout);
 
+		GraphCanvas canvas = new GraphCanvas(shell, new GraphCanvas.Listener(){
+			public void nodeSelected(Node node) {
+				System.out.println("Node:" + node);
+			}
+		});
+		canvas.setGraph((Iterable<Node>)_graph);
+
 		shell.open();
+		shell.layout();
 
 		while (!shell.isDisposed()) {
 			while (!_display.readAndDispatch()) {

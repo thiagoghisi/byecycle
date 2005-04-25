@@ -4,8 +4,8 @@
 
 package byecycle.views.layout;
 
-import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -32,11 +32,11 @@ public class GraphCanvas extends Canvas implements StressMeter {
 		void nodeSelected(Node node);
 	}
 
+	private static final Force SPREADING_OUT = new SpreadingOut();
+	
 	public GraphCanvas(Composite parent, Listener listener) {
 		super(parent, SWT.FILL | SWT.NO_BACKGROUND);
-		if (null == listener) {
-			throw new IllegalArgumentException("listener");
-		}
+		if (listener == null) throw new IllegalArgumentException("listener");
 		new LightweightSystem(this).setContents(_graphFigure);
 		_graphFigure.setLayoutManager(_contentsLayout);
 		_listener = listener;
@@ -54,13 +54,14 @@ public class GraphCanvas extends Canvas implements StressMeter {
 	private float _currentStress;
 	private float _smallestStressEver;
 	private final List<NodeFigure> _nodesInPursuit = new LinkedList<NodeFigure>();
-	private Listener _listener;
+	private final Listener _listener;
 	private final Map<IFigure, Node> _nodesByIFigure = new HashMap<IFigure, Node>();
 
 	public void setGraph(Iterable<Node> nodeGraph) {
 		initGraphElements(nodeGraph);
 		initGraphFigure();
 		randomizeLayout();
+		
 		_smallestStressEver = Float.MAX_VALUE;
 		_graphFigure.addMouseListener(new MouseListener.Stub() {
 			public void mouseDoubleClicked(MouseEvent e) {
@@ -116,6 +117,7 @@ public class GraphCanvas extends Canvas implements StressMeter {
             for (int j = i + 1; j < _graphElements.size(); j++) {
             	GraphElement element2 = (GraphElement)_graphElements.get(j);
 
+            	SPREADING_OUT.actUpon(element1, element2);
     	        element1.reactTo(element2);
             }
         }
