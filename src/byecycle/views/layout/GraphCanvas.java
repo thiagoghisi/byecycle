@@ -34,6 +34,12 @@ public class GraphCanvas extends Canvas implements StressMeter {
 
 	private static final Force SPREADING_OUT = new SpreadingOut();
 	
+	private static final Force ATTRACTION = new Attraction();
+	
+	private static final Force PROVIDER_GRAVITY = new ProviderGravity();
+	
+	private static final Force AVERSION = new Aversion();
+	
 	public GraphCanvas(Composite parent, Listener listener) {
 		super(parent, SWT.FILL | SWT.NO_BACKGROUND);
 		if (listener == null) throw new IllegalArgumentException("listener");
@@ -112,13 +118,15 @@ public class GraphCanvas extends Canvas implements StressMeter {
 
 	private void seekBetterTargetStep() {
 		for (int i = 0; i < _graphElements.size(); i++) {
-	        GraphElement element1 = (GraphElement)_graphElements.get(i);
+	        GraphElement element1 = _graphElements.get(i);
 	        
             for (int j = i + 1; j < _graphElements.size(); j++) {
-            	GraphElement element2 = (GraphElement)_graphElements.get(j);
+            	GraphElement element2 = _graphElements.get(j);
 
             	SPREADING_OUT.actUpon(element1, element2);
-    	        element1.reactTo(element2);
+				ATTRACTION.actUpon(element1, element2);
+				PROVIDER_GRAVITY.actUpon(element1, element2);
+				AVERSION.actUpon(element1, element2);
             }
         }
 

@@ -24,33 +24,8 @@ public class NodeFigure extends GraphElement {
 	private static final int MARGIN_PIXELS = 2;
 	private static final float VISCOSITY = 0.85f;  //TODO Play with this. :)
 	private static final float IMPETUS = 900;
-    
-    private static final float DEPENDENCY_THRUST = 0.0003f;
-	public static final Force STRONG_REPULSION = new Force() {
-        public float intensityGiven(float distance) {
-        	return 0;
-            //return -0.00000003f / (float)(Math.pow(distance, 1 /*2.7*/));  //TODO Play with this formula.
-        }
-
-		public void actUpon(GraphElement element1, GraphElement element2) {
-			// TODO Auto-generated method stub
-			
-		}
-    };
-
-    static final Force ATTRACTION = new Force() {
-        public float intensityGiven(float distance) {
-            //return  -(10 - distance) * 0.000002f; //TODO Play with this formula. Zero it to see REPULSION acting alone.
-            return 0;
-        }
-
-		public void actUpon(GraphElement element1, GraphElement element2) {
-			// TODO Auto-generated method stub
-			
-		}
-    };
-
-    private static final Random RANDOM = new Random();
+	
+	private static final Random RANDOM = new Random();
     
 	NodeFigure(Node node, StressMeter stressMeter) {
         _node = node;
@@ -101,53 +76,30 @@ public class NodeFigure extends GraphElement {
     Node node() {
         return _node;
     }
-
-    protected void reactTo(GraphElement otherElement) {
-    	super.reactTo(otherElement);
-
-    	if (!(otherElement instanceof NodeFigure)) return;
-    	NodeFigure other = (NodeFigure)otherElement; 
-    	
-        if (_node.dependsOn(other.node())) {
-            reactToProvider(other);
-        }
-        
-        if (other.node().dependsOn(_node)) {
-            other.reactToProvider(this);
-        }
-	    if (collidesWith(other)) reactTo(other, NodeFigure.STRONG_REPULSION); 
-
+	
+	public float candidateX() {
+		return _candidateX;
 	}
-
-    private boolean collidesWith(NodeFigure other) {
+	
+	public float candidateY() {
+		return _candidateY;
+	}
+	
+	public Rectangle intersection(NodeFigure other) {
 		Point c1 = candidatePosition();
 		Point c2 = other.candidatePosition(); 
 	
 		Rectangle r1 = new Rectangle(c1, figure().getBounds().getSize()); //TODO Optimize. Create only once and reuse.
 		Rectangle r2 = new Rectangle(c2, other.figure().getBounds().getSize());
-    	
-    	return r1.intersects(r2); //TODO: Use size of r1.getIntersection(r2) to determine the force.
+		
+    	return r1.intersect(r2); //TODO: Use size of r1.getIntersection(r2) to determine the force.
     }
 
-	private void reactToProvider(NodeFigure other) {
-		reactTo(other, ATTRACTION);
-
-		float dY = Math.abs(other._candidateY - _candidateY);  
-		boolean inverted = other._candidateY < _candidateY;
-		
-		float thrust = DEPENDENCY_THRUST * (inverted
-			? 1 + (dY / 20)
-			: 10 / (10 + dY)
-		);
-		up(thrust);
-		other.down(thrust);
-	}
-
-	private void up(float thrust) {
+	void up(float thrust) {
         addForceComponents(0, -thrust);
     }
 
-    private void down(float thrust) {
+    void down(float thrust) {
         addForceComponents(0, thrust);
     }
     
@@ -233,6 +185,10 @@ public class NodeFigure extends GraphElement {
 
 	boolean onTarget() {
 		return _currentX ==_targetX && _currentY == _targetY;
+	}
+
+	public boolean dependsOn(NodeFigure other) {
+		return _node.dependsOn(other.node());
 	}
 
 }
