@@ -70,6 +70,7 @@ public class NodeFigure extends GraphElement {
     private float _candidateY;
     private float _forceComponentX;
     private float _forceComponentY;
+	private Rectangle _aura;
     
 	private final StressMeter _stressMeter;
 	
@@ -129,7 +130,8 @@ public class NodeFigure extends GraphElement {
 	}
 
 	boolean isMoving() {
-        return _forceComponentX > 0.1 || _forceComponentY > 0.1;
+        return Math.abs(_forceComponentX) > 0.2 || Math.abs(_forceComponentY) > 0.2;
+        //FIXME: Nudge is not called when nodes are pressed against the margin.
     }
 
     void nudgeNudge() {
@@ -189,6 +191,16 @@ public class NodeFigure extends GraphElement {
 
 	public boolean dependsOn(NodeFigure other) {
 		return _node.dependsOn(other.node());
+	}
+
+	public Rectangle aura() {
+		Rectangle result = new Rectangle(candidatePosition(), figure().getBounds().getSize());
+		int auraThickness = 5;
+		result.x -= auraThickness;
+		result.y -= auraThickness;
+		result.width += auraThickness;
+		result.height += auraThickness;
+		return result;
 	}
 
 }

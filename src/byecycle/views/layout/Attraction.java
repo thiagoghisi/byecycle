@@ -4,7 +4,7 @@ public class Attraction extends DistanceBasedForce {
 
 	@Override
     public float intensityGiven(float distance) {
-        return  -(10 - distance) * 0.000002f; //TODO Play with this formula. Zero it to see REPULSION acting alone.
+        return  (distance - 15) * 0.000002f; //TODO Play with this formula. Zero it to see REPULSION acting alone.
     }
 	
 	@Override
@@ -15,9 +15,10 @@ public class Attraction extends DistanceBasedForce {
 			NodeFigure figure1 = (NodeFigure)element1;
 			NodeFigure figure2 = (NodeFigure)element2;
 			if (figure1.dependsOn(figure2) ||
-				figure2.dependsOn(figure2)) {
+				figure2.dependsOn(figure1)) {
 				super.actUpon(element1, element2);
 			}
 		}
 	}
+
 }

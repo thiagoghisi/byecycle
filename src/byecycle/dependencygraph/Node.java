@@ -20,7 +20,7 @@ public class Node<PayloadType> {
 		List<Node<PayloadType> > result = new ArrayList<Node<PayloadType>>(); 
         Node previous = null;
         for (int i = 0; i < names.length; i++) {
-            result.add(new Node<PayloadType>(names[i]));
+            result.add(new Node<PayloadType>(names[i], "package"));
         }
 
         produceRandomDependencies(result);

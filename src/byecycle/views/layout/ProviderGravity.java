@@ -13,25 +13,25 @@ public class ProviderGravity implements Force {
 		NodeFigure figure2 = (NodeFigure)element2;
     	
         if (figure1.dependsOn(figure2)) {
-            reactToProvider(figure1, figure2);
+            actUponDependentAndProvider(figure1, figure2);
         }
         
         if (figure2.dependsOn(figure1)) {
-            reactToProvider(figure2, figure1);
+            actUponDependentAndProvider(figure2, figure1);
         }
 	}
 	
-	private void reactToProvider(NodeFigure figure1, NodeFigure figure2) {
+	private void actUponDependentAndProvider(NodeFigure dependent, NodeFigure provider) {
 		
-		float dY = Math.abs(figure2.candidateY() - figure1.candidateY());  
-		boolean inverted = figure2.candidateY() < figure1.candidateY();
+		float dY = Math.abs(provider.candidateY() - dependent.candidateY());  
+		boolean inverted = provider.candidateY() < dependent.candidateY();
 		
 		float thrust = DEPENDENCY_THRUST * (inverted
 			? 1 + (dY / 20)
 			: 10 / (10 + dY)
 		);
-		figure1.up(thrust);
-		figure2.down(thrust);
+		dependent.up(thrust);
+		provider.down(thrust);
 	}
 
 

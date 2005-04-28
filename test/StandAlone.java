@@ -55,8 +55,9 @@ public class StandAlone {
 
 
 	private Collection<Node<Object> > graph() {
-	    String[] names = new String[30];
+	    String[] names = new String[36];
 	    for (int i = 0; i < names.length; i++) {
+            //names[i] = "Node skdjfhskdfh.sdkfskdlf.sdfksdfj" + i;
             names[i] = "Node " + i;
         }
 		return Node.createGraph(names);
