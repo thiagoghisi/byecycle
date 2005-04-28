@@ -71,6 +71,7 @@ public class GraphCanvas extends Canvas implements StressMeter {
 		_smallestStressEver = Float.MAX_VALUE;
 		_graphFigure.addMouseListener(new MouseListener.Stub() {
 			public void mouseDoubleClicked(MouseEvent e) {
+				System.out.println("mouseDoubleClicked");
 				IFigure target = _graphFigure.findFigureAt(e.x, e.y);
 				Node node = _nodesByIFigure.get(target);
 				_listener.nodeSelected(node);

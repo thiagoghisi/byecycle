@@ -102,6 +102,9 @@ public class ByecycleView extends ViewPart implements ISelectionListener, ISelec
 		if (!(selection instanceof IStructuredSelection)) {
 			return;
 		}		
+		if (selection.equals(_selection)) {
+			return;
+		}
 		
 		_selection = selection;
 		IStructuredSelection structured = (IStructuredSelection) selection;
@@ -189,14 +192,14 @@ public class ByecycleView extends ViewPart implements ISelectionListener, ISelec
 	}
 
 	public void setSelection(ISelection selection) {
-		if (selection == _selection) return;
-		
-		_selection = selection;
-		fireSelectionChanged();
+		if (selection.equals(_selection)) {
+			return;
+		}
+		fireSelectionChanged(selection);
 	}
 
-	private void fireSelectionChanged() {
-		SelectionChangedEvent event = new SelectionChangedEvent(this, _selection);
+	private void fireSelectionChanged(ISelection selection) {
+		SelectionChangedEvent event = new SelectionChangedEvent(this, selection);
 		for (ISelectionChangedListener listener : _selectionListeners) {
 			listener.selectionChanged(event);
 		}
