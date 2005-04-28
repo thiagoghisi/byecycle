@@ -7,6 +7,7 @@ package byecycle;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -37,7 +38,7 @@ public class PackageDependencyAnalysis {
 	
 	public static final String INTERFACE = "interface";
 
-	private final Map<IBinding, Node<IBinding> > _nodes = new HashMap<IBinding, Node<IBinding> >();
+	private final Map<String, Node<IBinding> > _nodes = new HashMap<String, Node<IBinding> >();
 	
 	public PackageDependencyAnalysis(ICompilationUnit[] compilationUnits, IProgressMonitor monitor) throws JavaModelException {
 		
@@ -72,13 +73,17 @@ public class PackageDependencyAnalysis {
 	}
 
 	private Node getNode(IBinding binding, String nodeName, String kind) {
-		Node<IBinding> node = _nodes.get(binding);
+		Node<IBinding> node = _nodes.get(getBindingKey(binding));
 		if (null == node) {
 			node = new Node<IBinding>(nodeName, kind);
 			node.payload(binding);
-			_nodes.put(binding, node);
+			_nodes.put(getBindingKey(binding), node);
 		}
 		return node;
+	}
+
+	private String getBindingKey(IBinding binding) {
+		return binding.getKey();
 	}
 
 	class DependencyVisitor extends ASTVisitor {
@@ -93,14 +98,29 @@ public class PackageDependencyAnalysis {
 			ITypeBinding binding = node.resolveBinding();
 			_currentNode = getNode(binding, binding.getQualifiedName(), node.isInterface() ? INTERFACE : CLASS);
 			_currentPackageName = binding.getPackage().getName();
-			
-			for (Iterator iter = node.bodyDeclarations().iterator(); iter.hasNext();) {
-				ASTNode child = (ASTNode) iter.next();
-				child.accept(this);
+
+			addProvider(binding.getSuperclass());
+			for (ITypeBinding superItf : binding.getInterfaces()) {
+				addProvider(superItf);
 			}
+			
+			visitList(node.bodyDeclarations());
+			
 			_currentNode = saved;
 			_currentPackageName = savedPackage;
 			return false;
+		}
+
+		private void visitList(List l) {
+			for (Iterator iter = l.iterator(); iter.hasNext();) {
+				ASTNode child = (ASTNode) iter.next();
+				child.accept(this);
+			}
+		}
+		
+		public boolean visit(org.eclipse.jdt.core.dom.QualifiedType node) {
+			addProvider(node.resolveBinding());
+			return true;
 		}
 		
 		public boolean visit(SimpleType node) {
