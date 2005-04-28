@@ -131,7 +131,7 @@ public class NodeFigure extends GraphElement {
 
 	boolean isMoving() {
         return Math.abs(_forceComponentX) > 0.2 || Math.abs(_forceComponentY) > 0.2;
-        //FIXME: Nudge is not called when nodes are pressed against the margin.
+        //FIXME: Nudge is not called when nodes are pressed against the margin. Keep previous coordinates to compare instead of using the component forces.
     }
 
     void nudgeNudge() {
