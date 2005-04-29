@@ -1,5 +1,6 @@
 //Copyright (C) 2004 Klaus Wuestefeld and Rodrigo B de Oliveira.
 //This is free software. See the license distributed along with this file.
+//Contributions by Julio César do Nascimento.
 
 package byecycle.views.layout;
 
@@ -31,15 +32,48 @@ public class NodeFigure extends GraphElement {
         _node = node;
         _stressMeter = stressMeter;
     }
-   
-    IFigure produceFigure() {
-		Label result = new Label(text(_node), imageForNode(_node));
-        result.setBorder(new LineBorder());
-        result.setBackgroundColor(randomPastelColor());
-        result.setOpaque(true);
+
+    IFigure produceFigureOld() {
+		String text = text(_node);
+		Label result = label(text, imageForNode(_node));
         return result;
 	}
 
+	private Label label(String text, Image icon) {
+		return icon == null
+			? new Label(" " + text, icon)
+			: new Label(      text, icon);
+	}
+
+	IFigure produceFigure() {
+		IFigure result;
+		String text = text(_node);
+		Color color = randomPastelColor();
+		if (text.length() < 20) {
+			result = produceFigureOld();
+		} else {
+			result = new CompartmentFigure(color); //FIXME: Package double-clicking is not working on CompartmentFigures.
+			int cut = (text.length() / 2) - 1;
+			result.add(label(text.substring(0,cut), imageForNode(_node)));
+			result.add(label(text.substring(cut), null));
+		}
+
+		result.setBorder(new LineBorder());
+		result.setBackgroundColor(color);
+		result.setOpaque(true);
+        return result;
+	}
+
+	
+	static class CompartmentFigure extends Figure {
+	  public CompartmentFigure(Color color) {
+		    ToolbarLayout layout = new ToolbarLayout();
+		    layout.setMinorAlignment(ToolbarLayout.ALIGN_TOPLEFT);
+		    layout.setStretchMinorAxis(false);
+		    setLayoutManager(layout);
+		  }
+	}
+	
 	private static String text(Node node) {
         String result = node.name();
 	    if (node.kind().equals("package")) return result;
