@@ -52,7 +52,7 @@ public class NodeFigure extends GraphElement {
 		if (text.length() < 20) {
 			result = produceFigureOld();
 		} else {
-			result = new CompartmentFigure(color); //FIXME: Package double-clicking is not working on CompartmentFigures.
+			result = new CompartmentFigure(color);
 			int cut = (text.length() / 2) - 1;
 			result.add(label(text.substring(0,cut), imageForNode(_node)));
 			result.add(label(text.substring(cut), null));

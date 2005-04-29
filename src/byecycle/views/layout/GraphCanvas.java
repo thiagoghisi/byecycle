@@ -73,7 +73,12 @@ public class GraphCanvas extends Canvas implements StressMeter {
 			public void mouseDoubleClicked(MouseEvent e) {
 				System.out.println("mouseDoubleClicked");
 				IFigure target = _graphFigure.findFigureAt(e.x, e.y);
-				Node node = _nodesByIFigure.get(target);
+				Node node = null;
+				do {
+					node = _nodesByIFigure.get(target);
+					target = target.getParent();
+				} while (node == null && target != null);
+				
 				_listener.nodeSelected(node);
 			}
 		});
