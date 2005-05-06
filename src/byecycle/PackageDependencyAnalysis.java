@@ -96,9 +96,12 @@ public class PackageDependencyAnalysis {
 			String savedPackage = _currentPackageName;
 			
 			ITypeBinding binding = node.resolveBinding();
-			_currentNode = getNode(binding, binding.getQualifiedName(), node.isInterface() ? INTERFACE : CLASS);
+			_currentNode = getNode2(binding);
 			_currentPackageName = binding.getPackage().getName();
 
+			// SpreadingOut -extends-> DistanceBasedForce -implements-> Force
+			
+			System.out.println(binding.getSuperclass());
 			addProvider(binding.getSuperclass());
 			for (ITypeBinding superItf : binding.getInterfaces()) {
 				addProvider(superItf);
@@ -109,6 +112,10 @@ public class PackageDependencyAnalysis {
 			_currentNode = saved;
 			_currentPackageName = savedPackage;
 			return false;
+		}
+
+		private Node getNode2(ITypeBinding binding) {
+			return getNode(binding, binding.getQualifiedName(), binding.isInterface() ? INTERFACE : CLASS);
 		}
 
 		private void visitList(List l) {
@@ -143,7 +150,7 @@ public class PackageDependencyAnalysis {
 			return true;
 		}
 
-		private void addProvider(ITypeBinding type) {
+		private void addProvider(ITypeBinding type) { 
 			if (null == type)
 				return;
 			if (type.isArray())
@@ -154,8 +161,10 @@ public class PackageDependencyAnalysis {
 				return; //TODO: Check why this happens.
             
 			String packageName = type.getPackage().getName();
-			if (packageName.equals(_currentPackageName))
+			if (packageName.equals(_currentPackageName)) {
+	            _currentNode.addProvider(getNode2(type));
 			    return;
+			}
 			if (packageName.equals("java.lang"))
 			    return;
             _currentNode.addProvider(getNode(type.getPackage(), packageName, PACKAGE));

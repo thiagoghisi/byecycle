@@ -204,7 +204,6 @@ public class GraphCanvas extends Canvas implements StressMeter {
 	}
 
 	private void clearGraphFigure() {
-		System.out.println("clearGraphFigure");
 		Object[] children = _graphFigure.getChildren().toArray();
 		for (int i = 0; i < children.length; i++) {
 			IFigure figure = (IFigure) children[i];
@@ -219,7 +218,6 @@ public class GraphCanvas extends Canvas implements StressMeter {
 		result = new NodeFigure(node, this);
 		nodeFiguresByNode.put(node, result);
 		_nodesByIFigure .put(result.figure(), node);
-		System.out.println(result.figure());
 		return result;
 	}
 
