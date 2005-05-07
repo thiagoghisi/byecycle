@@ -20,7 +20,6 @@ import org.eclipse.swt.widgets.Display;
 import byecycle.dependencygraph.Node;
 
 public class NodeFigure extends GraphElement {
-
     
 	private static final int MARGIN_PIXELS = 2;
 	private static final float VISCOSITY = 0.85f;  //TODO Play with this. :)
@@ -210,8 +209,8 @@ public class NodeFigure extends GraphElement {
 	}
 
 	void pursueTarget(XYLayout layout) {
-		float dX = Math.max(Math.min(_targetX - _currentX, 300), -300); //TODO: Back to 3 and -3.
-		float dY = Math.max(Math.min(_targetY - _currentY, 300), -300); //TODO: Back to 3 and -3.
+		float dX = Math.max(Math.min(_targetX - _currentX, 3), -3);
+		float dY = Math.max(Math.min(_targetY - _currentY, 3), -3);
 		
 		_currentX += dX;
 		_currentY += dY;
