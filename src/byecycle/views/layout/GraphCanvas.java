@@ -93,9 +93,9 @@ public class GraphCanvas extends Canvas implements StressMeter {
 
 		do {
 			seekBetterTargetStep();
-			//if (betterTargetFound())  //TODO Comment this line to see the animation.
+			if (betterTargetFound())  //TODO Comment this line to see the animation.
 				lockOnNewTarget();
-		} while (_nodesInPursuit.isEmpty() && guiRelief++ < 50);
+		} while (_nodesInPursuit.isEmpty() && guiRelief++ < 150);
 		
 		pursueTargetStep();
 	}
