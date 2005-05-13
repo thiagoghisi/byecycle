@@ -63,6 +63,8 @@ public class GraphCanvas extends Canvas implements StressMeter {
 	private final Listener _listener;
 	private final Map<IFigure, Node> _nodesByIFigure = new HashMap<IFigure, Node>();
 
+	private static long lastNudge;
+
 	public void setGraph(Iterable<Node> nodeGraph) {
 		initGraphElements(nodeGraph);
 		initGraphFigure();
@@ -144,7 +146,9 @@ public class GraphCanvas extends Canvas implements StressMeter {
             if (figure.isMoving()) moving++;
         }
 		
-		if (moving == 0) {
+		//if (moving == 0) {  //TODO: COrrect nudge logic.
+		if (System.currentTimeMillis() - lastNudge > 5000) {
+			lastNudge = System.currentTimeMillis();
 			randomNodeFigure().nudgeNudge();
 		}
 	}
