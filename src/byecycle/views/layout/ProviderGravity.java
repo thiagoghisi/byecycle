@@ -26,7 +26,7 @@ public class ProviderGravity implements Force {
 		float dY = Math.abs(provider.candidateY() - dependent.candidateY());  
 		boolean inverted = provider.candidateY() < dependent.candidateY();
 		
-		float thrust = DEPENDENCY_THRUST * (inverted
+		float thrust = 2 * DEPENDENCY_THRUST * (inverted
 			? 1 + (dY / 20)
 			: 10 / (10 + dY)
 		);

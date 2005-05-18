@@ -18,7 +18,7 @@ public class Aversion extends DistanceBasedForce {
 		
 		Rectangle intersection = figure1.aura().getIntersection(figure2.aura());
 		int area = intersection.getSize().getArea();
-		return -0.0000001f * (float)Math.pow(area, 1.4);
+		return -0.0000001f * (float)Math.pow(area, 1.5);
 	}
 
 	float intensityGiven(float distance) {

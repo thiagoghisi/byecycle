@@ -4,7 +4,7 @@ public class Attraction extends DistanceBasedForce {
 
 	@Override
     public float intensityGiven(float distance) {
-        return  (distance - 15) * 0.000002f; //TODO Play with this formula. Zero it to see REPULSION acting alone.
+        return  (distance - 25) * 0.000002f; //TODO Play with this formula. Zero it to see REPULSION acting alone.
     }
 	
 	@Override

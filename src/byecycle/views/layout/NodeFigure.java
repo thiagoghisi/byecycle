@@ -32,13 +32,7 @@ public class NodeFigure extends GraphElement {
         _stressMeter = stressMeter;
     }
 
-    IFigure produceFigureOld() {
-		String text = text(_node);
-		Label result = label(text, imageForNode(_node));
-        return result;
-	}
-
-	private Label label(String text, Image icon) {
+  	private Label label(String text, Image icon) {
 		return icon == null
 			? new Label(" " + text, icon)
 			: new Label(      text, icon);
@@ -49,7 +43,7 @@ public class NodeFigure extends GraphElement {
 		String text = text(_node);
 		Color color = randomPastelColor();
 		if (text.length() < 20) {
-			result = produceFigureOld();
+			result = label(text, imageForNode(_node));
 		} else {
 			result = new CompartmentFigure(color);
 			int cut = (text.length() / 2) - 1;
@@ -227,13 +221,22 @@ public class NodeFigure extends GraphElement {
 	}
 
 	public Rectangle aura() {
-		Rectangle result = new Rectangle(candidatePosition(), figure().getBounds().getSize());
-		int auraThickness = 5;
-		result.x -= auraThickness;
-		result.y -= auraThickness;
-		result.width += auraThickness;
-		result.height += auraThickness;
-		return result;
+		int auraThickness = 10;
+		Point candidatePosition = candidatePosition();
+		
+		if (_aura == null) {
+			_aura = new Rectangle(candidatePosition, figure().getBounds().getSize());
+			_aura.x -= auraThickness;
+			_aura.y -= auraThickness;
+			_aura.width += auraThickness;
+			_aura.height += auraThickness;
+		}
+		else {
+			_aura.x = candidatePosition.x - auraThickness;
+			_aura.y = candidatePosition.y - auraThickness;
+		}
+		return _aura;
+        
 	}
 
 }
