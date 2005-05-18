@@ -1,6 +1,9 @@
-package byecycle.views.layout;
+package byecycle.views.layout.forces;
 
 import org.eclipse.draw2d.geometry.Rectangle;
+
+import byecycle.views.layout.GraphElement;
+import byecycle.views.layout.NodeFigure;
 
 public class Aversion extends DistanceBasedForce {
 	

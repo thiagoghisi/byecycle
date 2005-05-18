@@ -90,4 +90,9 @@ public class Node<PayloadType> {
 		return _payload;
 	}
 
+	public boolean participatesInCycleWith(Node node) {
+		// TODO Auto-generated method stub
+		return true;
+	}
+
 }

@@ -1,6 +1,8 @@
-package byecycle.views.layout;
+package byecycle.views.layout.forces;
 
 import org.eclipse.draw2d.geometry.Point;
+
+import byecycle.views.layout.GraphElement;
 
 public abstract class DistanceBasedForce implements Force {
 

@@ -24,6 +24,11 @@ import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 
 import byecycle.dependencygraph.Node;
+import byecycle.views.layout.forces.Attraction;
+import byecycle.views.layout.forces.Aversion;
+import byecycle.views.layout.forces.Force;
+import byecycle.views.layout.forces.ProviderGravity;
+import byecycle.views.layout.forces.SpreadingOut;
 
 
 public class GraphCanvas extends Canvas implements StressMeter {
@@ -147,7 +152,7 @@ public class GraphCanvas extends Canvas implements StressMeter {
         }
 		
 		//if (moving == 0) {  //TODO: COrrect nudge logic.
-		if (System.currentTimeMillis() - lastNudge > 5000) {
+		if (System.currentTimeMillis() - lastNudge > 8000) {
 			lastNudge = System.currentTimeMillis();
 			randomNodeFigure().nudgeNudge();
 		}
@@ -167,7 +172,7 @@ public class GraphCanvas extends Canvas implements StressMeter {
 
 	private void makeInvertedDependenciesRed() {
 		for (int i = 0; i < _dependencyFigures.length; i++)
-			_dependencyFigures[i].drawArrow();
+			_dependencyFigures[i].refresh();
 	}
 	
 	private void initGraphFigure() {

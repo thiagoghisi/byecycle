@@ -123,19 +123,19 @@ public class NodeFigure extends GraphElement {
     	return r1.intersect(r2); //TODO: Use size of r1.getIntersection(r2) to determine the force.
     }
 
-	void up(float thrust) {
+	public void up(float thrust) {
         addForceComponents(0, -thrust);
     }
 
-    void down(float thrust) {
+    public void down(float thrust) {
         addForceComponents(0, thrust);
     }
     
-	Point candidatePosition() {
+	public Point candidatePosition() {
 		return new Point(_candidateX, _candidateY);
 	}
 
-	void addForceComponents(float x, float y) {
+	public void addForceComponents(float x, float y) {
         _forceComponentX += x * IMPETUS;
         _forceComponentY += y * IMPETUS;
         _stressMeter.addStress((float)Math.sqrt((x*x) + (y*y)));

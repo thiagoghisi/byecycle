@@ -1,4 +1,7 @@
-package byecycle.views.layout;
+package byecycle.views.layout.forces;
+
+import byecycle.views.layout.GraphElement;
+import byecycle.views.layout.NodeFigure;
 
 public class ProviderGravity implements Force {
 	
@@ -26,10 +29,10 @@ public class ProviderGravity implements Force {
 		float dY = Math.abs(provider.candidateY() - dependent.candidateY());  
 		boolean inverted = provider.candidateY() < dependent.candidateY();
 		
-		float thrust = 2 * DEPENDENCY_THRUST * (inverted
+		float thrust = (float) (DEPENDENCY_THRUST * 1.5 * (inverted
 			? 1 + (dY / 20)
 			: 10 / (10 + dY)
-		);
+		));
 		dependent.up(thrust);
 		provider.down(thrust);
 	}

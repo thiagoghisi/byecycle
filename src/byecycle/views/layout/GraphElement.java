@@ -7,13 +7,13 @@ import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.geometry.Point;
 
 
-abstract class GraphElement {
+public abstract class GraphElement {
 
     private IFigure _figure;
 
-	abstract Point candidatePosition();
+	public abstract Point candidatePosition();
 
-	abstract void addForceComponents(float f, float g);
+	public abstract void addForceComponents(float f, float g);
 	
 	IFigure figure() {
 		return _figure == null

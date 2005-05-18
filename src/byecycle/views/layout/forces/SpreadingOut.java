@@ -1,4 +1,4 @@
-package byecycle.views.layout;
+package byecycle.views.layout.forces;
 
 public class SpreadingOut extends DistanceBasedForce {
 

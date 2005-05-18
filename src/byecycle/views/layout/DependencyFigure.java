@@ -22,9 +22,10 @@ class DependencyFigure extends GraphElement {
 	DependencyFigure(NodeFigure dependent, NodeFigure provider) {
 		_dependent = dependent;
 		_provider = provider;
+	
 	}
 
-    Point candidatePosition() {
+    public Point candidatePosition() {
 		Point p1 = _dependent.candidatePosition();
 		Point p2 = _provider.candidatePosition();
 		int centerX = (p1.x + p2.x) / 2;
@@ -32,7 +33,7 @@ class DependencyFigure extends GraphElement {
 		return new Point(centerX, centerY);
 	}
 
-	void addForceComponents(float x, float y) {
+	public void addForceComponents(float x, float y) {
         float halfX = x / 2;
 		float halfY = y / 2;
 		_dependent.addForceComponents(halfX, halfY);
@@ -56,10 +57,20 @@ class DependencyFigure extends GraphElement {
 		arrowHead.setTemplate(decorationPointList);
 		_arrow.setTargetDecoration(arrowHead);
 		
+		Color redOrBlack = _dependent.node().participatesInCycleWith(_provider.node())
+			? ColorConstants.red
+			: ColorConstants.black;
+		_arrow.setForegroundColor(redOrBlack);
+		
 		return _arrow;
 	}
 
-	public void drawArrow() {
+	void refresh() {
+		correctOverlapInversion();
+	}
+
+	private void correctOverlapInversion() {
+		//Draw2D correctly inverts arrows when the boxes overlap. We will "uninvert" them for a more intuitive result.
 		IFigure source = _dependent.figure();
 		IFigure target = _provider.figure();
 		if (source.intersects(target.getBounds())) {
@@ -69,11 +80,6 @@ class DependencyFigure extends GraphElement {
 		}
 		_sourceAnchor.setOwner(source);
 		_targetAnchor.setOwner(target);
-		
-		Color redOrBlack = _dependent._currentY > _provider._currentY
-			? ColorConstants.red
-			: ColorConstants.black;
-		_arrow.setForegroundColor(redOrBlack);
 	}
 
 }
