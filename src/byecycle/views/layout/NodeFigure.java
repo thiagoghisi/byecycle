@@ -217,7 +217,7 @@ public class NodeFigure extends GraphElement {
 	}
 
 	public boolean dependsOn(NodeFigure other) {
-		return _node.dependsOn(other.node());
+		return _node.dependsDirectlyOn(other.node());
 	}
 
 	public Rectangle aura() {

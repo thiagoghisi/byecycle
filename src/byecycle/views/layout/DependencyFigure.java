@@ -57,7 +57,7 @@ class DependencyFigure extends GraphElement {
 		arrowHead.setTemplate(decorationPointList);
 		_arrow.setTargetDecoration(arrowHead);
 		
-		Color redOrBlack = _dependent.node().participatesInCycleWith(_provider.node())
+		Color redOrBlack = _provider.node().dependsOn(_dependent.node())
 			? ColorConstants.red
 			: ColorConstants.black;
 		_arrow.setForegroundColor(redOrBlack);

@@ -51,12 +51,14 @@ public class Node<PayloadType> {
     public Node(String name, String kind) {
         _name = name;
         _kind = kind;
+		_visited = false;
     }
 
     private final String _name;
     private final String _kind;
     private final Set<Node> _providers = new HashSet<Node>();
 	private PayloadType _payload;
+	private boolean _visited;
 
     public String name() {
         return _name;
@@ -71,10 +73,11 @@ public class Node<PayloadType> {
     }
 
     public void addProvider(Node provider) {
-        _providers.add(provider);
+		if (provider == this) return;
+		_providers.add(provider);
     }
 
-    public boolean dependsOn(Node other) {
+    public boolean dependsDirectlyOn(Node other) {
         return _providers.contains(other);
     }
 
@@ -90,9 +93,22 @@ public class Node<PayloadType> {
 		return _payload;
 	}
 
-	public boolean participatesInCycleWith(Node node) {
-		// TODO Auto-generated method stub
-		return true;
+	private boolean canVisit(Node node, Set<Node> visited) {
+		visited.add(this);
+		for (Node<?> neighbor : _providers) {
+		   if (neighbor == node) return true;
+		   if (!visited.contains(neighbor)) {
+			  if (neighbor.canVisit(this,visited)) return true;
+		   }
+		}
+		return false;
+	}
+			
+	public boolean dependsOn(Node node) {
+	    
+		Set<Node> visited = new HashSet<Node>();
+		
+		return this.canVisit(node, visited);
 	}
 
 }

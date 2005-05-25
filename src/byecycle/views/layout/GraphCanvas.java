@@ -122,7 +122,7 @@ public class GraphCanvas extends Canvas implements StressMeter {
 	 		if (node.onTarget()) it.remove();
 		}
 
-		makeInvertedDependenciesRed();
+		refreshDependencies();
 		
 		_graphFigure.revalidate();
 		_graphFigure.repaint();
@@ -169,7 +169,7 @@ public class GraphCanvas extends Canvas implements StressMeter {
 	}
 
 
-	private void makeInvertedDependenciesRed() {
+	private void refreshDependencies() {
 		for (int i = 0; i < _dependencyFigures.length; i++)
 			_dependencyFigures[i].refresh();
 	}
