@@ -81,10 +81,6 @@ public class Node<PayloadType> {
         return _providers.contains(other);
     }
 
-    public void clearProviders() {
-        _providers.clear();
-    }
-
 	public void payload(PayloadType payload) {
 		_payload = payload;
 	}
@@ -93,22 +89,22 @@ public class Node<PayloadType> {
 		return _payload;
 	}
 
-	private boolean canVisit(Node node, Set<Node> visited) {
+	private boolean seekProvider(Node target, Set<Node> visited) {
+		if (this == target) return true;
+		
+		if (visited.contains(this)) return false;
 		visited.add(this);
-		for (Node<?> neighbor : _providers) {
-		   if (neighbor == node) return true;
-		   if (!visited.contains(neighbor)) {
-			  if (neighbor.canVisit(this,visited)) return true;
-		   }
-		}
+		
+		for (Node<?> neighbor : _providers)
+		  if (neighbor.seekProvider(target, visited)) return true;
+
 		return false;
 	}
-			
+
 	public boolean dependsOn(Node node) {
-	    
+		if (this == node) return false;
 		Set<Node> visited = new HashSet<Node>();
-		
-		return this.canVisit(node, visited);
+		return this.seekProvider(node, visited);
 	}
 
 }
