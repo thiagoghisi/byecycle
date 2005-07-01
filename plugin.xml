@@ -11,6 +11,9 @@
       <library name="byecycle.jar">
          <export name="*"/>
       </library>
+      <library name="lib/draw2d/draw2d.jar">
+         <export name="*"/>
+      </library>
    </runtime>
 
 
@@ -19,7 +22,6 @@
       <import plugin="org.eclipse.jdt"/>
       <import plugin="org.eclipse.jdt.core"/>
       <import plugin="org.eclipse.core.runtime"/>
-      <import plugin="org.eclipse.draw2d"/>
    </requires>
 
    <extension
