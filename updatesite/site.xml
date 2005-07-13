@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
-   <feature url="features/byecycle-feature_0.0.4.jar" id="byecycle-feature" version="0.0.4"/>
+   <feature url="features/byecycle-feature_0.0.5.jar" id="byecycle-feature" version="0.0.5"/>
 </site>
