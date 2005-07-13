@@ -1,0 +1,30 @@
+To install the plugin from the byecycle update site:
+ > Start Eclipse
+ > Help
+ > Software Updates
+ > Find and Install
+ > Search for new features to install
+ > Next
+ > New Remote Site
+ > Name: Byecycle
+ > URL: http://priki.org/svn/byecycle/trunk/updatesite
+ > [Follow the wizard to the end]
+ > [Restart Eclipse]
+
+IMPORTANT - To display the Byecycle Dependencies view:
+ > Window
+ > Show View
+ > Other...
+ > + Byecycle
+ >     Dependencies
+ > OK
+ > [Click on any other view and click back on the Dependecies view]
+
+Once you have done the above, it is easy to get new Byecycle updates:
+ > Help
+ > Software Updates
+ > Find and Install
+ > Search for updates to currently installed features
+ > [Follow the wizard to the end choosing "Byecycle" where appropriate]
+
+Have fun.  :)
