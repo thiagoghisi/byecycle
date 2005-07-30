@@ -37,7 +37,7 @@ import byecycle.views.layout.GraphCanvas;
 public class ByecycleView extends ViewPart implements ISelectionListener, ISelectionProvider {
 
 	private static final int ONE_MILLISECOND = 1000000;
-	private static final int TEN_SECONDS = 10 * 1000000000;
+	private static final int FOUR_SECONDS = 4 * 1000000000;
 	
 	private GraphCanvas _canvas;
 	private IViewSite _site;
@@ -103,13 +103,13 @@ public class ByecycleView extends ViewPart implements ISelectionListener, ISelec
 		long currentTime = System.nanoTime();
 		
 		long timeSincePackageWasSelected = currentTime - _timePackageWasSelected; 
-		if (timeSincePackageWasSelected < TEN_SECONDS) return 0;  //Go fast in the first ten seconds.
+		if (timeSincePackageWasSelected < FOUR_SECONDS) return ONE_MILLISECOND;  //Go fast at first.
 		
 		long timeLastLayoutJobTook = currentTime - _timeLastLayoutJobStarted;
 		if (timeLastLayoutJobTook < 0) timeLastLayoutJobTook = 0; //This can happen due to rounding from nanos to millis.
 		
-		long timeToSleep = timeLastLayoutJobTook * 2;  //The more things run in parallel with byecycle, the less greedy byecycle will be. Byecycle is proud to be a very good citizen.  :)
-		if (timeToSleep > TEN_SECONDS) timeToSleep = TEN_SECONDS;
+		long timeToSleep = timeLastLayoutJobTook * 5;  //The more things run in parallel with byecycle, the less greedy byecycle will be. Byecycle is proud to be a very good citizen.  :)
+		if (timeToSleep > FOUR_SECONDS) timeToSleep = FOUR_SECONDS;
 		if (timeToSleep < ONE_MILLISECOND) timeToSleep = ONE_MILLISECOND;
 
 		_timeLastLayoutJobStarted = currentTime + timeToSleep;
@@ -179,13 +179,6 @@ public class ByecycleView extends ViewPart implements ISelectionListener, ISelec
 		};
 		job.schedule();
 		
-	}
-
-	private void dumpGraph(Node[] graph) {
-		System.out.println("*********");
-		for (int i=0; i<graph.length; ++i) {
-			System.out.println(graph[i].name());
-		}
 	}
 	
 	public void addSelectionChangedListener(ISelectionChangedListener listener) {
