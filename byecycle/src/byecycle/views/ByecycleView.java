@@ -37,13 +37,12 @@ import byecycle.views.layout.GraphCanvas;
 public class ByecycleView extends ViewPart implements ISelectionListener, ISelectionProvider {
 
 	private static final int ONE_MILLISECOND = 1000000;
-	private static final int FOUR_SECONDS = 4 * 1000000000;
+	private static final int TEN_SECONDS = 10 * 1000000000;
 	
 	private GraphCanvas _canvas;
 	private IViewSite _site;
 	private Set<ISelectionChangedListener> _selectionListeners = new HashSet<ISelectionChangedListener>();
 	private ISelection _selection;
-	private long _timePackageWasSelected;
 	private long _timeLastLayoutJobStarted;
 	
 	/**
@@ -102,14 +101,11 @@ public class ByecycleView extends ViewPart implements ISelectionListener, ISelec
 	private long nanosecondsToSleep() {
 		long currentTime = System.nanoTime();
 		
-		long timeSincePackageWasSelected = currentTime - _timePackageWasSelected; 
-		if (timeSincePackageWasSelected < FOUR_SECONDS) return ONE_MILLISECOND;  //Go fast at first.
-		
 		long timeLastLayoutJobTook = currentTime - _timeLastLayoutJobStarted;
 		if (timeLastLayoutJobTook < 0) timeLastLayoutJobTook = 0; //This can happen due to rounding from nanos to millis.
 		
-		long timeToSleep = timeLastLayoutJobTook * 5;  //The more things run in parallel with byecycle, the less greedy byecycle will be. Byecycle is proud to be a very good citizen.  :)
-		if (timeToSleep > FOUR_SECONDS) timeToSleep = FOUR_SECONDS;
+		long timeToSleep = timeLastLayoutJobTook * 4;  //The more things run in parallel with byecycle, the less greedy byecycle will be. Byecycle is proud to be a very good citizen.  :)
+		if (timeToSleep > TEN_SECONDS) timeToSleep = TEN_SECONDS;
 		if (timeToSleep < ONE_MILLISECOND) timeToSleep = ONE_MILLISECOND;
 
 		_timeLastLayoutJobStarted = currentTime + timeToSleep;
@@ -162,7 +158,6 @@ public class ByecycleView extends ViewPart implements ISelectionListener, ISelec
 							public IStatus runInUIThread(IProgressMonitor monitor) {
 								try {
 									_canvas.setGraph((Collection<Node>)nodes);
-									_timePackageWasSelected = System.nanoTime();
 								} catch (Exception x) {
 									x.printStackTrace();
 								}
