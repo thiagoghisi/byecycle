@@ -139,6 +139,8 @@ public class ByecycleView extends ViewPart implements ISelectionListener, IByecy
 	}
 
 	public void selectionChanged(IWorkbenchPart part, ISelection selection) {
+		if (!(selection instanceof IStructuredSelection))
+			return;
 		if (part == this) {
 			if (!_pause) {
 				selectionChanged(selection);
@@ -154,6 +156,8 @@ public class ByecycleView extends ViewPart implements ISelectionListener, IByecy
 	}
 
 	public void selectionChanged(ISelection selection) {
+		if (!(selection instanceof IStructuredSelection))
+			return;
 		_selection = selection;
 		refresh();
 	}
