@@ -43,13 +43,9 @@ public class NodeFigure extends GraphElement {
     }
 
     private Label label(String text, Image icon) {
-		Label result = icon == null
+		return icon == null
 			? new Label(" " + text, icon)
 			: new Label(      text, icon);
-		
-		result.setFont(JFaceResources.getTextFont());
-			
-		return result;
     }
 
     IFigure produceFigure() {
