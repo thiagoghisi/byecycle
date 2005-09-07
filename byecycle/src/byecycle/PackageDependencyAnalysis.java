@@ -6,16 +6,13 @@ package byecycle;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jdt.core.ICompilationUnit;
-import org.eclipse.jdt.core.IPackageDeclaration;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
@@ -29,7 +26,6 @@ import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.IBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MethodInvocation;
-import org.eclipse.jdt.core.dom.QualifiedType;
 import org.eclipse.jdt.core.dom.SimpleType;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 
@@ -37,14 +33,6 @@ import byecycle.dependencygraph.Node;
 import byecycle.preferences.PreferenceConstants;
 
 public class PackageDependencyAnalysis {
-    @Deprecated
-    public static final String PACKAGE = "package";
-
-    @Deprecated
-    public static final String CLASS = "class";
-
-    @Deprecated
-    public static final String INTERFACE = "interface";
 
     private final Map<String, Node<IBinding>> _nodes = new HashMap<String, Node<IBinding>>();
 
