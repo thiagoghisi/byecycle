@@ -2,10 +2,15 @@
 //This is free software. See the license distributed along with this file.
 package byecycle.views;
 
+import java.io.ByteArrayInputStream;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -13,7 +18,9 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IPackageFragment;
+import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.IType;
+import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.IBinding;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
@@ -161,6 +168,10 @@ public class ByecycleView extends ViewPart implements ISelectionListener, IByecy
 		_selection = selection;
 		refresh();
 	}
+	
+	private void writeFile() {
+		
+	}
 
 	private ICompilationUnit[] _compilationUnits = null;
 
@@ -174,6 +185,8 @@ public class ByecycleView extends ViewPart implements ISelectionListener, IByecy
 				IPackageFragment selectedPackage = (IPackageFragment) selected;
 				compilationUnits = selectedPackage.getCompilationUnits();
 				name = selectedPackage.getElementName();
+				
+				writeFileForPackageFragment(selectedPackage);
 			} else if (selected instanceof ICompilationUnit) {
 				ICompilationUnit compilationUnit = (ICompilationUnit) selected;
 				compilationUnits = new ICompilationUnit[] { compilationUnit };
@@ -192,6 +205,32 @@ public class ByecycleView extends ViewPart implements ISelectionListener, IByecy
 		} catch (Exception x) {
 			x.printStackTrace();
 		}
+	}
+
+	private void writeFileForPackageFragment(IPackageFragment p) {
+		IPackageFragmentRoot root = getPackageFragmentRoot(p);
+		
+		try {
+			IFolder folder = (IFolder)root.getCorrespondingResource();
+			IFolder cache = folder.getFolder(".byecyclelayoutcache");
+			if (!cache.exists()) cache.create(false, false, null);
+			IFile file = cache.getFile("foo.txt");
+			if (file.exists()) {
+				//file.setContents
+			} else {				
+				file.create(new ByteArrayInputStream("Hello".getBytes()), false, null);
+			}
+		} catch (CoreException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private IPackageFragmentRoot getPackageFragmentRoot(IPackageFragment p) {
+		IJavaElement parent = p.getParent();
+		while (!(parent instanceof IPackageFragmentRoot)) {
+			parent = parent.getParent();
+		}
+		return (IPackageFragmentRoot) parent;
 	}
 
 	private void analyze(final String elementName, final ICompilationUnit[] compilationUnits) {
@@ -274,7 +313,7 @@ public class ByecycleView extends ViewPart implements ISelectionListener, IByecy
 		if (pause == _pause)
 			return;
 		_pause = pause;
-		firePropertyChange(ACTIVACITY);
+		firePropertyChange(ACTIVITY);
 	}
 
 	public void toggleActive(boolean pause) {

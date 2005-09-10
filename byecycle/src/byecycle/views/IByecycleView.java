@@ -12,7 +12,7 @@ import org.eclipse.ui.IWorkbenchPart;
 
 public interface IByecycleView extends ISelectionProvider, IWorkbenchPart{
 
-	public static final int ACTIVACITY = 1;
+	public static final int ACTIVITY = 1;
 
 	public static final String PERSPECTIVE_ID = "byecycle.views.ByecycleView";
 
