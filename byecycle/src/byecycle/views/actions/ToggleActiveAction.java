@@ -30,8 +30,7 @@ public class ToggleActiveAction implements IViewActionDelegate, IPropertyListene
 
 	public void propertyChanged(Object source, int propId) {
 		assert _viewpart == source;
-		if (IByecycleView.ACTIVITY == propId)
-			return;
+		if (IByecycleView.ACTIVITY == propId) return;
 		_action.setChecked(_viewpart.isPaused());
 	}
 }

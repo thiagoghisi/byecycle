@@ -44,7 +44,7 @@ public class GraphCanvas extends Canvas implements StressMeter {
 	private static final Force AVERSION = new Aversion();
 	
 	public GraphCanvas(Composite parent, Listener listener) {
-		super(parent, SWT.FILL | SWT.NO_BACKGROUND);
+		super(parent, SWT.FILL | SWT.NO_BACKGROUND | SWT.H_SCROLL | SWT.V_SCROLL);  //FIXME: The scrollbars appear but do nothing.
 		if (listener == null) throw new IllegalArgumentException("listener");
 		new LightweightSystem(this).setContents(_graphFigure);
 		_graphFigure.setLayoutManager(_contentsLayout);

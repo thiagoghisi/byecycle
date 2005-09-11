@@ -5,10 +5,7 @@
 package byecycle.views.layout;
 
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Random;
-
 import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.Label;
@@ -18,12 +15,9 @@ import org.eclipse.draw2d.XYLayout;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.jdt.ui.JavaUI;
-import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Display;
-
 import byecycle.JavaType;
 import byecycle.dependencygraph.Node;
 
@@ -101,16 +95,6 @@ public class NodeFigure extends GraphElement {
         }
     }
 
-    // TODO: Should it move inside JavaType, or make it configable??
-//    static Map<JavaType, RGB> COLORS = new HashMap<JavaType, RGB>();
-//    static {
-//        // TODO: fix the colors
-//        COLORS.put(JavaType.ANNOTATION, new RGB(240, 180, 150));
-//        COLORS.put(JavaType.CLASS, new RGB(150, 240, 150));
-//        COLORS.put(JavaType.ENUM, new RGB(180, 180, 180));
-//        COLORS.put(JavaType.INTERFACE, new RGB(180, 180, 240));
-//        COLORS.put(JavaType.PACKAGE, new RGB(180, 150, 150));
-//    }
 
     private Color getPastelColor(Node<?> node) { // TODO: Rename
     	Random random = new Random(node.name().hashCode() * 713);
@@ -155,16 +139,6 @@ public class NodeFigure extends GraphElement {
         return _candidateY;
     }
 
-    public Rectangle intersection(NodeFigure other) {
-        Point c1 = candidatePosition();
-        Point c2 = other.candidatePosition();
-
-		Rectangle r1 = new Rectangle(c1, figure().getBounds().getSize()); //TODO Optimize. Create only once and reuse.
-        Rectangle r2 = new Rectangle(c2, other.figure().getBounds().getSize());
-
-    	return r1.intersect(r2); //TODO: Use size of r1.getIntersection(r2) to determine the force.
-    }
-
     public void up(float thrust) {
         addForceComponents(0, -thrust);
     }
@@ -196,6 +170,7 @@ public class NodeFigure extends GraphElement {
         _forceComponentY = dampen(_forceComponentY);
 
         stayAround();
+        respectMargin();
     }
 
     boolean isMoving() {
@@ -213,19 +188,12 @@ public class NodeFigure extends GraphElement {
 
     private void stayAround() {
     	addForceComponents( (-_candidateX * 0.0000002f), (-_candidateY * 0.0000002f));
-
-        Rectangle availableSpace = figure().getParent().getClientArea();
-        Rectangle me = figure().getBounds();
-
-        int maxX = availableSpace.width - me.width - MARGIN_PIXELS;
-        int maxY = availableSpace.height - me.height - MARGIN_PIXELS;
-
-        if (_candidateX < MARGIN_PIXELS) _candidateX = MARGIN_PIXELS;
-        if (_candidateX >   maxX) _candidateX = maxX;
-
-        if (_candidateY < MARGIN_PIXELS) _candidateY = MARGIN_PIXELS;
-        if (_candidateY >   maxY) _candidateY = maxY;
     }
+
+	private void respectMargin() {
+		if (_candidateX < MARGIN_PIXELS) _candidateX = MARGIN_PIXELS;
+        if (_candidateY < MARGIN_PIXELS) _candidateY = MARGIN_PIXELS;
+	}
 
     void position(float x, float y) {
         _currentX = x;

@@ -9,8 +9,8 @@ import java.util.HashSet;
 import java.util.Set;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -20,7 +20,6 @@ import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.IType;
-import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.IBinding;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
@@ -49,19 +48,14 @@ public class ByecycleView extends ViewPart implements ISelectionListener, IByecy
 
 	private Set<ISelectionChangedListener> _selectionListeners = new HashSet<ISelectionChangedListener>();
 
-	private ISelection _selection;
-
-	private ISelection _currentSelection;
+	private IStructuredSelection _selection;
 
 	private long _timeLastLayoutJobStarted;
 
 	private UIJob _job;
 
-	private boolean _pause;
+	private boolean _paused;
 
-	/**
-	 * The constructor.
-	 */
 	public ByecycleView() {
 	}
 
@@ -73,12 +67,12 @@ public class ByecycleView extends ViewPart implements ISelectionListener, IByecy
 		_job = new UIJob("package analysis display") {
 			@Override
 			public boolean shouldSchedule() {
-				return !_pause;
+				return !_paused;
 			}
 
 			@Override
 			public boolean shouldRun() {
-				return !_pause;
+				return !_paused;
 			}
 
 			@Override
@@ -145,63 +139,25 @@ public class ByecycleView extends ViewPart implements ISelectionListener, IByecy
 		// viewer.getControl().setFocus();
 	}
 
-	public void selectionChanged(IWorkbenchPart part, ISelection selection) {
-		if (!(selection instanceof IStructuredSelection))
-			return;
-		if (part == this) {
-			if (!_pause) {
-				selectionChanged(selection);
-			}
-			return;
-		}
-		if (_currentSelection == selection)
-			return;
-		_currentSelection = selection;
-		if (!_pause) {
-			selectionChanged(selection);
-		}
-	}
-
-	public void selectionChanged(ISelection selection) {
-		if (!(selection instanceof IStructuredSelection))
-			return;
-		_selection = selection;
+	public void selectionChanged(IWorkbenchPart part, ISelection newSelection) {
+		if (_paused) return;
+		if (!(newSelection instanceof IStructuredSelection)) return;
+		IStructuredSelection structured = (IStructuredSelection)newSelection;
+		if (!(structured.getFirstElement() instanceof IPackageFragment)) return;
+		
+		if (_selection != null && _selection.equals(structured)) return;
+		_selection = structured;
 		refresh();
 	}
-	
-	private void writeFile() {
-		
-	}
 
-	private ICompilationUnit[] _compilationUnits = null;
 
 	private void refresh() {
-		IStructuredSelection structured = (IStructuredSelection) _selection;
-		Object selected = structured.getFirstElement();
 		try {
-			ICompilationUnit[] compilationUnits = null;
-			String name = null;
-			if (selected instanceof IPackageFragment) {
-				IPackageFragment selectedPackage = (IPackageFragment) selected;
-				compilationUnits = selectedPackage.getCompilationUnits();
-				name = selectedPackage.getElementName();
+			IPackageFragment selectedPackage = (IPackageFragment) _selection.getFirstElement();
+			ICompilationUnit[] compilationUnits = selectedPackage.getCompilationUnits();
 				
-				writeFileForPackageFragment(selectedPackage);
-			} else if (selected instanceof ICompilationUnit) {
-				ICompilationUnit compilationUnit = (ICompilationUnit) selected;
-				compilationUnits = new ICompilationUnit[] { compilationUnit };
-				name = compilationUnit.getElementName();
-			} else if (selected instanceof IType) {
-				IType type = (IType) selected;
-				compilationUnits = new ICompilationUnit[] { type.getCompilationUnit() };
-				name = type.getElementName();
-			}
-			if (name != null) {
-				if (!Arrays.deepEquals(_compilationUnits, compilationUnits)) {
-					_compilationUnits = compilationUnits;
-					analyze(name, compilationUnits);
-				}
-			}
+			writeFileForPackageFragment(selectedPackage);
+			analyze(selectedPackage.getElementName(), compilationUnits);
 		} catch (Exception x) {
 			x.printStackTrace();
 		}
@@ -211,7 +167,9 @@ public class ByecycleView extends ViewPart implements ISelectionListener, IByecy
 		IPackageFragmentRoot root = getPackageFragmentRoot(p);
 		
 		try {
-			IFolder folder = (IFolder)root.getCorrespondingResource();
+			IResource resource = root.getCorrespondingResource();
+			System.out.println(resource);
+			IFolder folder = (IFolder)resource;
 			IFolder cache = folder.getFolder(".byecyclelayoutcache");
 			if (!cache.exists()) cache.create(false, false, null);
 			IFile file = cache.getFile("foo.txt");
@@ -225,12 +183,10 @@ public class ByecycleView extends ViewPart implements ISelectionListener, IByecy
 		}
 	}
 
-	private IPackageFragmentRoot getPackageFragmentRoot(IPackageFragment p) {
-		IJavaElement parent = p.getParent();
-		while (!(parent instanceof IPackageFragmentRoot)) {
-			parent = parent.getParent();
-		}
-		return (IPackageFragmentRoot) parent;
+	private IPackageFragmentRoot getPackageFragmentRoot(IJavaElement element) {
+		return element instanceof IPackageFragmentRoot
+			? (IPackageFragmentRoot) element
+			: getPackageFragmentRoot(element.getParent());
 	}
 
 	private void analyze(final String elementName, final ICompilationUnit[] compilationUnits) {
@@ -238,7 +194,7 @@ public class ByecycleView extends ViewPart implements ISelectionListener, IByecy
 		Job job = new Job("'" + elementName + "' analysis") {
 			protected IStatus run(IProgressMonitor monitor) {
 				try {
-					_pause = true;
+					_paused = true;
 					final Collection<Node<IBinding>> nodes = new PackageDependencyAnalysis(compilationUnits, monitor)
 							.dependencyGraph();
 					if (!monitor.isCanceled()) {
@@ -296,9 +252,7 @@ public class ByecycleView extends ViewPart implements ISelectionListener, IByecy
 	}
 
 	public void setSelection(ISelection selection) {
-		if (selection.equals(_selection)) {
-			return;
-		}
+		if (selection.equals(_selection)) return;
 		fireSelectionChanged(selection);
 	}
 
@@ -310,18 +264,17 @@ public class ByecycleView extends ViewPart implements ISelectionListener, IByecy
 	}
 
 	private void setPaused(boolean pause) {
-		if (pause == _pause)
-			return;
-		_pause = pause;
+		if (pause == _paused) return;
+		_paused = pause;
 		firePropertyChange(ACTIVITY);
 	}
 
 	public void toggleActive(boolean pause) {
-		if (pause == _pause)
-			return;
-		if (_pause) {
-			if (_currentSelection != null && !_currentSelection.equals(_selection)) {
-				selectionChanged(_currentSelection);
+		if (pause == _paused) return;
+
+		if (_paused) {
+			if (_selection != null) {
+				refresh();
 			} else {
 				setPaused(false);
 				scheduleImproveLayoutJob();
@@ -333,6 +286,6 @@ public class ByecycleView extends ViewPart implements ISelectionListener, IByecy
 	}
 
 	public boolean isPaused() {
-		return _pause;
+		return _paused;
 	}
 }

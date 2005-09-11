@@ -21,8 +21,6 @@ public interface IByecycleView extends ISelectionProvider, IWorkbenchPart{
 	 */
 	public abstract void selectionChanged(IWorkbenchPart part, ISelection selection);
 
-	public abstract void selectionChanged(ISelection selection);
-
 	public abstract void addSelectionChangedListener(ISelectionChangedListener listener);
 
 	public abstract ISelection getSelection();

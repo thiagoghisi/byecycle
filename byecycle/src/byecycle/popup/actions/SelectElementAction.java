@@ -9,7 +9,6 @@ import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
-import byecycle.views.ByecycleView;
 import byecycle.views.IByecycleView;
 
 public class SelectElementAction implements IViewActionDelegate {
@@ -26,7 +25,7 @@ public class SelectElementAction implements IViewActionDelegate {
 		try {
 			IByecycleView _viewpart = (IByecycleView) activePage.showView(IByecycleView.PERSPECTIVE_ID);
 			activePage.activate(_viewpart);
-			_viewpart.selectionChanged(_selection);
+			_viewpart.selectionChanged(_viewpart, _selection);
 		} catch (PartInitException e) {
 			e.printStackTrace();
 		}
