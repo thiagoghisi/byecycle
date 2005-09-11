@@ -62,15 +62,15 @@
    </extension>
    <extension point="org.eclipse.ui.popupMenus">
    <objectContribution objectClass="org.eclipse.jdt.core.IType" id="byecycle.SelectElement">
-	<action label="Show in Byecycle" class="byecycle.popup.actions.SelectElementAction" menubarPath="additions" id="byecycle.showElementAction">
+	<action label="Show Dependencies" class="byecycle.popup.actions.SelectElementAction" menubarPath="additions" id="byecycle.showElementAction">
 	</action>
 </objectContribution>
    <objectContribution objectClass="org.eclipse.jdt.core.ICompilationUnit" id="byecycle.SelectElement">
-	<action label="Show in Byecycle" class="byecycle.popup.actions.SelectElementAction" menubarPath="additions" id="byecycle.showElementAction">
+	<action label="Show Dependencies" class="byecycle.popup.actions.SelectElementAction" menubarPath="additions" id="byecycle.showElementAction">
 	</action>
 </objectContribution>
    <objectContribution objectClass="org.eclipse.jdt.core.IPackageFragment" id="byecycle.SelectElement">
-	<action label="Show in Byecycle" class="byecycle.popup.actions.SelectElementAction" menubarPath="additions" id="byecycle.showElementAction">
+	<action label="Show Dependencies" class="byecycle.popup.actions.SelectElementAction" menubarPath="additions" id="byecycle.showElementAction">
 	</action>
 </objectContribution>
    </extension>
@@ -84,12 +84,12 @@
                label="Toggle"/>
          <action
                class="byecycle.views.actions.ToggleActiveAction"
-               icon="icons/resume_co.gif"
+               icon="icons/pause.gif"
                id="byecycle.toggleActiveAction"
                label="Toggle Active"
                style="toggle"
                toolbarPath="Toggle"
-               tooltip="Toggle Active">
+               tooltip="Pause diagram layout thread">
          </action>
       </viewContribution>
    </extension>
