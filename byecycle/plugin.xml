@@ -35,7 +35,7 @@
       </category>
       <view
             name="Dependencies"
-            icon="icons/sample.gif"
+            icon="icons/byecycle.gif"
             category="byecycle"
             class="byecycle.views.ByecycleView"
             id="byecycle.views.ByecycleView">
