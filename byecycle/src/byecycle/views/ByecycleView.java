@@ -169,7 +169,7 @@ public class ByecycleView extends ViewPart implements ISelectionListener, IByecy
 		try {
 			IResource resource = root.getCorrespondingResource();
 			System.out.println(resource);
-			IFolder folder = (IFolder)resource;
+			IFolder folder = (IFolder)resource; //FIXME: This works only with sourcefolders, not with source directly in the project root.
 			IFolder cache = folder.getFolder(".byecyclelayoutcache");
 			if (!cache.exists()) cache.create(false, false, null);
 			IFile file = cache.getFile("foo.txt");
