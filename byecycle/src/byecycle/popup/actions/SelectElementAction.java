@@ -19,8 +19,8 @@ public class SelectElementAction implements IViewActionDelegate {
 	}
 
 	public void run(IAction action) {
-		if (_selection == null)
-			return;
+		if (_selection == null) return;
+		
 		final IWorkbenchPage activePage = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
 		try {
 			IByecycleView _viewpart = (IByecycleView) activePage.showView(IByecycleView.PERSPECTIVE_ID);
@@ -31,7 +31,7 @@ public class SelectElementAction implements IViewActionDelegate {
 		}
 	}
 
-	public void selectionChanged(IAction action, ISelection selection) {
+	public void selectionChanged(IAction ignored, ISelection selection) {
 		_selection = selection;
 	}
 }

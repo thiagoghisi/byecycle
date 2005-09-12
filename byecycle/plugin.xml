@@ -62,15 +62,15 @@
    </extension>
    <extension point="org.eclipse.ui.popupMenus">
    <objectContribution objectClass="org.eclipse.jdt.core.IType" id="byecycle.SelectElement">
-	<action label="Show Dependencies" class="byecycle.popup.actions.SelectElementAction" menubarPath="additions" id="byecycle.showElementAction">
+	<action label="Show Dependencies" class="byecycle.popup.actions.SelectElementAction" menubarPath="additions" id="byecycle.showElementAction" icon="icons/byecycle.gif">
 	</action>
 </objectContribution>
    <objectContribution objectClass="org.eclipse.jdt.core.ICompilationUnit" id="byecycle.SelectElement">
-	<action label="Show Dependencies" class="byecycle.popup.actions.SelectElementAction" menubarPath="additions" id="byecycle.showElementAction">
+	<action label="Show Dependencies" class="byecycle.popup.actions.SelectElementAction" menubarPath="additions" id="byecycle.showElementAction" icon="icons/byecycle.gif">
 	</action>
 </objectContribution>
    <objectContribution objectClass="org.eclipse.jdt.core.IPackageFragment" id="byecycle.SelectElement">
-	<action label="Show Dependencies" class="byecycle.popup.actions.SelectElementAction" menubarPath="additions" id="byecycle.showElementAction">
+	<action label="Show Dependencies" class="byecycle.popup.actions.SelectElementAction" menubarPath="additions" id="byecycle.showElementAction" icon="icons/byecycle.gif">
 	</action>
 </objectContribution>
    </extension>

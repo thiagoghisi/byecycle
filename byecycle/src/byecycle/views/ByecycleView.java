@@ -4,8 +4,6 @@ package byecycle.views;
 
 import java.io.ByteArrayInputStream;
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
@@ -20,12 +18,9 @@ import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.dom.IBinding;
 import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PartInitException;
@@ -35,7 +30,7 @@ import byecycle.PackageDependencyAnalysis;
 import byecycle.dependencygraph.Node;
 import byecycle.views.layout.GraphCanvas;
 
-public class ByecycleView extends ViewPart implements ISelectionListener, IByecycleView {
+public class ByecycleView extends ViewPart implements IByecycleView {
 
 	private static final int ONE_MILLISECOND = 1000000;
 	private static final int TEN_SECONDS = 10 * 1000000000;
@@ -44,26 +39,19 @@ public class ByecycleView extends ViewPart implements ISelectionListener, IByecy
 
 	private IViewSite _site;
 
-	private Set<ISelectionChangedListener> _selectionListeners = new HashSet<ISelectionChangedListener>();
 	private IStructuredSelection _selection;
+	private IStructuredSelection _packageBeingAnalysed;
 
-	private UIJob _job;
+	private UIJob _layoutJob;
 	private long _timeLastLayoutJobStarted;
-
-	private boolean _paused;
 
 
 	public void init(IViewSite site) throws PartInitException {
 		super.init(site);
 		_site = site;
 		_site.getPage().addSelectionListener(this);
-		_site.setSelectionProvider(this);
-		_job = new UIJob("package analysis display") {
 
-			@Override
-			public boolean shouldRun() {
-				return !_paused;
-			}
+		_layoutJob = new UIJob("Package dependency layout") {
 
 			@Override
 			public IStatus runInUIThread(IProgressMonitor monitor) {
@@ -71,6 +59,7 @@ public class ByecycleView extends ViewPart implements ISelectionListener, IByecy
 				if (canvas == null || canvas.isDisposed() || monitor.isCanceled())
 					return Status.OK_STATUS;
 				try {
+					_timeLastLayoutJobStarted = System.nanoTime();
 					_canvas.tryToImproveLayout();
 					this.schedule(nanosecondsToSleep() / 1000000);
 				} catch (Exception rx) {
@@ -79,7 +68,7 @@ public class ByecycleView extends ViewPart implements ISelectionListener, IByecy
 				return Status.OK_STATUS;
 			}
 		};
-		_job.setSystem(true);
+		_layoutJob.setSystem(true);
 	}
 
 	@Override
@@ -97,14 +86,6 @@ public class ByecycleView extends ViewPart implements ISelectionListener, IByecy
 				setSelection(node);
 			}
 		});
-	}
-
-	private void scheduleImproveLayoutJob() {
-		if (_job.getState() == UIJob.SLEEPING) {
-			_job.wakeUp();
-		} else {
-			_job.schedule();
-		}
 	}
 
 	private long nanosecondsToSleep() {
@@ -129,25 +110,29 @@ public class ByecycleView extends ViewPart implements ISelectionListener, IByecy
 		// viewer.getControl().setFocus();
 	}
 
-	public void selectionChanged(IWorkbenchPart part, ISelection newSelection) {
-		if (_paused) return;
+	public void selectionChanged(IWorkbenchPart ignored, ISelection newSelection) {
 		if (!(newSelection instanceof IStructuredSelection)) return;
 		IStructuredSelection structured = (IStructuredSelection)newSelection;
 		if (!(structured.getFirstElement() instanceof IPackageFragment)) return;
 		
 		if (_selection != null && _selection.equals(structured)) return;
 		_selection = structured;
+		
+		if (isPaused()) return;
+		pause();
 		refresh();
+		resume();
 	}
 
 
 	private void refresh() {
+		_packageBeingAnalysed = _selection;
 		try {
-			IPackageFragment selectedPackage = (IPackageFragment) _selection.getFirstElement();
-			ICompilationUnit[] compilationUnits = selectedPackage.getCompilationUnits();
+			IPackageFragment packageFragment = (IPackageFragment) _packageBeingAnalysed.getFirstElement();
+			ICompilationUnit[] compilationUnits = packageFragment.getCompilationUnits();
 				
-			writeFileForPackageFragment(selectedPackage);
-			analyze(selectedPackage.getElementName(), compilationUnits);
+			writeFileForPackageFragment(packageFragment);
+			analyze(packageFragment.getElementName(), compilationUnits);
 		} catch (Exception x) {
 			x.printStackTrace();
 		}
@@ -180,20 +165,15 @@ public class ByecycleView extends ViewPart implements ISelectionListener, IByecy
 	}
 
 	private void analyze(final String elementName, final ICompilationUnit[] compilationUnits) {
-		_timeLastLayoutJobStarted = System.nanoTime();
 		Job job = new Job("'" + elementName + "' analysis") {
 			protected IStatus run(IProgressMonitor monitor) {
 				try {
-					_paused = true;
 					final Collection<Node<IBinding>> nodes = new PackageDependencyAnalysis(compilationUnits, monitor)
 							.dependencyGraph();
 					if (!monitor.isCanceled()) {
-						// dumpGraph(graph);
 						UIJob job = new UIJob("package analysis display") {
 							public IStatus runInUIThread(IProgressMonitor monitor) {
 								try {
-									setPaused(false);
-									scheduleImproveLayoutJob();
 									_canvas.setGraph((Collection<Node<IBinding>>) nodes);
 								} catch (Exception x) {
 									UIJob.errorStatus(x);
@@ -212,18 +192,6 @@ public class ByecycleView extends ViewPart implements ISelectionListener, IByecy
 		job.schedule();
 	}
 
-	public void addSelectionChangedListener(ISelectionChangedListener listener) {
-		_selectionListeners.add(listener);
-	}
-
-	public ISelection getSelection() {
-		return _selection;
-	}
-
-	public void removeSelectionChangedListener(ISelectionChangedListener listener) {
-		_selectionListeners.remove(listener);
-	}
-
 	private void setSelection(Node<IBinding> selection) {
 		if (null == selection) {
 			drillUp();
@@ -236,45 +204,37 @@ public class ByecycleView extends ViewPart implements ISelectionListener, IByecy
 		IBinding binding = selection.payload();
 		IJavaElement element = binding.getJavaElement();
 		if (null != element) {
-			setSelection(new StructuredSelection(element));
+			selectionChanged(null, new StructuredSelection(element));
 		}
 	}
 
 	private void drillUp() {
 		IJavaElement element = (IJavaElement) _selection.getFirstElement();
-		setSelection(new StructuredSelection(element.getParent()));
-	}
-
-	public void setSelection(ISelection selection) {
-		if (selection.equals(_selection)) return;
-		fireSelectionChanged(selection);
-	}
-
-	private void fireSelectionChanged(ISelection selection) {
-		SelectionChangedEvent event = new SelectionChangedEvent(this, selection);
-		for (ISelectionChangedListener listener : _selectionListeners) {
-			listener.selectionChanged(event);
-		}
-	}
-
-	private void setPaused(boolean pause) {
-		_paused = pause;
+		selectionChanged(null, new StructuredSelection(element.getParent()));
 	}
 
 	public void togglePaused(boolean pause) {
-		if (pause == _paused) return;
-
-		if (_paused) {
-			if (_selection != null) {
-				refresh();
-			} else {
-				setPaused(false);
-				scheduleImproveLayoutJob();
-			}
+		if (pause) {
+			pause();
 		} else {
-			_job.sleep();
-			setPaused(true);
+			resume();
 		}
+	}
+
+	private void pause() {
+		_layoutJob.sleep();
+	}
+
+	private void resume() {
+		if (_packageBeingAnalysed != _selection) {
+			refresh();
+		}
+		_layoutJob.wakeUp();
+		_layoutJob.schedule();
+	}
+
+	private boolean isPaused() {
+		return _layoutJob.getState() == UIJob.SLEEPING;
 	}
 
 }
