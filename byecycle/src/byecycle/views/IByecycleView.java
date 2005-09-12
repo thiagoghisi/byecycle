@@ -7,12 +7,9 @@ package byecycle.views;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.ISelectionProvider;
-import org.eclipse.ui.IPropertyListener;
 import org.eclipse.ui.IWorkbenchPart;
 
 public interface IByecycleView extends ISelectionProvider, IWorkbenchPart{
-
-	public static final int ACTIVITY = 1;
 
 	public static final String PERSPECTIVE_ID = "byecycle.views.ByecycleView";
 
@@ -29,10 +26,6 @@ public interface IByecycleView extends ISelectionProvider, IWorkbenchPart{
 
 	public abstract void setSelection(ISelection selection);
 
-	public abstract void toggleActive(boolean pause);
-
-	public abstract void addPropertyListener(IPropertyListener action);
-
-	public abstract boolean isPaused();
+	public abstract void togglePaused(boolean pause);
 
 }

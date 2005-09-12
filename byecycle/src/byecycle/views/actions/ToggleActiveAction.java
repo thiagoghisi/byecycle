@@ -4,33 +4,23 @@ package byecycle.views.actions;
 
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.ui.IPropertyListener;
 import org.eclipse.ui.IViewActionDelegate;
 import org.eclipse.ui.IViewPart;
 import byecycle.views.ByecycleView;
 import byecycle.views.IByecycleView;
 
-public class ToggleActiveAction implements IViewActionDelegate, IPropertyListener {
-	private IByecycleView _viewpart;
+public class ToggleActiveAction implements IViewActionDelegate {
 
-	private IAction _action;
+	private IByecycleView _view;
 
 	public void init(IViewPart view) {
-		_viewpart = (ByecycleView) view;
-		_viewpart.addPropertyListener(this);
+		_view = (ByecycleView) view;
 	}
 
 	public void run(IAction action) {
-		_viewpart.toggleActive(action.isChecked());
+		_view.togglePaused(action.isChecked());
 	}
 
-	public void selectionChanged(IAction action, ISelection selection) {
-		_action = action;
-	}
+	public void selectionChanged(IAction ignored, ISelection ignoredToo) {}
 
-	public void propertyChanged(Object source, int propId) {
-		assert _viewpart == source;
-		if (IByecycleView.ACTIVITY == propId) return;
-		_action.setChecked(_viewpart.isPaused());
-	}
 }

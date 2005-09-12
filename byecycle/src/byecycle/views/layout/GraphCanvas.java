@@ -29,10 +29,10 @@ import byecycle.views.layout.forces.ProviderGravity;
 import byecycle.views.layout.forces.SpreadingOut;
 
 
-public class GraphCanvas extends Canvas implements StressMeter {
+public class GraphCanvas<T> extends Canvas implements StressMeter {
 
-	public interface Listener {
-		void nodeSelected(Node node);
+	public interface Listener<LT> {
+		void nodeSelected(Node<LT> node);
 	}
 
 	private static final Force SPREADING_OUT = new SpreadingOut();
@@ -43,7 +43,7 @@ public class GraphCanvas extends Canvas implements StressMeter {
 	
 	private static final Force AVERSION = new Aversion();
 	
-	public GraphCanvas(Composite parent, Listener listener) {
+	public GraphCanvas(Composite parent, Listener<T> listener) {
 		super(parent, SWT.FILL | SWT.NO_BACKGROUND | SWT.H_SCROLL | SWT.V_SCROLL);  //FIXME: The scrollbars appear but do nothing.
 		if (listener == null) throw new IllegalArgumentException("listener");
 		new LightweightSystem(this).setContents(_graphFigure);
@@ -63,12 +63,12 @@ public class GraphCanvas extends Canvas implements StressMeter {
 	private float _currentStress;
 	private float _smallestStressEver;
 	private final List<NodeFigure> _nodesInPursuit = new LinkedList<NodeFigure>();
-	private final Listener _listener;
-	private final Map<IFigure, Node> _nodesByIFigure = new HashMap<IFigure, Node>();
+	private final Listener<T> _listener;
+	private final Map<IFigure, Node<T>> _nodesByIFigure = new HashMap<IFigure, Node<T>>();
 
 	private static long lastNudge;
 
-	public void setGraph(Iterable<Node> nodeGraph) {
+	public void setGraph(Iterable<Node<T>> nodeGraph) {
 		initGraphElements(nodeGraph);
 		initGraphFigure();
 		randomizeLayout();
@@ -76,9 +76,8 @@ public class GraphCanvas extends Canvas implements StressMeter {
 		_smallestStressEver = Float.MAX_VALUE;
 		_graphFigure.addMouseListener(new MouseListener.Stub() {
 			public void mouseDoubleClicked(MouseEvent e) {
-				System.out.println("mouseDoubleClicked");
 				IFigure target = _graphFigure.findFigureAt(e.x, e.y);
-				Node node = null;
+				Node<T> node = null;
 				do {
 					node = _nodesByIFigure.get(target);
 					target = target.getParent();
@@ -188,17 +187,17 @@ public class GraphCanvas extends Canvas implements StressMeter {
 		}
 	}
 
-	private void initGraphElements(Iterable<Node> nodeGraph) {
+	private void initGraphElements(Iterable<Node<T>> nodeGraph) {
 		_nodesByIFigure.clear();
 		
-		Map nodeFiguresByNode = new HashMap();
-		List dependencyFigures = new ArrayList();
+		Map<Node, NodeFigure> nodeFiguresByNode = new HashMap<Node, NodeFigure>();
+		List<DependencyFigure> dependencyFigures = new ArrayList<DependencyFigure>();
 		
-		for (Node node : nodeGraph) {
+		for (Node<T> node : nodeGraph) {
 			NodeFigure dependentFigure = produceNodeFigureFor(node, nodeFiguresByNode);
-			Iterator providers = node.providers();
+			Iterator<Node<T>> providers = node.providers();
 			while (providers.hasNext()) {
-				Node provider = (Node)providers.next();
+				Node<T> provider = providers.next();
 				NodeFigure providerFigure = produceNodeFigureFor(provider, nodeFiguresByNode);
 				dependencyFigures.add(new DependencyFigure(dependentFigure, providerFigure));
 			}
@@ -223,7 +222,7 @@ public class GraphCanvas extends Canvas implements StressMeter {
 		}
 	}
 
-	private NodeFigure produceNodeFigureFor(Node node, Map nodeFiguresByNode) {
+	private NodeFigure produceNodeFigureFor(Node<T> node, Map<Node, NodeFigure> nodeFiguresByNode) {
 		NodeFigure result = (NodeFigure) nodeFiguresByNode.get(node);
 		if (result != null)	return result;
 

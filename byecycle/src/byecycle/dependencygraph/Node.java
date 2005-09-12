@@ -13,17 +13,17 @@ import java.util.Set;
 
 import byecycle.JavaType;
 
-public class Node<PayloadType extends Object> {
+public class Node<PayloadType> {
 
     private final static Random RANDOM = new Random();
 
-    public static <PayloadType> Collection<Node<PayloadType>> createGraph(
+    public static Collection<Node<String>> createGraph(
             String[] names) {
 
-        List<Node<PayloadType>> result = new ArrayList<Node<PayloadType>>();
+        List<Node<String>> result = new ArrayList<Node<String>>();
 
         for (String element : names) {
-            result.add(new Node<PayloadType>(element, JavaType.PACKAGE));
+            result.add(new Node<String>(element, JavaType.PACKAGE));
         }
 
         produceRandomDependencies(result);
@@ -36,8 +36,8 @@ public class Node<PayloadType extends Object> {
         int dependenciesToCreate = (int) (graph.size() * 1.1);
 
         while (dependenciesToCreate-- > 0) {
-            Node node1 = drawOneFrom(graph);
-            Node node2 = drawOneFrom(graph);
+            Node<PayloadType> node1 = drawOneFrom(graph);
+            Node<PayloadType> node2 = drawOneFrom(graph);
             if (node1 == node2)
                 continue;
 
@@ -54,24 +54,6 @@ public class Node<PayloadType extends Object> {
         this(name, JavaType.CLASS);
     }
 
-    @Deprecated
-    public Node(String name, String kind) {
-        _name = name;
-        if(kind.equals("package")) {
-            _kind = JavaType.PACKAGE;
-        }else if(kind.equals("class")) {
-            _kind = JavaType.CLASS;
-        }else if(kind.equals("interface")) {
-            _kind = JavaType.INTERFACE;
-        }else if(kind.equals("enum")) {
-            _kind = JavaType.ENUM;
-        }else if(kind.equals("annotation")) {
-            _kind = JavaType.ANNOTATION;
-        }else {
-            throw new IllegalArgumentException(kind);
-        }
-    }
-
     public Node(String name, JavaType kind) {
         _name = name;
         _kind = kind;
@@ -81,7 +63,7 @@ public class Node<PayloadType extends Object> {
 
     private final JavaType _kind;
 
-    private final Set<Node> _providers = new HashSet<Node>();
+    private final Set<Node<PayloadType>> _providers = new HashSet<Node<PayloadType>>();
 
     private PayloadType _payload;
 
@@ -98,11 +80,11 @@ public class Node<PayloadType extends Object> {
         return _kind.toString().toLowerCase();
     }
 
-    public Iterator<Node> providers() {
+    public Iterator<Node<PayloadType>> providers() {
         return _providers.iterator();
     }
 
-    public void addProvider(Node provider) {
+    public void addProvider(Node<PayloadType> provider) {
         if (provider == this)
             return;
         _providers.add(provider);

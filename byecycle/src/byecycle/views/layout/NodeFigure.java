@@ -4,7 +4,6 @@
 
 package byecycle.views.layout;
 
-import java.io.InputStream;
 import java.util.Random;
 import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.IFigure;
@@ -17,7 +16,6 @@ import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.widgets.Display;
 import byecycle.JavaType;
 import byecycle.dependencygraph.Node;
 
@@ -79,20 +77,8 @@ public class NodeFigure extends GraphElement {
     }
 
     private static Image imageForNode(Node<?> node) {
-        try {
-            String resourcename = node.kind2().getResourceName();
-            return JavaUI.getSharedImages().getImage(resourcename);
-        } catch (NoClassDefFoundError e) {
-            InputStream resource = NodeFigure.class
-                    .getResourceAsStream("icons/" + node.kind() + ".gif");
-            return null == resource ? null : new Image(Display.getCurrent(),
-                    resource);
-        } catch (RuntimeException e) {
-            InputStream resource = NodeFigure.class
-                    .getResourceAsStream("icons/" + node.kind() + ".gif");
-            return null == resource ? null : new Image(Display.getCurrent(),
-                    resource);
-        }
+    	String resourcename = node.kind2().getResourceName();
+    	return JavaUI.getSharedImages().getImage(resourcename);
     }
 
 

@@ -71,7 +71,7 @@ public class PackageDependencyAnalysis {
         return _nodes.values();
     }
 
-    private Node getNode(IBinding binding, String nodeName, JavaType kind) {
+    private Node<IBinding> getNode(IBinding binding, String nodeName, JavaType kind) {
         String key = getBindingKey(binding);
         Node<IBinding> node = _nodes.get(key);
         if (null == node) {
@@ -104,12 +104,12 @@ public class PackageDependencyAnalysis {
 
     class DependencyVisitor extends ASTVisitor {
 
-        private Node _currentNode;
+        private Node<IBinding> _currentNode;
 
         private String _currentPackageName;
 
         private boolean visit0(AbstractTypeDeclaration node) {
-            Node saved = _currentNode;
+            Node<IBinding> saved = _currentNode;
             String savedPackage = _currentPackageName;
 
             ITypeBinding binding = node.resolveBinding();
@@ -137,7 +137,7 @@ public class PackageDependencyAnalysis {
             return visit0(node);
         }
 
-        private Node getNode2(ITypeBinding binding) {
+        private Node<IBinding> getNode2(ITypeBinding binding) {
             JavaType type = JavaType.valueOf(binding);
             return getNode(binding, binding.getQualifiedName(), type);
         }

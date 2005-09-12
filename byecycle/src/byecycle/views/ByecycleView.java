@@ -36,26 +36,22 @@ import byecycle.dependencygraph.Node;
 import byecycle.views.layout.GraphCanvas;
 
 public class ByecycleView extends ViewPart implements ISelectionListener, IByecycleView {
-	private static final int ONE_MILLISECOND = 1000000;
 
+	private static final int ONE_MILLISECOND = 1000000;
 	private static final int TEN_SECONDS = 10 * 1000000000;
 
-	private GraphCanvas _canvas;
+	private GraphCanvas<IBinding> _canvas;
 
 	private IViewSite _site;
 
 	private Set<ISelectionChangedListener> _selectionListeners = new HashSet<ISelectionChangedListener>();
-
 	private IStructuredSelection _selection;
 
-	private long _timeLastLayoutJobStarted;
-
 	private UIJob _job;
+	private long _timeLastLayoutJobStarted;
 
 	private boolean _paused;
 
-	public ByecycleView() {
-	}
 
 	public void init(IViewSite site) throws PartInitException {
 		super.init(site);
@@ -63,10 +59,6 @@ public class ByecycleView extends ViewPart implements ISelectionListener, IByecy
 		_site.getPage().addSelectionListener(this);
 		_site.setSelectionProvider(this);
 		_job = new UIJob("package analysis display") {
-			@Override
-			public boolean shouldSchedule() {
-				return !_paused;
-			}
 
 			@Override
 			public boolean shouldRun() {
@@ -100,8 +92,8 @@ public class ByecycleView extends ViewPart implements ISelectionListener, IByecy
 	 * This is a callback that will allow us to create the viewer and initialize it.
 	 */
 	public void createPartControl(Composite parent) {
-		_canvas = new GraphCanvas(parent, new GraphCanvas.Listener() {
-			public void nodeSelected(Node node) {
+		_canvas = new GraphCanvas<IBinding>(parent, new GraphCanvas.Listener<IBinding>() {
+			public void nodeSelected(Node<IBinding> node) {
 				setSelection(node);
 			}
 		});
@@ -202,7 +194,7 @@ public class ByecycleView extends ViewPart implements ISelectionListener, IByecy
 								try {
 									setPaused(false);
 									scheduleImproveLayoutJob();
-									_canvas.setGraph((Collection<Node>) nodes);
+									_canvas.setGraph((Collection<Node<IBinding>>) nodes);
 								} catch (Exception x) {
 									UIJob.errorStatus(x);
 								}
@@ -232,21 +224,25 @@ public class ByecycleView extends ViewPart implements ISelectionListener, IByecy
 		_selectionListeners.remove(listener);
 	}
 
-	void setSelection(Node selection) {
+	private void setSelection(Node<IBinding> selection) {
 		if (null == selection) {
-			// drill up
-			IStructuredSelection structured = (IStructuredSelection) selection;
-			IJavaElement element = (IJavaElement) structured.getFirstElement();
-			setSelection(new StructuredSelection(element.getParent()));
+			drillUp();
 		} else {
-			// drill down
-			Node<IBinding> typedNode = (Node<IBinding>) selection;
-			IBinding binding = typedNode.payload();
-			IJavaElement element = binding.getJavaElement();
-			if (null != element) {
-				setSelection(new StructuredSelection(element));
-			}
+			drillDown(selection);
 		}
+	}
+
+	private void drillDown(Node<IBinding> selection) {
+		IBinding binding = selection.payload();
+		IJavaElement element = binding.getJavaElement();
+		if (null != element) {
+			setSelection(new StructuredSelection(element));
+		}
+	}
+
+	private void drillUp() {
+		IJavaElement element = (IJavaElement) _selection.getFirstElement();
+		setSelection(new StructuredSelection(element.getParent()));
 	}
 
 	public void setSelection(ISelection selection) {
@@ -262,12 +258,10 @@ public class ByecycleView extends ViewPart implements ISelectionListener, IByecy
 	}
 
 	private void setPaused(boolean pause) {
-		if (pause == _paused) return;
 		_paused = pause;
-		firePropertyChange(ACTIVITY);
 	}
 
-	public void toggleActive(boolean pause) {
+	public void togglePaused(boolean pause) {
 		if (pause == _paused) return;
 
 		if (_paused) {
@@ -283,7 +277,4 @@ public class ByecycleView extends ViewPart implements ISelectionListener, IByecy
 		}
 	}
 
-	public boolean isPaused() {
-		return _paused;
-	}
 }
