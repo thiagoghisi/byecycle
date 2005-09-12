@@ -13,10 +13,10 @@ public enum JavaType {
     INTERFACE(ISharedImages.IMG_OBJS_INTERFACE), // 
     ENUM(ISharedImages.IMG_OBJS_ENUM);//
 
-    private final String res;
+    private final String _resourceName;
 
     JavaType(String str) {
-        res = str;
+        _resourceName = str;
     }
 
     public static JavaType valueOf(ITypeBinding binding) {
@@ -33,7 +33,7 @@ public enum JavaType {
     }
 
     public String getResourceName() {
-        return res;
+        return _resourceName;
     }
 
 }
