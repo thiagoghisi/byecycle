@@ -38,8 +38,6 @@ public class PackageDependencyAnalysis {
 
     private List<String> _excludedPackages;
 
-    // private Set<String> _currentPackages = new HashSet<String>();
-
     public PackageDependencyAnalysis(ICompilationUnit[] compilationUnits,
             IProgressMonitor monitor) throws JavaModelException {
 
@@ -52,14 +50,6 @@ public class PackageDependencyAnalysis {
         DependencyVisitor visitor = new DependencyVisitor();
 
         monitor.beginTask("dependency analysis", compilationUnits.length);
-
-        /*
-         * for (ICompilationUnit each : compilationUnits) { // READ ALL SELECTED
-         * PACKAGE FIRST~! IPackageDeclaration[] packages =
-         * each.getPackageDeclarations(); if (packages != null) { for
-         * (IPackageDeclaration unit : packages) {
-         * _currentPackages.add(unit.getElementName()); } } }
-         */
 
         for (ICompilationUnit each : compilationUnits) {
             parser.setResolveBindings(true);
@@ -79,17 +69,6 @@ public class PackageDependencyAnalysis {
 
     public Collection<Node<IBinding>> dependencyGraph() {
         return _nodes.values();
-    }
-
-    private Node getNode(IBinding binding, String nodeName, String kind) {
-        String key = getBindingKey(binding);
-        Node<IBinding> node = _nodes.get(key);
-        if (null == node) {
-            node = new Node<IBinding>(nodeName, kind);
-            node.payload(binding);
-            _nodes.put(key, node);
-        }
-        return node;
     }
 
     private Node getNode(IBinding binding, String nodeName, JavaType kind) {
@@ -112,10 +91,6 @@ public class PackageDependencyAnalysis {
         return "java.lang".equals(packageName)
                 || getExcludedPackages().contains(packageName);
     }
-
-    // private boolean selectedPackage(ITypeBinding type) {
-    // return _currentPackages.contains(type.getPackage().getName());
-    // }
 
     private List<String> getExcludedPackages() {
         if (_excludedPackages == null) {
@@ -141,9 +116,6 @@ public class PackageDependencyAnalysis {
             _currentNode = getNode2(binding);
             _currentPackageName = binding.getPackage().getName();
 
-            // SpreadingOut -extends-> DistanceBasedForce -implements-> Force
-
-            // System.out.println(binding.getSuperclass());
             addProvider(binding.getSuperclass());
             for (ITypeBinding superItf : binding.getInterfaces()) {
                 addProvider(superItf);
@@ -168,8 +140,6 @@ public class PackageDependencyAnalysis {
         private Node getNode2(ITypeBinding binding) {
             JavaType type = JavaType.valueOf(binding);
             return getNode(binding, binding.getQualifiedName(), type);
-            // return getNode(binding, binding.getQualifiedName(), binding
-            // .isInterface() ? INTERFACE : CLASS);
         }
 
         private void visitList(List l) {
