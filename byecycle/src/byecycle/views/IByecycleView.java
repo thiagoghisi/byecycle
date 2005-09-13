@@ -12,8 +12,10 @@ public interface IByecycleView extends ISelectionListener, IWorkbenchPart{
 
 	public static final String PERSPECTIVE_ID = "byecycle.views.ByecycleView";
 
-	public abstract void selectionChanged(IWorkbenchPart part, ISelection selection);
+	public void showDependencies(ISelection _selection);
 
-	public abstract void togglePaused(boolean pause);
+	public void togglePaused(boolean pause);
+
+	public void selectionChanged(IWorkbenchPart part, ISelection selection);
 
 }

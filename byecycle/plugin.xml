@@ -61,16 +61,16 @@
       <initializer class="byecycle.preferences.PreferenceInitializer"/>
    </extension>
    <extension point="org.eclipse.ui.popupMenus">
-   <objectContribution objectClass="org.eclipse.jdt.core.IType" id="byecycle.SelectElement">
-	<action label="Show Dependencies" class="byecycle.popup.actions.SelectElementAction" menubarPath="additions" id="byecycle.showElementAction" icon="icons/byecycle.gif">
+   <objectContribution objectClass="org.eclipse.jdt.core.IType" id="byecycle.ShowDependencies">
+	<action label="Show Dependencies" class="byecycle.popup.actions.ShowDependenciesAction" menubarPath="additions" id="byecycle.ShowDependenciesAction" icon="icons/byecycle.gif">
 	</action>
 </objectContribution>
-   <objectContribution objectClass="org.eclipse.jdt.core.ICompilationUnit" id="byecycle.SelectElement">
-	<action label="Show Dependencies" class="byecycle.popup.actions.SelectElementAction" menubarPath="additions" id="byecycle.showElementAction" icon="icons/byecycle.gif">
+   <objectContribution objectClass="org.eclipse.jdt.core.ICompilationUnit" id="byecycle.ShowDependencies">
+	<action label="Show Dependencies" class="byecycle.popup.actions.ShowDependenciesAction" menubarPath="additions" id="byecycle.ShowDependenciesAction" icon="icons/byecycle.gif">
 	</action>
 </objectContribution>
-   <objectContribution objectClass="org.eclipse.jdt.core.IPackageFragment" id="byecycle.SelectElement">
-	<action label="Show Dependencies" class="byecycle.popup.actions.SelectElementAction" menubarPath="additions" id="byecycle.showElementAction" icon="icons/byecycle.gif">
+   <objectContribution objectClass="org.eclipse.jdt.core.IPackageFragment" id="byecycle.ShowDependencies">
+	<action label="Show Dependencies" class="byecycle.popup.actions.ShowDependenciesAction" menubarPath="additions" id="byecycle.ShowDependenciesAction" icon="icons/byecycle.gif">
 	</action>
 </objectContribution>
    </extension>

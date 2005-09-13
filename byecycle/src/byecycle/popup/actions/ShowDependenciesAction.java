@@ -11,24 +11,32 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import byecycle.views.IByecycleView;
 
-public class SelectElementAction implements IViewActionDelegate {
+public class ShowDependenciesAction implements IViewActionDelegate {
 
 	private ISelection _selection;
 
 	public void init(IViewPart view) {
+		//Apparently never called.
 	}
 
-	public void run(IAction action) {
+	public void run(IAction ignored) {
 		if (_selection == null) return;
-		
-		final IWorkbenchPage activePage = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+		byecycleView().showDependencies(_selection);
+	}
+
+	private IByecycleView byecycleView() {
+		IWorkbenchPage activePage = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+
+		IByecycleView result = null;
 		try {
-			IByecycleView _viewpart = (IByecycleView) activePage.showView(IByecycleView.PERSPECTIVE_ID);
-			activePage.activate(_viewpart);
-			_viewpart.selectionChanged(_viewpart, _selection);
+			result = (IByecycleView) activePage.showView(IByecycleView.PERSPECTIVE_ID);
 		} catch (PartInitException e) {
 			e.printStackTrace();
+			return null;
 		}
+		
+		activePage.activate(result);
+		return result;
 	}
 
 	public void selectionChanged(IAction ignored, ISelection selection) {

@@ -16,6 +16,7 @@ import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
+import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.IBinding;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -39,11 +40,14 @@ public class ByecycleView extends ViewPart implements IByecycleView {
 
 	private IViewSite _site;
 
-	private IStructuredSelection _selection;
-	private IStructuredSelection _packageBeingAnalysed;
-
+	private IPackageFragment _currentPackage;
+	private Collection<Node<IBinding>> _nextGraph;
+	
 	private UIJob _layoutJob;
 	private long _timeLastLayoutJobStarted;
+
+	private boolean _paused;
+	private IJavaElement _deferredSelection;
 
 
 	public void init(IViewSite site) throws PartInitException {
@@ -55,16 +59,24 @@ public class ByecycleView extends ViewPart implements IByecycleView {
 
 			@Override
 			public IStatus runInUIThread(IProgressMonitor monitor) {
-				GraphCanvas canvas = _canvas;
-				if (canvas == null || canvas.isDisposed() || monitor.isCanceled())
+			
+				if (_canvas == null || _canvas.isDisposed() || monitor.isCanceled())
 					return Status.OK_STATUS;
-				try {
-					_timeLastLayoutJobStarted = System.nanoTime();
-					_canvas.tryToImproveLayout();
-					this.schedule(nanosecondsToSleep() / 1000000);
-				} catch (Exception rx) {
-					return UIJob.errorStatus(rx);
+
+				if (_nextGraph != null) {
+					_canvas.setGraph((Collection<Node<IBinding>>)_nextGraph);
+					_nextGraph = null;
 				}
+
+				if (_paused) {
+					this.sleep();
+					return Status.OK_STATUS;
+				}
+				
+				_timeLastLayoutJobStarted = System.nanoTime();
+				_canvas.tryToImproveLayout();
+				this.schedule(nanosecondsToSleep() / 1000000);
+
 				return Status.OK_STATUS;
 			}
 		};
@@ -77,67 +89,100 @@ public class ByecycleView extends ViewPart implements IByecycleView {
 		super.dispose();
 	}
 
-	/**
-	 * This is a callback that will allow us to create the viewer and initialize it.
-	 */
 	public void createPartControl(Composite parent) {
 		_canvas = new GraphCanvas<IBinding>(parent, new GraphCanvas.Listener<IBinding>() {
 			public void nodeSelected(Node<IBinding> node) {
-				setSelection(node);
+				selectNode(node);
 			}
 		});
 	}
 
-	private long nanosecondsToSleep() {
-		long currentTime = System.nanoTime();
-		long timeLastLayoutJobTook = currentTime - _timeLastLayoutJobStarted;
-		if (timeLastLayoutJobTook < 0)
-			timeLastLayoutJobTook = 0; // This can happen due to rounding from nanos to millis.
-		long timeToSleep = timeLastLayoutJobTook * 4; // The more things run in parallel with byecycle, the less greedy byecycle
-		// will be. Byecycle is proud to be a very good citizen. :)
-		if (timeToSleep > TEN_SECONDS)
-			timeToSleep = TEN_SECONDS;
-		if (timeToSleep < ONE_MILLISECOND)
-			timeToSleep = ONE_MILLISECOND;
-		_timeLastLayoutJobStarted = currentTime + timeToSleep;
-		return timeToSleep;
+	public void selectionChanged(IWorkbenchPart ignored, ISelection selectionCandidate) {
+		IJavaElement newSelection = validadeSelection(selectionCandidate);
+		if (_paused) {
+			_deferredSelection = newSelection; 
+			return;
+		}
+		showJavaDependencies(newSelection);
 	}
 
-	/**
-	 * Passing the focus request to the viewer's control.
-	 */
-	public void setFocus() {
-		// viewer.getControl().setFocus();
+	public void showDependencies(ISelection selectionCandidate) {
+		showJavaDependencies(validadeSelection(selectionCandidate));
 	}
-
-	public void selectionChanged(IWorkbenchPart ignored, ISelection newSelection) {
-		if (!(newSelection instanceof IStructuredSelection)) return;
-		IStructuredSelection structured = (IStructuredSelection)newSelection;
-		if (!(structured.getFirstElement() instanceof IPackageFragment)) return;
+	
+	private void showJavaDependencies(IJavaElement javaElement) {
 		
-		if (_selection != null && _selection.equals(structured)) return;
-		_selection = structured;
+		IPackageFragment newPackage = getPackage(javaElement);
 		
-		if (isPaused()) return;
-		pause();
-		refresh();
-		resume();
-	}
+		if (newPackage == null) return;
+		if (newPackage == _currentPackage) return;
+		_currentPackage = newPackage;
+		
+		writeFileForPackageFragment(_currentPackage);
 
-
-	private void refresh() {
-		_packageBeingAnalysed = _selection;
+		final ICompilationUnit[] compilationUnits;
 		try {
-			IPackageFragment packageFragment = (IPackageFragment) _packageBeingAnalysed.getFirstElement();
-			ICompilationUnit[] compilationUnits = packageFragment.getCompilationUnits();
-				
-			writeFileForPackageFragment(packageFragment);
-			analyze(packageFragment.getElementName(), compilationUnits);
-		} catch (Exception x) {
+			compilationUnits = _currentPackage.getCompilationUnits();
+		} catch (JavaModelException x) {
 			x.printStackTrace();
+			return;
+		}
+
+		(new Job("'" + _currentPackage.getElementName() + "' analysis") {
+			protected IStatus run(IProgressMonitor monitor) {
+				try {
+					_nextGraph = new PackageDependencyAnalysis(compilationUnits, monitor).dependencyGraph();
+					_layoutJob.wakeUp();
+					_layoutJob.schedule();
+				} catch (Exception x) {
+					UIJob.errorStatus(x);
+				}
+				return Status.OK_STATUS;
+			}
+		}).schedule();
+	}
+
+	private IPackageFragment getPackage(IJavaElement element) {
+		if (element == null) return null;
+		if (element instanceof IPackageFragment) return (IPackageFragment) element;
+		return getPackage(element.getParent());
+	}
+
+	private void selectNode(Node<IBinding> selection) {
+		if (null == selection) {
+			drillUp();
+		} else {
+			drillDown(selection);
 		}
 	}
 
+	private void drillDown(Node<IBinding> selection) {
+		IBinding binding = selection.payload();
+		IJavaElement element = binding.getJavaElement();
+		if (null != element) {
+			selectionChanged(null, new StructuredSelection(element));
+		}
+	}
+
+	private void drillUp() {
+		showJavaDependencies(_currentPackage.getParent());
+	}
+
+	public void togglePaused(boolean pause) {
+		assert pause != _paused;
+		_paused = pause;
+		if (!_paused) showJavaDependencies(_deferredSelection);
+	}
+
+	private IJavaElement validadeSelection(ISelection candidate) {
+		if (!(candidate instanceof IStructuredSelection)) return null;
+
+		Object firstElement = ((IStructuredSelection)candidate).getFirstElement();
+		if (!(firstElement instanceof IJavaElement)) return null;
+		
+		return (IJavaElement)firstElement;
+	}
+	
 	private void writeFileForPackageFragment(IPackageFragment p) {
 		IPackageFragmentRoot root = getPackageFragmentRoot(p);
 		
@@ -164,77 +209,22 @@ public class ByecycleView extends ViewPart implements IByecycleView {
 			: getPackageFragmentRoot(element.getParent());
 	}
 
-	private void analyze(final String elementName, final ICompilationUnit[] compilationUnits) {
-		Job job = new Job("'" + elementName + "' analysis") {
-			protected IStatus run(IProgressMonitor monitor) {
-				try {
-					final Collection<Node<IBinding>> nodes = new PackageDependencyAnalysis(compilationUnits, monitor)
-							.dependencyGraph();
-					if (!monitor.isCanceled()) {
-						UIJob job = new UIJob("package analysis display") {
-							public IStatus runInUIThread(IProgressMonitor monitor) {
-								try {
-									_canvas.setGraph((Collection<Node<IBinding>>) nodes);
-								} catch (Exception x) {
-									UIJob.errorStatus(x);
-								}
-								return Status.OK_STATUS;
-							}
-						};
-						job.schedule();
-					}
-				} catch (Exception x) {
-					UIJob.errorStatus(x);
-				}
-				return Status.OK_STATUS;
-			}
-		};
-		job.schedule();
+	private long nanosecondsToSleep() {
+		long currentTime = System.nanoTime();
+		long timeLastLayoutJobTook = currentTime - _timeLastLayoutJobStarted;
+		if (timeLastLayoutJobTook < 0)
+			timeLastLayoutJobTook = 0; // This can happen due to rounding from nanos to millis.
+		long timeToSleep = timeLastLayoutJobTook * 4; // The more things run in parallel with byecycle, the less greedy byecycle
+		// will be. Byecycle is proud to be a very good citizen. :)
+		if (timeToSleep > TEN_SECONDS)
+			timeToSleep = TEN_SECONDS;
+		if (timeToSleep < ONE_MILLISECOND)
+			timeToSleep = ONE_MILLISECOND;
+		_timeLastLayoutJobStarted = currentTime + timeToSleep;
+		return timeToSleep;
 	}
 
-	private void setSelection(Node<IBinding> selection) {
-		if (null == selection) {
-			drillUp();
-		} else {
-			drillDown(selection);
-		}
-	}
+	public void setFocus() {}
 
-	private void drillDown(Node<IBinding> selection) {
-		IBinding binding = selection.payload();
-		IJavaElement element = binding.getJavaElement();
-		if (null != element) {
-			selectionChanged(null, new StructuredSelection(element));
-		}
-	}
-
-	private void drillUp() {
-		IJavaElement element = (IJavaElement) _selection.getFirstElement();
-		selectionChanged(null, new StructuredSelection(element.getParent()));
-	}
-
-	public void togglePaused(boolean pause) {
-		if (pause) {
-			pause();
-		} else {
-			resume();
-		}
-	}
-
-	private void pause() {
-		_layoutJob.sleep();
-	}
-
-	private void resume() {
-		if (_packageBeingAnalysed != _selection) {
-			refresh();
-		}
-		_layoutJob.wakeUp();
-		_layoutJob.schedule();
-	}
-
-	private boolean isPaused() {
-		return _layoutJob.getState() == UIJob.SLEEPING;
-	}
-
+	
 }
