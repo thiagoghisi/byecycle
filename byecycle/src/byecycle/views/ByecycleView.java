@@ -83,6 +83,11 @@ public class ByecycleView extends ViewPart implements IByecycleView {
 		_layoutJob.setSystem(true);
 	}
 
+	private void react() {
+		_layoutJob.wakeUp();
+		_layoutJob.schedule();
+	}
+	
 	@Override
 	public void dispose() {
 		_site.getPage().removeSelectionListener(this);
@@ -115,7 +120,7 @@ public class ByecycleView extends ViewPart implements IByecycleView {
 		IPackageFragment newPackage = getPackage(javaElement);
 		
 		if (newPackage == null) return;
-		if (newPackage == _currentPackage) return;
+		if (newPackage == _currentPackage) return;  //FIXME: Apparently identity is not preserved. There can be more than one IPackageFragment for the same package fragment.
 		_currentPackage = newPackage;
 		
 		writeFileForPackageFragment(_currentPackage);
@@ -132,13 +137,13 @@ public class ByecycleView extends ViewPart implements IByecycleView {
 			protected IStatus run(IProgressMonitor monitor) {
 				try {
 					_nextGraph = new PackageDependencyAnalysis(compilationUnits, monitor).dependencyGraph();
-					_layoutJob.wakeUp();
-					_layoutJob.schedule();
+					react();
 				} catch (Exception x) {
 					UIJob.errorStatus(x);
 				}
 				return Status.OK_STATUS;
 			}
+
 		}).schedule();
 	}
 
@@ -164,7 +169,7 @@ public class ByecycleView extends ViewPart implements IByecycleView {
 		}
 	}
 
-	private void drillUp() {
+	private void drillUp() { //FIXME: drillUp is apparently not being called.
 		showJavaDependencies(_currentPackage.getParent());
 	}
 
@@ -172,6 +177,7 @@ public class ByecycleView extends ViewPart implements IByecycleView {
 		assert pause != _paused;
 		_paused = pause;
 		if (!_paused) showJavaDependencies(_deferredSelection);
+		react();
 	}
 
 	private IJavaElement validadeSelection(ISelection candidate) {
