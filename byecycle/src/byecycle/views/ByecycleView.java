@@ -124,7 +124,7 @@ public class ByecycleView extends ViewPart implements IByecycleView {
 		IPackageFragment newPackage = getPackage(javaElement);
 		
 		if (newPackage == null) return;
-		if (newPackage == _selectedPackage) return;  //FIXME: Apparently identity is not preserved. There can be more than one IPackageFragment for the same package fragment.
+		if (newPackage == _selectedPackage) return;
 		synchronized (_graphChangeMonitor) {
 			_selectedPackage = newPackage;
 			_selectedPackageGraph = null;
