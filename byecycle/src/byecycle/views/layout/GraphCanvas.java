@@ -53,7 +53,7 @@ public class GraphCanvas<T> extends Canvas implements StressMeter {
 
 	
 	private final List<GraphElement> _graphElements = new ArrayList<GraphElement>();
-	private NodeFigure[] _nodeFigures;
+	private List<NodeFigure<T>> _nodeFigures;
 	private DependencyFigure[] _dependencyFigures;
 	
 	private final IFigure _graphFigure = new Figure();
@@ -62,16 +62,16 @@ public class GraphCanvas<T> extends Canvas implements StressMeter {
 	private final Random _random = new Random();
 	private float _currentStress;
 	private float _smallestStressEver;
-	private final List<NodeFigure> _nodesInPursuit = new LinkedList<NodeFigure>();
+	private final List<NodeFigure<T>> _nodesInPursuit = new LinkedList<NodeFigure<T>>();
 	private final Listener<T> _listener;
 	private final Map<IFigure, Node<T>> _nodesByIFigure = new HashMap<IFigure, Node<T>>();
 
 	private static long lastNudge;
 
-	public void setGraph(Iterable<Node<T>> nodeGraph) {
+	public void setGraph(Iterable<Node<T>> nodeGraph, GraphLayout layoutHint) {
 		initGraphElements(nodeGraph);
 		initGraphFigure();
-		randomizeLayout();
+		layoutAccordingTo(layoutHint);
 		
 		_smallestStressEver = Float.MAX_VALUE;
 		_graphFigure.addMouseListener(new MouseListener.Stub() {
@@ -89,7 +89,7 @@ public class GraphCanvas<T> extends Canvas implements StressMeter {
 	}
 	
 	public void tryToImproveLayout() {
-		if (_nodeFigures == null || 0 == _nodeFigures.length) return;
+		if (_nodeFigures == null || 0 == _nodeFigures.size()) return;
 
 		seekBetterTargetForAWhile();
 		if (betterTargetFound())  //TODO Comment this line to see the animation.
@@ -108,8 +108,7 @@ public class GraphCanvas<T> extends Canvas implements StressMeter {
 	private void lockOnNewTarget() {
 		_nodesInPursuit.clear();
 		
-		for (int i = 0; i < _nodeFigures.length; i++) {
-			NodeFigure node = _nodeFigures[i];
+		for (NodeFigure<T> node : _nodeFigures) {
 			node.lockOnTarget();
 			if (!node.onTarget()) _nodesInPursuit.add(node);
 		}
@@ -118,9 +117,9 @@ public class GraphCanvas<T> extends Canvas implements StressMeter {
 	private void pursueTargetStep() {
 		if (_nodesInPursuit.isEmpty()) return;
 
-		Iterator<NodeFigure> it = _nodesInPursuit.iterator();
+		Iterator<NodeFigure<T>> it = _nodesInPursuit.iterator();
 		while (it.hasNext()) {
-			NodeFigure node = it.next();
+			NodeFigure<T> node = it.next();
 			node.pursueTarget(_contentsLayout);
 	 		if (node.onTarget()) it.remove();
 		}
@@ -145,11 +144,9 @@ public class GraphCanvas<T> extends Canvas implements StressMeter {
             }
         }
 
-		int moving = 0;		
-		for (int i = 0; i < _nodeFigures.length; i++) {
-            NodeFigure figure = _nodeFigures[i];
+		int moving = 0;
+		for (NodeFigure<T> figure : _nodeFigures) {
             figure.give();
-
             if (figure.isMoving()) moving++;
         }
 		
@@ -167,8 +164,9 @@ public class GraphCanvas<T> extends Canvas implements StressMeter {
 		return result;
 	}
 
-	private NodeFigure randomNodeFigure() {
-		return _nodeFigures[_random.nextInt(_nodeFigures.length)];
+	private NodeFigure<T> randomNodeFigure() {
+		int randomIndex = _random.nextInt(_nodeFigures.size());
+		return _nodeFigures.get(randomIndex);
 	}
 
 
@@ -210,8 +208,8 @@ public class GraphCanvas<T> extends Canvas implements StressMeter {
 		_dependencyFigures = new DependencyFigure[dependencyFigures.size()];
 		System.arraycopy(dependencyFigures.toArray(), 0, _dependencyFigures, 0, _dependencyFigures.length);
 
-		_nodeFigures = new NodeFigure[nodeFiguresByNode.size()];
-		System.arraycopy(nodeFiguresByNode.values().toArray(), 0, _nodeFigures, 0, _nodeFigures.length);
+		_nodeFigures = new ArrayList<NodeFigure<T>>(nodeFiguresByNode.size());
+		_nodeFigures.addAll(nodeFiguresByNode.values());
 	}
 
 	private void clearGraphFigure() {
@@ -226,15 +224,14 @@ public class GraphCanvas<T> extends Canvas implements StressMeter {
 		NodeFigure result = (NodeFigure) nodeFiguresByNode.get(node);
 		if (result != null)	return result;
 
-		result = new NodeFigure(node, this);
+		result = new NodeFigure<T>(node, this);
 		nodeFiguresByNode.put(node, result);
 		_nodesByIFigure .put(result.figure(), node);
 		return result;
 	}
 
-	private void randomizeLayout() {
-		for (int i = 0; i < _nodeFigures.length; i++) {
-			NodeFigure nodeFigure = _nodeFigures[i];
+	private void layoutAccordingTo(GraphLayout layoutHint) {
+		for (NodeFigure<T> nodeFigure : _nodeFigures) {
 			int x = 180 + _random.nextInt(41);
 			int y = 180 + _random.nextInt(41);
 			nodeFigure.position(x, y);

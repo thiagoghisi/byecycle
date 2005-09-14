@@ -30,6 +30,7 @@ import org.eclipse.ui.progress.UIJob;
 import byecycle.PackageDependencyAnalysis;
 import byecycle.dependencygraph.Node;
 import byecycle.views.layout.GraphCanvas;
+import byecycle.views.layout.GraphLayout;
 
 public class ByecycleView extends ViewPart implements IByecycleView {
 
@@ -59,18 +60,15 @@ public class ByecycleView extends ViewPart implements IByecycleView {
 
 		_layoutJob = new UIJob("Package dependency layout") {
 
+			private PackageLayoutMap _layoutCache = new PackageLayoutMap();
+
 			@Override
 			public IStatus runInUIThread(IProgressMonitor monitor) {
 			
 				if (_canvas == null || _canvas.isDisposed() || monitor.isCanceled())
 					return Status.OK_STATUS;
 
-				if (_selectedPackageGraph != null) {
-					synchronized (_graphChangeMonitor) {
-						_canvas.setGraph((Collection<Node<IBinding>>)_selectedPackageGraph);
-						_selectedPackageGraph = null;
-					}
-				}
+				checkForNewGraph();
 
 				if (_paused) {
 					this.sleep();
@@ -82,6 +80,20 @@ public class ByecycleView extends ViewPart implements IByecycleView {
 				this.schedule(nanosecondsToSleep() / 1000000);
 
 				return Status.OK_STATUS;
+			}
+
+			private void checkForNewGraph() {
+				if (_selectedPackageGraph != null) {
+					IPackageFragment myPackage;
+					Collection<Node<IBinding>> myGraph;
+					synchronized (_graphChangeMonitor) {
+						myPackage = _selectedPackage;
+						myGraph = _selectedPackageGraph;
+						_selectedPackageGraph = null;
+					}
+					GraphLayout bestLayoutTillNow = _layoutCache.getLayoutFor(myPackage);
+					_canvas.setGraph((Collection<Node<IBinding>>)myGraph, bestLayoutTillNow);
+				}
 			}
 		};
 		_layoutJob.setSystem(true);
@@ -146,8 +158,6 @@ public class ByecycleView extends ViewPart implements IByecycleView {
 			protected IStatus run(IProgressMonitor monitor) {
 				try {
 					Collection<Node<IBinding>> nextGraph = new PackageDependencyAnalysis(compilationUnits, monitor).dependencyGraph();
-					
-					writeFileForPackageFragment(packageBeingGenerated); //TODO: Read layout cache here. Write layout cache when a better layout is found.
 					
 					synchronized (_graphChangeMonitor) {
 						if (packageBeingGenerated != _selectedPackage) return Status.OK_STATUS;

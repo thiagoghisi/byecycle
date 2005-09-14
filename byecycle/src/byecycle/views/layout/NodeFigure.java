@@ -19,7 +19,7 @@ import org.eclipse.swt.graphics.Image;
 import byecycle.JavaType;
 import byecycle.dependencygraph.Node;
 
-public class NodeFigure extends GraphElement {
+public class NodeFigure<T> extends GraphElement {
 
     private static final int MARGIN_PIXELS = 2;
 
@@ -29,7 +29,7 @@ public class NodeFigure extends GraphElement {
 
     private static final Random RANDOM = new Random();
 
-    NodeFigure(Node node, StressMeter stressMeter) {
+    NodeFigure(Node<T> node, StressMeter stressMeter) {
         _node = node;
         _stressMeter = stressMeter;
     }
@@ -42,15 +42,15 @@ public class NodeFigure extends GraphElement {
 
     IFigure produceFigure() {
         IFigure result;
-        String text = text(_node);
+        String name = name();
         Color color = getPastelColor(_node);
-        if (text.length() < 20) {
-            result = label(text, imageForNode(_node));
+        if (name.length() < 20) {
+            result = label(name, imageForNode(_node));
         } else {
             result = new CompartmentFigure(color);
-            int cut = (text.length() / 2) - 1;
-            result.add(label(text.substring(0, cut), imageForNode(_node)));
-            result.add(label(text.substring(cut), null));
+            int cut = (name.length() / 2) - 1;
+            result.add(label(name.substring(0, cut), imageForNode(_node)));
+            result.add(label(name.substring(cut), null));
         }
 
         result.setBorder(new LineBorder());
@@ -59,6 +59,12 @@ public class NodeFigure extends GraphElement {
         return result;
     }
 
+	public String name() {
+		String result = _node.name();
+		if (_node.kind2() == JavaType.PACKAGE) return result;
+		return result.substring(result.lastIndexOf('.') + 1);
+	}
+
     static class CompartmentFigure extends Figure {
         public CompartmentFigure(Color color) {
             ToolbarLayout layout = new ToolbarLayout();
@@ -66,14 +72,6 @@ public class NodeFigure extends GraphElement {
             layout.setStretchMinorAxis(false);
             setLayoutManager(layout);
         }
-    }
-
-	private static String text(Node<?> node) {
-        String result = node.name();
-        if (node.kind2() == JavaType.PACKAGE)
-            return result;
-        return result.substring(result.lastIndexOf('.') + 1);
-
     }
 
     private static Image imageForNode(Node<?> node) {
@@ -91,7 +89,7 @@ public class NodeFigure extends GraphElement {
     }
 
 
-    private final Node _node;
+    private final Node<T> _node;
 
     private float _currentX;
 
