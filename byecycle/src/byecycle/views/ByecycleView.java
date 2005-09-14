@@ -36,12 +36,14 @@ public class ByecycleView extends ViewPart implements IByecycleView {
 	private static final int ONE_MILLISECOND = 1000000;
 	private static final int TEN_SECONDS = 10 * 1000000000;
 
-	private GraphCanvas<IBinding> _canvas;
-
 	private IViewSite _site;
 
-	private IPackageFragment _currentPackage;
-	private Collection<Node<IBinding>> _nextGraph;
+	private GraphCanvas<IBinding> _canvas;
+
+	private IPackageFragment _selectedPackage;
+	private Collection<Node<IBinding>> _selectedPackageGraph;
+
+	private final Object _graphChangeMonitor = new Object();
 	
 	private UIJob _layoutJob;
 	private long _timeLastLayoutJobStarted;
@@ -63,9 +65,11 @@ public class ByecycleView extends ViewPart implements IByecycleView {
 				if (_canvas == null || _canvas.isDisposed() || monitor.isCanceled())
 					return Status.OK_STATUS;
 
-				if (_nextGraph != null) {
-					_canvas.setGraph((Collection<Node<IBinding>>)_nextGraph);
-					_nextGraph = null;
+				if (_selectedPackageGraph != null) {
+					synchronized (_graphChangeMonitor) {
+						_canvas.setGraph((Collection<Node<IBinding>>)_selectedPackageGraph);
+						_selectedPackageGraph = null;
+					}
 				}
 
 				if (_paused) {
@@ -102,7 +106,7 @@ public class ByecycleView extends ViewPart implements IByecycleView {
 		});
 	}
 
-	public void selectionChanged(IWorkbenchPart ignored, ISelection selectionCandidate) {
+	public void selectionChanged(IWorkbenchPart ignored, ISelection selectionCandidate) { //FIXME: After the "Show Dependencies" popup menu action, this method is no longer called (Byecycle is no longer notified of selections changes and no longer changes the graph display). If focus is changed to another View and back, for example, everything comes back to normal. Is this an Eclipse bug?
 		IJavaElement newSelection = validadeSelection(selectionCandidate);
 		if (_paused) {
 			_deferredSelection = newSelection; 
@@ -120,23 +124,35 @@ public class ByecycleView extends ViewPart implements IByecycleView {
 		IPackageFragment newPackage = getPackage(javaElement);
 		
 		if (newPackage == null) return;
-		if (newPackage == _currentPackage) return;  //FIXME: Apparently identity is not preserved. There can be more than one IPackageFragment for the same package fragment.
-		_currentPackage = newPackage;
+		if (newPackage == _selectedPackage) return;  //FIXME: Apparently identity is not preserved. There can be more than one IPackageFragment for the same package fragment.
+		synchronized (_graphChangeMonitor) {
+			_selectedPackage = newPackage;
+			_selectedPackageGraph = null;
+		}
 		
-		writeFileForPackageFragment(_currentPackage);
+		generateGraph(newPackage);
+	}
 
+	private void generateGraph(final IPackageFragment packageBeingGenerated) {
 		final ICompilationUnit[] compilationUnits;
 		try {
-			compilationUnits = _currentPackage.getCompilationUnits();
+			compilationUnits = packageBeingGenerated.getCompilationUnits();
 		} catch (JavaModelException x) {
 			x.printStackTrace();
 			return;
 		}
 
-		(new Job("'" + _currentPackage.getElementName() + "' analysis") {
+		(new Job("'" + packageBeingGenerated.getElementName() + "' analysis") {
 			protected IStatus run(IProgressMonitor monitor) {
 				try {
-					_nextGraph = new PackageDependencyAnalysis(compilationUnits, monitor).dependencyGraph();
+					Collection<Node<IBinding>> nextGraph = new PackageDependencyAnalysis(compilationUnits, monitor).dependencyGraph();
+					
+					writeFileForPackageFragment(packageBeingGenerated); //TODO: Read layout cache here. Write layout cache when a better layout is found.
+					
+					synchronized (_graphChangeMonitor) {
+						if (packageBeingGenerated != _selectedPackage) return Status.OK_STATUS;
+ 						_selectedPackageGraph = nextGraph;
+					}
 					react();
 				} catch (Exception x) {
 					UIJob.errorStatus(x);
@@ -170,7 +186,7 @@ public class ByecycleView extends ViewPart implements IByecycleView {
 	}
 
 	private void drillUp() { //FIXME: drillUp is apparently not being called.
-		showJavaDependencies(_currentPackage.getParent());
+		showJavaDependencies(_selectedPackage.getParent());
 	}
 
 	public void togglePaused(boolean pause) {
@@ -214,7 +230,7 @@ public class ByecycleView extends ViewPart implements IByecycleView {
 			? (IPackageFragmentRoot) element
 			: getPackageFragmentRoot(element.getParent());
 	}
-
+	
 	private long nanosecondsToSleep() {
 		long currentTime = System.nanoTime();
 		long timeLastLayoutJobTook = currentTime - _timeLastLayoutJobStarted;
