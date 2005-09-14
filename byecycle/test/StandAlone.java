@@ -34,7 +34,7 @@ public class StandAlone {
 				System.out.println("Node:" + node);
 			}
 		});
-		canvas.setGraph(_graph, null);
+		canvas.setGraph(_graph);
 
 		shell.open();
 		shell.layout();

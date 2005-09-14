@@ -21,7 +21,7 @@ import byecycle.dependencygraph.Node;
 
 public class NodeFigure<T> extends GraphElement {
 
-    private static final int MARGIN_PIXELS = 2;
+    private static final int MARGIN_PIXELS = 3;
 
     private static final float VISCOSITY = 0.85f; // TODO Play with this. :)
 
@@ -29,9 +29,10 @@ public class NodeFigure<T> extends GraphElement {
 
     private static final Random RANDOM = new Random();
 
-    NodeFigure(Node<T> node, StressMeter stressMeter) {
+    NodeFigure(Node<T> node, StressMeter stressMeter, XYLayout layoutManager) {
         _node = node;
         _stressMeter = stressMeter;
+        _layoutManager = layoutManager;
     }
 
     private Label label(String text, Image icon) {
@@ -59,7 +60,7 @@ public class NodeFigure<T> extends GraphElement {
         return result;
     }
 
-	public String name() {
+	String name() {
 		String result = _node.name();
 		if (_node.kind2() == JavaType.PACKAGE) return result;
 		return result.substring(result.lastIndexOf('.') + 1);
@@ -91,13 +92,13 @@ public class NodeFigure<T> extends GraphElement {
 
     private final Node<T> _node;
 
-    private float _currentX;
+    private int _currentX;
 
-    private float _currentY;
+    private int _currentY;
 
-    private float _targetX;
+    private int _targetX;
 
-    private float _targetY;
+    private int _targetY;
 
     private float _candidateX;
 
@@ -110,6 +111,8 @@ public class NodeFigure<T> extends GraphElement {
     private Rectangle _aura;
 
     private final StressMeter _stressMeter;
+
+	private final XYLayout _layoutManager;
 
     Node node() {
         return _node;
@@ -179,31 +182,37 @@ public class NodeFigure<T> extends GraphElement {
         if (_candidateY < MARGIN_PIXELS) _candidateY = MARGIN_PIXELS;
 	}
 
-    void position(float x, float y) {
-        _currentX = x;
-        _currentY = y;
+    void position(Point point) {
+    	_currentX = point.x;
+        _currentY = point.y;
 
-        _targetX = x;
-        _targetY = y;
+        _targetX = point.x;
+        _targetY = point.y;
 
-        _candidateX = x;
-        _candidateY = y;
+        _candidateX = point.x;
+        _candidateY = point.y;
+        
+        layout();
     }
 
     void lockOnTarget() {
-        _targetX = _candidateX;
-        _targetY = _candidateY;
+        _targetX = Math.round(_candidateX);
+        _targetY = Math.round(_candidateY);
     }
 
-    void pursueTarget(XYLayout layout) {
-        float dX = Math.max(Math.min(_targetX - _currentX, 3), -3);
-        float dY = Math.max(Math.min(_targetY - _currentY, 3), -3);
+    void pursueTarget() {
+        int dX = Math.max(Math.min(_targetX - _currentX, 3), -3);
+        int dY = Math.max(Math.min(_targetY - _currentY, 3), -3);
 
         _currentX += dX;
         _currentY += dY;
 
-		layout.setConstraint(this.figure(), new Rectangle(Math.round(_currentX), Math.round(_currentY), -1, -1));
+		layout();
     }
+
+	private void layout() {
+		_layoutManager.setConstraint(this.figure(), new Rectangle(_currentX, _currentY, -1, -1));
+	}
 
     boolean onTarget() {
         return _currentX == _targetX && _currentY == _targetY;
@@ -231,5 +240,9 @@ public class NodeFigure<T> extends GraphElement {
         return _aura;
 
     }
+
+	Point targetPosition() {
+		return new Point(_targetX, _targetY);
+	}
 
 }

@@ -30,7 +30,7 @@ import org.eclipse.ui.progress.UIJob;
 import byecycle.PackageDependencyAnalysis;
 import byecycle.dependencygraph.Node;
 import byecycle.views.layout.GraphCanvas;
-import byecycle.views.layout.GraphLayout;
+import byecycle.views.layout.GraphLayoutMemento;
 
 public class ByecycleView extends ViewPart implements IByecycleView {
 
@@ -48,6 +48,7 @@ public class ByecycleView extends ViewPart implements IByecycleView {
 	
 	private UIJob _layoutJob;
 	private long _timeLastLayoutJobStarted;
+	private final PackageLayoutMap _layoutCache = new PackageLayoutMap();
 
 	private boolean _paused;
 	private IJavaElement _deferredSelection;
@@ -60,7 +61,7 @@ public class ByecycleView extends ViewPart implements IByecycleView {
 
 		_layoutJob = new UIJob("Package dependency layout") {
 
-			private PackageLayoutMap _layoutCache = new PackageLayoutMap();
+			private IPackageFragment _packageBeingDisplayed;
 
 			@Override
 			public IStatus runInUIThread(IProgressMonitor monitor) {
@@ -76,24 +77,25 @@ public class ByecycleView extends ViewPart implements IByecycleView {
 				}
 				
 				_timeLastLayoutJobStarted = System.nanoTime();
-				_canvas.tryToImproveLayout();
+				boolean improved = _canvas.tryToImproveLayout();
 				this.schedule(nanosecondsToSleep() / 1000000);
 
+				if (improved) _layoutCache.keep(_packageBeingDisplayed, _canvas.layoutMemento());
+				
 				return Status.OK_STATUS;
 			}
 
 			private void checkForNewGraph() {
-				if (_selectedPackageGraph != null) {
-					IPackageFragment myPackage;
-					Collection<Node<IBinding>> myGraph;
-					synchronized (_graphChangeMonitor) {
-						myPackage = _selectedPackage;
-						myGraph = _selectedPackageGraph;
-						_selectedPackageGraph = null;
-					}
-					GraphLayout bestLayoutTillNow = _layoutCache.getLayoutFor(myPackage);
-					_canvas.setGraph((Collection<Node<IBinding>>)myGraph, bestLayoutTillNow);
+				if (_selectedPackageGraph == null) return;
+
+				Collection<Node<IBinding>> myGraph;
+				synchronized (_graphChangeMonitor) {
+					_packageBeingDisplayed = _selectedPackage;
+					myGraph = _selectedPackageGraph;
+					_selectedPackageGraph = null;
 				}
+				GraphLayoutMemento bestLayoutTillNow = _layoutCache.getLayoutFor(_packageBeingDisplayed);
+				_canvas.setGraph((Collection<Node<IBinding>>)myGraph, bestLayoutTillNow);
 			}
 		};
 		_layoutJob.setSystem(true);

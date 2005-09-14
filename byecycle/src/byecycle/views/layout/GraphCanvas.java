@@ -10,7 +10,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-
 import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.LightweightSystem;
@@ -20,7 +19,6 @@ import org.eclipse.draw2d.XYLayout;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
-
 import byecycle.dependencygraph.Node;
 import byecycle.views.layout.forces.Attraction;
 import byecycle.views.layout.forces.Aversion;
@@ -68,11 +66,11 @@ public class GraphCanvas<T> extends Canvas implements StressMeter {
 
 	private static long lastNudge;
 
-	public void setGraph(Iterable<Node<T>> nodeGraph, GraphLayout layoutHint) {
+	public void setGraph(Iterable<Node<T>> nodeGraph, GraphLayoutMemento layoutHint) {
 		initGraphElements(nodeGraph);
 		initGraphFigure();
-		layoutAccordingTo(layoutHint);
-		
+		layoutHint.layout(_nodeFigures);
+
 		_smallestStressEver = Float.MAX_VALUE;
 		_graphFigure.addMouseListener(new MouseListener.Stub() {
 			public void mouseDoubleClicked(MouseEvent e) {
@@ -88,14 +86,18 @@ public class GraphCanvas<T> extends Canvas implements StressMeter {
 		});
 	}
 	
-	public void tryToImproveLayout() {
-		if (_nodeFigures == null || 0 == _nodeFigures.size()) return;
+	public boolean tryToImproveLayout() {
+		if (_nodeFigures == null || 0 == _nodeFigures.size()) return false;
 
 		seekBetterTargetForAWhile();
-		if (betterTargetFound())  //TODO Comment this line to see the animation.
-			lockOnNewTarget();
+		boolean improved = betterTargetFound();
 
+		if (improved)  //TODO Comment this line to see the animation.
+			lockOnNewTarget();
+		
 		pursueTargetStep();
+
+		return improved;
 	}
 
 	private void seekBetterTargetForAWhile() {
@@ -120,7 +122,7 @@ public class GraphCanvas<T> extends Canvas implements StressMeter {
 		Iterator<NodeFigure<T>> it = _nodesInPursuit.iterator();
 		while (it.hasNext()) {
 			NodeFigure<T> node = it.next();
-			node.pursueTarget(_contentsLayout);
+			node.pursueTarget();
 	 		if (node.onTarget()) it.remove();
 		}
 
@@ -224,21 +226,21 @@ public class GraphCanvas<T> extends Canvas implements StressMeter {
 		NodeFigure result = (NodeFigure) nodeFiguresByNode.get(node);
 		if (result != null)	return result;
 
-		result = new NodeFigure<T>(node, this);
+		result = new NodeFigure<T>(node, this, _contentsLayout);
 		nodeFiguresByNode.put(node, result);
 		_nodesByIFigure .put(result.figure(), node);
 		return result;
 	}
 
-	private void layoutAccordingTo(GraphLayout layoutHint) {
-		for (NodeFigure<T> nodeFigure : _nodeFigures) {
-			int x = 180 + _random.nextInt(41);
-			int y = 180 + _random.nextInt(41);
-			nodeFigure.position(x, y);
-		}
-    }
-
 	public void addStress(float stress) {
 		_currentStress += stress;
+	}
+
+	public void setGraph(Iterable<Node<T>> _graph) {
+		setGraph(_graph, new GraphLayoutMemento());
+	}
+
+	public GraphLayoutMemento layoutMemento() {
+		return new GraphLayoutMemento(_nodeFigures);
 	}
 }
