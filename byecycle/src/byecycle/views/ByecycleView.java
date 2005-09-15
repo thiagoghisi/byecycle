@@ -2,12 +2,7 @@
 //This is free software. See the license distributed along with this file.
 package byecycle.views;
 
-import java.io.ByteArrayInputStream;
 import java.util.Collection;
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -15,7 +10,6 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IPackageFragment;
-import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.IBinding;
 import org.eclipse.jface.viewers.ISelection;
@@ -215,32 +209,6 @@ public class ByecycleView extends ViewPart implements IByecycleView {
 		if (!(firstElement instanceof IJavaElement)) return null;
 		
 		return (IJavaElement)firstElement;
-	}
-	
-	private void writeFileForPackageFragment(IPackageFragment p) {
-		IPackageFragmentRoot root = getPackageFragmentRoot(p);
-		
-		try {
-			IResource resource = root.getCorrespondingResource();
-			System.out.println(resource);
-			IFolder folder = (IFolder)resource; //FIXME: This works only with sourcefolders, not with source directly in the project root.
-			IFolder cache = folder.getFolder(".byecyclelayoutcache");
-			if (!cache.exists()) cache.create(false, false, null);
-			IFile file = cache.getFile("foo.txt");
-			if (file.exists()) {
-				//file.setContents
-			} else {				
-				file.create(new ByteArrayInputStream("Hello".getBytes()), false, null);
-			}
-		} catch (CoreException e) {
-			e.printStackTrace();
-		}
-	}
-
-	private IPackageFragmentRoot getPackageFragmentRoot(IJavaElement element) {
-		return element instanceof IPackageFragmentRoot
-			? (IPackageFragmentRoot) element
-			: getPackageFragmentRoot(element.getParent());
 	}
 	
 	private long nanosecondsToSleep() {

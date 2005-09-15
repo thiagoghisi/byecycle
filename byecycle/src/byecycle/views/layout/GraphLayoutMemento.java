@@ -23,7 +23,6 @@ public class GraphLayoutMemento {
 	<T> void layout(List<NodeFigure<T>> nodeFigures) {
 		for (NodeFigure<T> nodeFigure : nodeFigures) {
 			nodeFigure.position(producePosition(nodeFigure));
-			System.out.println(nodeFigure.name() + " " + producePosition(nodeFigure));
 		}
     }
 

@@ -43,10 +43,24 @@ public class GraphCanvas<T> extends Canvas implements StressMeter {
 	
 	public GraphCanvas(Composite parent, Listener<T> listener) {
 		super(parent, SWT.FILL | SWT.NO_BACKGROUND | SWT.H_SCROLL | SWT.V_SCROLL);  //FIXME: The scrollbars appear but do nothing.
-		if (listener == null) throw new IllegalArgumentException("listener");
 		new LightweightSystem(this).setContents(_graphFigure);
+
 		_graphFigure.setLayoutManager(_contentsLayout);
+
+		if (listener == null) throw new IllegalArgumentException("listener");
 		_listener = listener;
+		_graphFigure.addMouseListener(new MouseListener.Stub() {
+			public void mouseDoubleClicked(MouseEvent e) {
+				IFigure target = _graphFigure.findFigureAt(e.x, e.y);
+				Node<T> node = null;
+				do {
+					node = _nodesByIFigure.get(target);
+					target = target.getParent();
+				} while (node == null && target != null);
+				
+				_listener.nodeSelected(node);
+			}
+		});
 	}
 
 	
@@ -72,18 +86,6 @@ public class GraphCanvas<T> extends Canvas implements StressMeter {
 		layoutHint.layout(_nodeFigures);
 
 		_smallestStressEver = Float.MAX_VALUE;
-		_graphFigure.addMouseListener(new MouseListener.Stub() {
-			public void mouseDoubleClicked(MouseEvent e) {
-				IFigure target = _graphFigure.findFigureAt(e.x, e.y);
-				Node<T> node = null;
-				do {
-					node = _nodesByIFigure.get(target);
-					target = target.getParent();
-				} while (node == null && target != null);
-				
-				_listener.nodeSelected(node);
-			}
-		});
 	}
 	
 	public boolean tryToImproveLayout() {
