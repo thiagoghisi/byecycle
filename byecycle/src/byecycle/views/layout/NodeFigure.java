@@ -100,9 +100,9 @@ public class NodeFigure<T> extends GraphElement {
 
     private int _targetY;
 
-    private float _candidateX;
+    private int _candidateX;
 
-    private float _candidateY;
+    private int _candidateY;
 
     private float _forceComponentX;
 
@@ -116,10 +116,6 @@ public class NodeFigure<T> extends GraphElement {
 
     Node node() {
         return _node;
-    }
-
-    public float candidateX() {
-        return _candidateX;
     }
 
     public float candidateY() {

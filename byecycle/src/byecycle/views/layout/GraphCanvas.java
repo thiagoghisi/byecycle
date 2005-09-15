@@ -160,10 +160,14 @@ public class GraphCanvas<T> extends FigureCanvas implements StressMeter {
 	}
 
 	private boolean betterTargetFound() {
-		boolean result = _currentStress < _smallestStressEver;
-		if (result) _smallestStressEver = _currentStress;
-		_currentStress = 0;
-		return result;
+		try {
+			if (_smallestStressEver == Float.MAX_VALUE) //First time
+				return false;
+			return _currentStress < _smallestStressEver; //TODO: Optimize: Check why mementos are being saved everytime the graph is displayed.
+		} finally {
+			_smallestStressEver = Math.min(_smallestStressEver, _currentStress);
+			_currentStress = 0;
+		}
 	}
 
 	private NodeFigure<T> randomNodeFigure() {

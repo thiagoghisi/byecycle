@@ -65,10 +65,7 @@ public class ByecycleView extends ViewPart implements IByecycleView {
 
 				checkForNewGraph();
 
-				if (_paused) {
-					this.sleep();
-					return Status.OK_STATUS;
-				}
+				if (_paused) return Status.OK_STATUS;
 				
 				_timeLastLayoutJobStarted = System.nanoTime();
 				boolean improved = _canvas.tryToImproveLayout();
@@ -93,13 +90,9 @@ public class ByecycleView extends ViewPart implements IByecycleView {
 			}
 		};
 		_layoutJob.setSystem(true);
+		_layoutJob.setPriority(Job.DECORATE); //Low priority;
 	}
 
-	private void react() {
-		_layoutJob.wakeUp();
-		_layoutJob.schedule();
-	}
-	
 	@Override
 	public void dispose() {
 		_site.getPage().removeSelectionListener(this);
@@ -159,7 +152,7 @@ public class ByecycleView extends ViewPart implements IByecycleView {
 						if (packageBeingGenerated != _selectedPackage) return Status.OK_STATUS;
  						_selectedPackageGraph = nextGraph;
 					}
-					react();
+					_layoutJob.schedule();
 				} catch (Exception x) {
 					UIJob.errorStatus(x);
 				}
@@ -199,7 +192,7 @@ public class ByecycleView extends ViewPart implements IByecycleView {
 		assert pause != _paused;
 		_paused = pause;
 		if (!_paused) showJavaDependencies(_deferredSelection);
-		react();
+		_layoutJob.schedule();
 	}
 
 	private IJavaElement validadeSelection(ISelection candidate) {
