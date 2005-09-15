@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IPackageFragment;
@@ -24,18 +24,24 @@ public class PackageLayoutMap {
 
 	public void keep(IPackageFragment aPackage, GraphLayoutMemento memento) {
 		_contents.put(aPackage, memento);
+		writeFileForPackageFragment(aPackage);
 	}
 	
-	private void writeFileForPackageFragment(IPackageFragment p) {
-		IPackageFragmentRoot root = getPackageFragmentRoot(p);
-		
+	private void writeFileForPackageFragment(IPackageFragment aPackage) {
+
 		try {
-			IResource resource = root.getCorrespondingResource();
-			System.out.println(resource);
-			IFolder folder = (IFolder)resource; //FIXME: This works only with sourcefolders, not with source directly in the project root.
-			IFolder cache = folder.getFolder(".byecyclelayoutcache");
-			if (!cache.exists()) cache.create(false, false, null);
-			IFile file = cache.getFile("foo.txt");
+			IProject project = aPackage.getJavaProject().getProject();
+
+			IFolder byecycleFolder = project.getFolder(".byecycle");
+			if (!byecycleFolder.exists()) byecycleFolder.create(false, false, null);
+			
+			IFolder cacheFolder = byecycleFolder.getFolder("layoutcache");
+			if (!cacheFolder.exists()) cacheFolder.create(false, false, null);
+		
+			IPackageFragmentRoot root = getPackageFragmentRoot(aPackage);
+			String rootName = root == null ? "" : root.getElementName();
+
+			IFile file = cacheFolder.getFile(rootName + "..." + aPackage.getElementName());
 			if (file.exists()) {
 				//file.setContents
 			} else {				
@@ -46,7 +52,11 @@ public class PackageLayoutMap {
 		}
 	}
 
+	/**
+	 * @return a IPackageFragmentRoot representing a source folder, jar file, zip file or null if the package is directly in the root of an Eclipse project.
+	 */
 	private IPackageFragmentRoot getPackageFragmentRoot(IJavaElement element) {
+		if (element == null) return null;
 		return element instanceof IPackageFragmentRoot
 			? (IPackageFragmentRoot) element
 			: getPackageFragmentRoot(element.getParent());

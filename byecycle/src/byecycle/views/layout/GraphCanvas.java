@@ -11,13 +11,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import org.eclipse.draw2d.Figure;
+import org.eclipse.draw2d.FigureCanvas;
 import org.eclipse.draw2d.IFigure;
-import org.eclipse.draw2d.LightweightSystem;
 import org.eclipse.draw2d.MouseEvent;
 import org.eclipse.draw2d.MouseListener;
 import org.eclipse.draw2d.XYLayout;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 import byecycle.dependencygraph.Node;
 import byecycle.views.layout.forces.Attraction;
@@ -27,7 +25,7 @@ import byecycle.views.layout.forces.ProviderGravity;
 import byecycle.views.layout.forces.SpreadingOut;
 
 
-public class GraphCanvas<T> extends Canvas implements StressMeter {
+public class GraphCanvas<T> extends FigureCanvas implements StressMeter {
 
 	public interface Listener<LT> {
 		void nodeSelected(Node<LT> node);
@@ -42,9 +40,9 @@ public class GraphCanvas<T> extends Canvas implements StressMeter {
 	private static final Force AVERSION = new Aversion();
 	
 	public GraphCanvas(Composite parent, Listener<T> listener) {
-		super(parent, SWT.FILL | SWT.NO_BACKGROUND | SWT.H_SCROLL | SWT.V_SCROLL);  //FIXME: The scrollbars appear but do nothing.
-		new LightweightSystem(this).setContents(_graphFigure);
-
+		super(parent);
+		
+		this.setContents(_graphFigure);
 		_graphFigure.setLayoutManager(_contentsLayout);
 
 		if (listener == null) throw new IllegalArgumentException("listener");
@@ -154,8 +152,8 @@ public class GraphCanvas<T> extends Canvas implements StressMeter {
             if (figure.isMoving()) moving++;
         }
 		
-		//if (moving == 0) {  //TODO: COrrect nudge logic.
-		if (System.currentTimeMillis() - lastNudge > 8000) {
+		//if (moving == 0) {  //FIXME: Correct nudge logic.
+		if (System.currentTimeMillis() - lastNudge > 10000) {
 			lastNudge = System.currentTimeMillis();
 			randomNodeFigure().nudgeNudge();
 		}
