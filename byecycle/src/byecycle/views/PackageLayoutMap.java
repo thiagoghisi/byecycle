@@ -1,8 +1,10 @@
 package byecycle.views;
 
 import java.io.ByteArrayInputStream;
-import java.util.HashMap;
-import java.util.Map;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
@@ -16,39 +18,59 @@ import byecycle.views.layout.GraphLayoutMemento;
 
 public class PackageLayoutMap {
 
-	private final Map<IPackageFragment, GraphLayoutMemento> _contents = new HashMap<IPackageFragment, GraphLayoutMemento>();
-
 	public GraphLayoutMemento getLayoutFor(IPackageFragment aPackage) {
-		//TODO: implement an LRU cache.
-		GraphLayoutMemento result = _contents.get(aPackage);
+		GraphLayoutMemento result = read(aPackage);
 		return result == null ? new GraphLayoutMemento() : result;
+		//TODO: get from an LRU cache.
+	}
+
+	private GraphLayoutMemento read(IPackageFragment aPackage) {
+		try {
+			IFile file = produceFileFor(aPackage);
+			if (!file.exists()) return null;
+			
+			InputStream contents = file.getContents();
+			try {
+				return (GraphLayoutMemento)new ObjectInputStream(contents).readObject();
+			} finally {
+				contents.close();
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
 	}
 
 	public void keep(IPackageFragment aPackage, GraphLayoutMemento memento) {
-		_contents.put(aPackage, memento);
-		writeFileForPackageFragment(aPackage);
+		save(aPackage, memento);
+		//TODO: add to an LRU cache.
 	}
 	
-	private void writeFileForPackageFragment(IPackageFragment aPackage) {
-
+	private void save(IPackageFragment aPackage, GraphLayoutMemento memento) {
+		//TODO: Schedule a deferred job, to avoid writing hundreds of times in the initial layout phases.
 		try {
-			IFolder cacheFolder = produceCacheFolder(aPackage);
-		
-			String rootName = rootNameFor(aPackage).replaceAll("/", "__");
-		
-			String packageName = aPackage.isDefaultPackage()
-				? "(default package)"
-				: aPackage.getElementName();
+			IFile file = produceFileFor(aPackage);
+			if (file.exists()) file.delete(false, null);
 
-			IFile file = cacheFolder.getFile(rootName + "__" + packageName);
-			if (file.exists()) {
-				//file.setContents
-			} else {				
-				file.create(new ByteArrayInputStream("Hello".getBytes()), false, null);
-			}
-		} catch (CoreException e) {
+			ByteArrayOutputStream serialization = new ByteArrayOutputStream();
+			new ObjectOutputStream(serialization).writeObject(memento); //TODO: Use readable format (properties file) instead of serialization.
+			file.create(new ByteArrayInputStream(serialization.toByteArray()), false, null);
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+
+	static private IFile produceFileFor(IPackageFragment aPackage) throws CoreException, JavaModelException {
+		IFolder cacheFolder = produceCacheFolder(aPackage);
+
+		String rootName = rootNameFor(aPackage).replaceAll("/", "__");
+
+		String packageName = aPackage.isDefaultPackage()
+			? "(default package)"
+			: aPackage.getElementName();
+
+		IFile file = cacheFolder.getFile(rootName + "__" + packageName + ".serialized"); //TODO: + "_" + System.currentTimeMillis()); //To avoid SCM conflicts.
+		return file;
 	}
 
 	static private String rootNameFor(IPackageFragment aPackage) throws JavaModelException {

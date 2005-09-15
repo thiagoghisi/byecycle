@@ -1,13 +1,16 @@
 package byecycle.views.layout;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import org.eclipse.draw2d.geometry.Point;
 
-public class GraphLayoutMemento {
+public class GraphLayoutMemento implements Serializable {
 	
+	private static final long serialVersionUID = 1L;
+
 	static private final Random _random = new Random();
 
 	private final Map<String, Point> _positionsByName = new HashMap<String, Point>();
