@@ -6,10 +6,12 @@ import java.util.Map;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
+import org.eclipse.jdt.core.JavaModelException;
 import byecycle.views.layout.GraphLayoutMemento;
 
 public class PackageLayoutMap {
@@ -30,18 +32,15 @@ public class PackageLayoutMap {
 	private void writeFileForPackageFragment(IPackageFragment aPackage) {
 
 		try {
-			IProject project = aPackage.getJavaProject().getProject();
-
-			IFolder byecycleFolder = project.getFolder(".byecycle");
-			if (!byecycleFolder.exists()) byecycleFolder.create(false, false, null);
-			
-			IFolder cacheFolder = byecycleFolder.getFolder("layoutcache");
-			if (!cacheFolder.exists()) cacheFolder.create(false, false, null);
+			IFolder cacheFolder = produceCacheFolder(aPackage);
 		
-			IPackageFragmentRoot root = getPackageFragmentRoot(aPackage);
-			String rootName = root == null ? "" : root.getElementName();
+			String rootName = rootNameFor(aPackage).replaceAll("/", "__");
+		
+			String packageName = aPackage.isDefaultPackage()
+				? "(default package)"
+				: aPackage.getElementName();
 
-			IFile file = cacheFolder.getFile(rootName + "..." + aPackage.getElementName());
+			IFile file = cacheFolder.getFile(rootName + "__" + packageName);
 			if (file.exists()) {
 				//file.setContents
 			} else {				
@@ -52,10 +51,37 @@ public class PackageLayoutMap {
 		}
 	}
 
+	static private String rootNameFor(IPackageFragment aPackage) throws JavaModelException {
+		IPackageFragmentRoot root = getPackageFragmentRoot(aPackage);
+		if (root == null) return "";
+		
+		IResource correspondingResource;
+		try {
+			correspondingResource = root.getCorrespondingResource();
+		} catch (JavaModelException ignored) {
+			return "";
+		}
+		if (correspondingResource == null) return "";
+		
+		return correspondingResource.getProjectRelativePath().toString();
+	}
+
+	static private IFolder produceCacheFolder(IPackageFragment aPackage) throws CoreException {
+		IProject project = aPackage.getJavaProject().getProject();
+
+		IFolder byecycleFolder = project.getFolder(".byecycle");
+		if (!byecycleFolder.exists()) byecycleFolder.create(false, false, null);
+		
+		IFolder result = byecycleFolder.getFolder("layoutcache");
+		if (!result.exists()) result.create(false, false, null);
+		
+		return result;
+	}
+
 	/**
 	 * @return a IPackageFragmentRoot representing a source folder, jar file, zip file or null if the package is directly in the root of an Eclipse project.
 	 */
-	private IPackageFragmentRoot getPackageFragmentRoot(IJavaElement element) {
+	static private IPackageFragmentRoot getPackageFragmentRoot(IJavaElement element) {
 		if (element == null) return null;
 		return element instanceof IPackageFragmentRoot
 			? (IPackageFragmentRoot) element
