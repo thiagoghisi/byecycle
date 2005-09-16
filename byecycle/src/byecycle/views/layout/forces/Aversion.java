@@ -15,8 +15,8 @@ public class Aversion extends DistanceBasedForce {
 
 	@Override
 	protected float intensityGiven(GraphElement element1, GraphElement element2, float ignored) {
-    	NodeFigure figure1 = (NodeFigure)element1;
-		NodeFigure figure2 = (NodeFigure)element2;
+    	NodeFigure<?> figure1 = (NodeFigure)element1;
+		NodeFigure<?> figure2 = (NodeFigure)element2;
 		
 		Rectangle intersection = figure1.aura().getIntersection(figure2.aura());
 		int area = intersection.getSize().getArea();
