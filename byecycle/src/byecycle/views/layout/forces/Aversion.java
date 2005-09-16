@@ -11,7 +11,6 @@ public class Aversion extends DistanceBasedForce {
 		if (!(element1 instanceof NodeFigure)) return;
 		if (!(element2 instanceof NodeFigure)) return;
 		super.actUpon(element1, element2);
-		//TODO: Consider making the figures "slide" off each other rather than simply repel.
 	}
 
 	@Override
