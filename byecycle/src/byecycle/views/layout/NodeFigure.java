@@ -1,6 +1,5 @@
 //Copyright (C) 2004 Klaus Wuestefeld and Rodrigo B de Oliveira.
 //This is free software. See the license distributed along with this file.
-//Contributions by Julio César do Nascimento.
 
 package byecycle.views.layout;
 
@@ -100,9 +99,9 @@ public class NodeFigure<T> extends GraphElement {
 
     private int _targetY;
 
-    private int _candidateX;
+    private float _candidateX;
 
-    private int _candidateY;
+    private float _candidateY;
 
     private float _forceComponentX;
 
@@ -145,20 +144,20 @@ public class NodeFigure<T> extends GraphElement {
     }
 
     /** "Give: To yield to physical force." Dictionary.com */
-    void give() {
+    boolean give() {
+		float previousX = _candidateX;
+		float previousY = _candidateY;
+    	
         _candidateX += _forceComponentX;
         _candidateY += _forceComponentY;
+        respectMargin(); //TODO: This can be removed once the southEastWind is removed and the graph is free in space (See related TODO comment in this file).
 
-        _forceComponentX = dampen(_forceComponentX);
+        _forceComponentX = dampen(_forceComponentX); //TODO: Keeping these forces from one step to the next is a weird poor man's form of inertia. Experiment with proper inertia or removing inertia altogether (removing inertia will make converging to local minimum faster, I believe). Klaus.
         _forceComponentY = dampen(_forceComponentY);
 
-        stayAround();
-        respectMargin();
-    }
-
-    boolean isMoving() {
-        return Math.abs(_forceComponentX) > 0.2 || Math.abs(_forceComponentY) > 0.2;
-        //FIXME: Nudge is not called when nodes are pressed against the margin. Keep previous coordinates to compare instead of using the component forces.
+        if (Math.abs(_candidateX - previousX) > 0.005) return true;
+        if (Math.abs(_candidateY - previousY) > 0.005) return true;
+		return false;
     }
 
     void nudgeNudge() {
@@ -169,7 +168,7 @@ public class NodeFigure<T> extends GraphElement {
         return (RANDOM.nextFloat() - 0.5f) * 0.1f;
     }
 
-    private void stayAround() {
+    void southEastWind() {
     	addForceComponents( (-_candidateX * 0.0000002f), (-_candidateY * 0.0000002f));
     }
 

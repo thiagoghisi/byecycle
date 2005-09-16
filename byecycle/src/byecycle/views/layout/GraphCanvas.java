@@ -25,7 +25,7 @@ import byecycle.views.layout.forces.ProviderGravity;
 import byecycle.views.layout.forces.SpreadingOut;
 
 
-public class GraphCanvas<T> extends FigureCanvas implements StressMeter {
+public class GraphCanvas<T> extends FigureCanvas {
 
 	public interface Listener<LT> {
 		void nodeSelected(Node<LT> node);
@@ -62,49 +62,65 @@ public class GraphCanvas<T> extends FigureCanvas implements StressMeter {
 	}
 
 	
+	private final IFigure _graphFigure = new Figure();
+	private final XYLayout _contentsLayout = new XYLayout();
+
 	private final List<GraphElement> _graphElements = new ArrayList<GraphElement>();
 	private List<NodeFigure<T>> _nodeFigures;
 	private DependencyFigure[] _dependencyFigures;
-	
-	private final IFigure _graphFigure = new Figure();
-	private final XYLayout _contentsLayout = new XYLayout();
-	
-	private final Random _random = new Random();
-	private float _currentStress;
-	private float _smallestStressEver;
-	private final List<NodeFigure<T>> _nodesInPursuit = new LinkedList<NodeFigure<T>>();
-	private final Listener<T> _listener;
 	private final Map<IFigure, Node<T>> _nodesByIFigure = new HashMap<IFigure, Node<T>>();
 
-	private static long lastNudge;
+	private final List<NodeFigure<T>> _nodesInPursuit = new LinkedList<NodeFigure<T>>();
+	
+	private float _smallestStressEver;
+	private final MyStressMeter _stressMeter = new MyStressMeter();
+
+	private final Listener<T> _listener;
+
+	private final Random _random = new Random();
+
 
 	public void setGraph(Iterable<Node<T>> nodeGraph, GraphLayoutMemento layoutHint) {
 		initGraphElements(nodeGraph);
 		initGraphFigure();
 		layoutHint.layout(_nodeFigures);
 
-		_smallestStressEver = Float.MAX_VALUE;
+		measureInitialStress();
+	}
+
+	private void measureInitialStress() {
+		seekLocalStressMinimumStep();
+		_smallestStressEver = _stressMeter._stressValue;
 	}
 	
 	public boolean tryToImproveLayout() {
-		if (_nodeFigures == null || 0 == _nodeFigures.size()) return false;
+		if (_nodeFigures == null || _nodeFigures.isEmpty()) return false;
 
-		seekBetterTargetForAWhile();
+		//lockOnNewTarget();  //TODO Fun: Uncomment this line to see the animation.  :)
+
+		pursueTargetStep(); //TODO Refactoring: Separate display logic from graph layout algorithm logic.
+
+		if (!seekLocalStressMinimumForAWhile()) return false;
+
 		boolean improved = betterTargetFound();
-
-		if (improved)  //TODO Comment this line to see the animation.
+		if (improved)
 			lockOnNewTarget();
-		
-		pursueTargetStep();
+
+		startSeekingAnotherMinimum();
 
 		return improved;
 	}
 
-	private void seekBetterTargetForAWhile() {
+	private void startSeekingAnotherMinimum() {
+		randomNodeFigure().nudgeNudge();
+	}
+
+	private boolean seekLocalStressMinimumForAWhile() {
 		long start = System.nanoTime();
 		do {
-			seekBetterTargetStep();
-		} while (System.nanoTime() - start < 1000000); //One millisecond.
+			if (seekLocalStressMinimumStep()) return true;
+		} while (System.nanoTime() - start < 1000000); //One millisecond at least.
+		return false;
 	}
 
 	private void lockOnNewTarget() {
@@ -132,7 +148,9 @@ public class GraphCanvas<T> extends FigureCanvas implements StressMeter {
 		_graphFigure.repaint();
 	}
 
-	private void seekBetterTargetStep() {
+	private boolean seekLocalStressMinimumStep() {
+		_stressMeter.reset();
+
 		for (int i = 0; i < _graphElements.size(); i++) {
 	        GraphElement element1 = _graphElements.get(i);
 	        
@@ -146,28 +164,21 @@ public class GraphCanvas<T> extends FigureCanvas implements StressMeter {
             }
         }
 
-		int moving = 0;
+		for (NodeFigure<T> figure : _nodeFigures)
+			figure.southEastWind(); //TODO: Add some kind of weak gravity and let the graph free in space. Simply transalate graph to origin, instead of blowing it there.
+
+		boolean moving = false;
 		for (NodeFigure<T> figure : _nodeFigures) {
-            figure.give();
-            if (figure.isMoving()) moving++;
+            if (figure.give()) moving = true;
         }
-		
-		//if (moving == 0) {  //FIXME: Correct nudge logic.
-		if (System.currentTimeMillis() - lastNudge > 10000) {
-			lastNudge = System.currentTimeMillis();
-			randomNodeFigure().nudgeNudge();
-		}
+
+		return !moving;
 	}
 
 	private boolean betterTargetFound() {
-		try {
-			if (_smallestStressEver == Float.MAX_VALUE) //First time
-				return false;
-			return _currentStress < _smallestStressEver; //TODO: Optimize: Check why mementos are being saved everytime the graph is displayed.
-		} finally {
-			_smallestStressEver = Math.min(_smallestStressEver, _currentStress);
-			_currentStress = 0;
-		}
+		if (_stressMeter._stressValue >= _smallestStressEver) return false;
+		_smallestStressEver = _stressMeter._stressValue;
+		return true;
 	}
 
 	private NodeFigure<T> randomNodeFigure() {
@@ -230,14 +241,10 @@ public class GraphCanvas<T> extends FigureCanvas implements StressMeter {
 		NodeFigure result = (NodeFigure) nodeFiguresByNode.get(node);
 		if (result != null)	return result;
 
-		result = new NodeFigure<T>(node, this, _contentsLayout);
+		result = new NodeFigure<T>(node, _stressMeter, _contentsLayout);
 		nodeFiguresByNode.put(node, result);
 		_nodesByIFigure .put(result.figure(), node);
 		return result;
-	}
-
-	public void addStress(float stress) {
-		_currentStress += stress;
 	}
 
 	public void setGraph(Iterable<Node<T>> _graph) {
@@ -247,4 +254,17 @@ public class GraphCanvas<T> extends FigureCanvas implements StressMeter {
 	public GraphLayoutMemento layoutMemento() {
 		return new GraphLayoutMemento(_nodeFigures);
 	}
+
+	private static class MyStressMeter implements StressMeter {
+		private float _stressValue;
+
+		public void addStress(float stress) {
+			_stressValue += stress;
+		}
+		
+		private void reset() {
+			_stressValue = 0;
+		}
+	}
+
 }

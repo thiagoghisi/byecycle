@@ -29,9 +29,20 @@ public class PackageLayoutMap {
 	private final Object _scheduledSavesMonitor = new Object();
 
 	public GraphLayoutMemento getLayoutFor(IPackageFragment aPackage) {
+		GraphLayoutMemento newest = mementoToBeWrittenFor(aPackage);
+		if (newest != null) return newest;
+		
 		GraphLayoutMemento result = read(aPackage);
+		
 		return result == null ? new GraphLayoutMemento() : result;
 		//TODO: get from an LRU cache.
+	}
+
+	private GraphLayoutMemento mementoToBeWrittenFor(IPackageFragment aPackage) {
+		synchronized (_scheduledSavesMonitor) {
+			if (_scheduledSaves == null) return null;
+			return _scheduledSaves.get(aPackage);
+		}
 	}
 
 	private GraphLayoutMemento read(IPackageFragment aPackage) {
@@ -60,7 +71,7 @@ public class PackageLayoutMap {
 		synchronized (_scheduledSavesMonitor) {
 			scheduledSaves().put(aPackage, memento);
 		}
-		_saveJob.schedule(1000 * 30);
+		_saveJob.schedule(1000 * 10);
 	}
 
 	private void save(IPackageFragment aPackage, GraphLayoutMemento memento) {

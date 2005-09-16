@@ -13,7 +13,7 @@ public abstract class DistanceBasedForce implements Force {
 	}
 
 	public void actUpon(GraphElement element1, GraphElement element2) {
-		Point p1 = element1.candidatePosition();
+		Point p1 = element1.candidatePosition();  //TODO: Point uses ints internally for x and y values. Consider calculating distance ourselves.
 		Point p2 = element2.candidatePosition(); 
 		
 		float distance = (float)Math.max(p1.getDistance(p2), 2);
