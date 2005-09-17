@@ -47,20 +47,22 @@ public class GraphCanvas<T> extends FigureCanvas {
 
 		if (listener == null) throw new IllegalArgumentException("listener");
 		_listener = listener;
+		_mouseListener = new MouseListener.Stub() {
+			public void mouseDoubleClicked(MouseEvent e) {
+				Node<T> node = _nodesByIFigure.get(e.getSource());
+				_listener.nodeSelected(node);
+				e.consume();
+			}
+		};
 		_graphFigure.addMouseListener(new MouseListener.Stub() {
 			public void mouseDoubleClicked(MouseEvent e) {
-				IFigure target = _graphFigure.findFigureAt(e.x, e.y);
-				Node<T> node = null;
-				do {
-					node = _nodesByIFigure.get(target);
-					target = target.getParent();
-				} while (node == null && target != null);
-				
-				_listener.nodeSelected(node);
+				_listener.nodeSelected(null);
+				e.consume();
 			}
 		});
 	}
 
+	private final MouseListener _mouseListener;
 	
 	private final IFigure _graphFigure = new Figure();
 	private final XYLayout _contentsLayout = new XYLayout();
@@ -244,12 +246,13 @@ public class GraphCanvas<T> extends FigureCanvas {
 	}
 
 	private NodeFigure produceNodeFigureFor(Node<T> node, Map<Node, NodeFigure> nodeFiguresByNode) {
-		NodeFigure result = (NodeFigure) nodeFiguresByNode.get(node);
+		NodeFigure result = nodeFiguresByNode.get(node);
 		if (result != null)	return result;
 
-		result = new NodeFigure<T>(node, _stressMeter, _contentsLayout);
+		result = new NodeFigure<T>(node, _stressMeter);
 		nodeFiguresByNode.put(node, result);
 		_nodesByIFigure .put(result.figure(), node);
+		result.figure().addMouseListener(_mouseListener);
 		return result;
 	}
 

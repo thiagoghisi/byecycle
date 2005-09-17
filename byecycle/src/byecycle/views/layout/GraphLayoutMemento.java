@@ -25,6 +25,7 @@ public class GraphLayoutMemento implements Serializable {
 
 	<T> void layout(List<NodeFigure<T>> nodeFigures) {
 		for (NodeFigure<T> nodeFigure : nodeFigures) {
+			nodeFigure.figure().setSize(nodeFigure.figure().getPreferredSize());
 			nodeFigure.position(producePosition(nodeFigure));
 		}
     }
