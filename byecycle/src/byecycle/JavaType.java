@@ -21,16 +21,16 @@ public enum JavaType {
 
     public static JavaType valueOf(ITypeBinding binding) {
         assert binding != null;
-        if (binding.isInterface()) {
-            return JavaType.INTERFACE;
-        } else if (binding.isEnum()) {
-            return ENUM;
-        } else if (binding.isAnnotation()) {
-            return ANNOTATION;
-        } else {
-            return CLASS;
-        }
-    }
+		if (binding.isAnnotation()) { //FIX: ANNOTATION also isInterface, must detect before INTERFACE 
+			return ANNOTATION;
+		} else if (binding.isInterface()) {
+			return INTERFACE;
+		} else if (binding.isEnum()) {
+			return ENUM;
+		} else {
+			return CLASS;
+		}
+   }
 
     public String getResourceName() {
         return _resourceName;
