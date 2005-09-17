@@ -72,6 +72,7 @@ public class GraphCanvas<T> extends FigureCanvas {
 
 	private final List<NodeFigure<T>> _nodesInPursuit = new LinkedList<NodeFigure<T>>();
 	
+	private boolean _firstTime;
 	private float _smallestStressEver;
 	private final MyStressMeter _stressMeter = new MyStressMeter();
 
@@ -83,8 +84,12 @@ public class GraphCanvas<T> extends FigureCanvas {
 	public void setGraph(Iterable<Node<T>> nodeGraph, GraphLayoutMemento layoutHint) {
 		initGraphElements(nodeGraph);
 		initGraphFigure();
+		
+		if (layoutHint == null) {
+			_firstTime = true;
+			layoutHint = GraphLayoutMemento.random();
+		}
 		layoutHint.layout(_nodeFigures);
-
 		measureInitialStress();
 	}
 
@@ -97,23 +102,30 @@ public class GraphCanvas<T> extends FigureCanvas {
 		if (_nodeFigures == null || _nodeFigures.isEmpty()) return false;
 
 		//lockOnNewTarget();  //TODO Fun: Uncomment this line to see the animation.  :)
-
 		pursueTargetStep(); //TODO Refactoring: Separate display logic from graph layout algorithm logic.
 
-		if (!seekLocalStressMinimumForAWhile()) return false;
+		boolean localMinimumFound = seekLocalStressMinimumForAWhile();
 
-		boolean improved = betterTargetFound();
-		if (improved)
+		float stress = _stressMeter._stressValue;
+		boolean improved = stress < _smallestStressEver;
+		if (_firstTime && improved) lockOnNewTarget();
+		
+		if (!localMinimumFound) return false;
+		prepareToSeekAnotherMinimum();  //Interferes with the stress meter so has to be done here, after measuring the stress.
+		_firstTime = false;
+
+		if (improved) {
+			_smallestStressEver = stress; //FIXME: Find out why the local minimum (not moving) graphs don't always coincide with the least stress (and often much worse visually) graphs. This is why _smallestStressEver is updated only after a local minimum is found. Discrepancy might end when graphs stop being pressed against the margin. If this discrepancy is solved, the _firstTime flag can be removed and lockOnNewTarget/smallestEver logic can become independent of the localMinimum/nudgeNudge logic. Since we have to wait for the local minimum (because of discrepancy) the _firstTime flag exists only to give the user some feedback because it might take a long time to find the first local minimum for huge graphs.
 			lockOnNewTarget();
-
-		startSeekingAnotherMinimum();
-
+		}
+		
 		return improved;
 	}
 
-	private void startSeekingAnotherMinimum() {
+	private void prepareToSeekAnotherMinimum() {
 		randomNodeFigure().nudgeNudge();
 	}
+
 
 	private boolean seekLocalStressMinimumForAWhile() {
 		long start = System.nanoTime();
@@ -173,12 +185,6 @@ public class GraphCanvas<T> extends FigureCanvas {
         }
 
 		return !moving;
-	}
-
-	private boolean betterTargetFound() {
-		if (_stressMeter._stressValue >= _smallestStressEver) return false;
-		_smallestStressEver = _stressMeter._stressValue;
-		return true;
 	}
 
 	private NodeFigure<T> randomNodeFigure() {
@@ -248,7 +254,7 @@ public class GraphCanvas<T> extends FigureCanvas {
 	}
 
 	public void setGraph(Iterable<Node<T>> _graph) {
-		setGraph(_graph, new GraphLayoutMemento());
+		setGraph(_graph, null);
 	}
 
 	public GraphLayoutMemento layoutMemento() {

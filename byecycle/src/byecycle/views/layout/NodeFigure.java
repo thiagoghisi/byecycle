@@ -150,13 +150,13 @@ public class NodeFigure<T> extends GraphElement {
     	
         _candidateX += _forceComponentX;
         _candidateY += _forceComponentY;
-        respectMargin(); //TODO: This can be removed once the southEastWind is removed and the graph is free in space (See related TODO comment in this file).
+        respectMargin(); //TODO: This can be removed once the southEastWind is removed and the graph is free in space (See related TO DO comment in this file).
 
         _forceComponentX = dampen(_forceComponentX); //TODO: Keeping these forces from one step to the next is a weird poor man's form of inertia. Experiment with proper inertia or removing inertia altogether (removing inertia will make converging to local minimum faster, I believe). Klaus.
         _forceComponentY = dampen(_forceComponentY);
 
-        if (Math.abs(_candidateX - previousX) > 0.005) return true;
-        if (Math.abs(_candidateY - previousY) > 0.005) return true;
+        if (Math.abs(_candidateX - previousX) > 0.02) return true;
+        if (Math.abs(_candidateY - previousY) > 0.02) return true;
 		return false;
     }
 

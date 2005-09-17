@@ -24,6 +24,8 @@ import byecycle.views.layout.GraphLayoutMemento;
 
 public class PackageLayoutMap {
 
+	private static final String FILE_EXTENSION = ".serialized";
+	
 	private final WorkspaceJob _saveJob = createSaveJob();
 	private Map<IPackageFragment, GraphLayoutMemento> _scheduledSaves;
 	private final Object _scheduledSavesMonitor = new Object();
@@ -32,10 +34,8 @@ public class PackageLayoutMap {
 		GraphLayoutMemento newest = mementoToBeWrittenFor(aPackage);
 		if (newest != null) return newest;
 		
-		GraphLayoutMemento result = read(aPackage);
-		
-		return result == null ? new GraphLayoutMemento() : result;
-		//TODO: get from an LRU cache.
+		return read(aPackage);
+		//TODO: Optimize: Use an LRU cache. This is not so urgent because Eclipse apparently does a lot of caching of the workspace files.
 	}
 
 	private GraphLayoutMemento mementoToBeWrittenFor(IPackageFragment aPackage) {
@@ -47,8 +47,8 @@ public class PackageLayoutMap {
 
 	private GraphLayoutMemento read(IPackageFragment aPackage) {
 		try {
-			IFile file = produceFileFor(aPackage);
-			if (!file.exists()) return null;
+			IFile file = fileForReading(aPackage);
+			if (file == null) return null;
 			
 			InputStream contents = file.getContents();
 			try {
@@ -64,7 +64,6 @@ public class PackageLayoutMap {
 
 	public void keep(IPackageFragment aPackage, GraphLayoutMemento memento) {
 		scheduleSave(aPackage, memento);
-		//TODO: add to an LRU cache.
 	}
 	
 	private void scheduleSave(IPackageFragment aPackage, GraphLayoutMemento memento) {
@@ -76,8 +75,7 @@ public class PackageLayoutMap {
 
 	private void save(IPackageFragment aPackage, GraphLayoutMemento memento) {
 		try {
-			IFile file = produceFileFor(aPackage);
-			if (file.exists()) file.delete(false, null);
+			IFile file = createTimestampedFileToAvoidScmMergeConflicts(aPackage);
 
 			ByteArrayOutputStream serialization = new ByteArrayOutputStream();
 			new ObjectOutputStream(serialization).writeObject(memento); //TODO: Use readable format (properties file) instead of serialization.
@@ -98,21 +96,38 @@ public class PackageLayoutMap {
 			save(aPackage, mySaves.get(aPackage));
 	}
 
-	static private IFile produceFileFor(IPackageFragment aPackage) throws CoreException, JavaModelException {
-		IProject project = aPackage.getJavaProject().getProject();
-		IFolder cacheFolder = produceCacheFolder(project);
-
-		String rootName = rootNameFor(aPackage).replaceAll("/", "__");
-
-		String packageName = aPackage.isDefaultPackage()
-			? "(default package)"
-			: aPackage.getElementName();
-
-		IFile file = cacheFolder.getFile(rootName + "__" + packageName + ".serialized"); //TODO: + "_" + System.currentTimeMillis()); //To avoid SCM conflicts.
-		return file;
+	static private IFile fileForReading(IPackageFragment aPackage) throws CoreException, JavaModelException {
+		IFolder cacheFolder = produceCacheFolder(aPackage);
+		final String baseName = baseNameFor(aPackage);
+		
+		return matchingFile(cacheFolder, baseName);
 	}
 
-	static private String rootNameFor(IPackageFragment aPackage) throws JavaModelException {
+	private static IFile matchingFile(IFolder cacheFolder, String baseName) throws CoreException {
+		for (IResource candidate : cacheFolder.members())
+			if (candidate.getName().startsWith(baseName)) return (IFile)candidate;
+		return null;
+	}
+
+	static private IFile createTimestampedFileToAvoidScmMergeConflicts(IPackageFragment aPackage) throws CoreException, JavaModelException {
+		IFolder cacheFolder = produceCacheFolder(aPackage);
+		String baseName = baseNameFor(aPackage);
+		
+		deleteOldFiles(cacheFolder, baseName);
+		
+		String newName = baseName + System.currentTimeMillis() + FILE_EXTENSION;
+		return cacheFolder.getFile(newName);
+	}
+
+	private static void deleteOldFiles(IFolder cacheFolder, String baseName) throws CoreException {
+		while (true) {
+			IFile oldFile = matchingFile(cacheFolder, baseName);
+			if (oldFile == null) return;
+			oldFile.delete(false, false, null);
+		}
+	}
+
+	static private String baseNameFor(IPackageFragment aPackage) throws JavaModelException {
 		IPackageFragmentRoot root = getPackageFragmentRoot(aPackage);
 		if (root == null) return "";
 		
@@ -124,10 +139,19 @@ public class PackageLayoutMap {
 		}
 		if (correspondingResource == null) return "";
 		
-		return correspondingResource.getProjectRelativePath().toString();
+		String rootNameIncludingSlashes = correspondingResource.getProjectRelativePath().toString();
+		String validRootName = rootNameIncludingSlashes.replaceAll("/", "__");
+		
+		String packageName = aPackage.isDefaultPackage()
+		? "(default package)"
+		: aPackage.getElementName();
+
+		return validRootName + "__" + packageName + "__timestamp";
 	}
 
-	static private IFolder produceCacheFolder(IProject project) throws CoreException {
+	static private IFolder produceCacheFolder(IPackageFragment aPackage) throws CoreException {
+		IProject project = aPackage.getJavaProject().getProject();
+
 		IFolder byecycleFolder = project.getFolder(".byecycle");
 		if (!byecycleFolder.exists()) byecycleFolder.create(false, false, null);
 		

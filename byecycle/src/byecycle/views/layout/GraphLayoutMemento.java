@@ -40,4 +40,8 @@ public class GraphLayoutMemento implements Serializable {
 		return new Point(x, y);
 	}
 
+	public static GraphLayoutMemento random() {
+		return new GraphLayoutMemento();
+	}
+
 }
