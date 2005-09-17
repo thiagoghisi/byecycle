@@ -17,6 +17,7 @@ import org.eclipse.draw2d.MouseEvent;
 import org.eclipse.draw2d.MouseListener;
 import org.eclipse.draw2d.XYLayout;
 import org.eclipse.swt.widgets.Composite;
+import byecycle.JavaType;
 import byecycle.dependencygraph.Node;
 import byecycle.views.layout.forces.Attraction;
 import byecycle.views.layout.forces.Aversion;
@@ -252,7 +253,8 @@ public class GraphCanvas<T> extends FigureCanvas {
 		result = new NodeFigure<T>(node, _stressMeter);
 		nodeFiguresByNode.put(node, result);
 		_nodesByIFigure .put(result.figure(), node);
-		result.figure().addMouseListener(_mouseListener);
+		if(node.kind2()==JavaType.PACKAGE)
+			result.figure().addMouseListener(_mouseListener);
 		return result;
 	}
 
