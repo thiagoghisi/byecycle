@@ -3,7 +3,7 @@ package byecycle.views.layout.forces;
 import byecycle.views.layout.GraphElement;
 import byecycle.views.layout.NodeFigure;
 
-public class ProviderGravity implements Force {
+public class ProviderThrust implements Force {
 	
 	private static final float DEPENDENCY_THRUST = 0.0003f;
 

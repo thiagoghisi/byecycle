@@ -3,7 +3,7 @@ package byecycle.views.layout.forces;
 import byecycle.views.layout.GraphElement;
 import byecycle.views.layout.NodeFigure;
 
-public class Attraction extends DistanceBasedForce {
+public class DependencySpring extends DistanceBasedForce {
 
 	@Override
     public float intensityGiven(float distance) {

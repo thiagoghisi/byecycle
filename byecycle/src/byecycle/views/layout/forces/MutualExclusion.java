@@ -3,7 +3,7 @@ package byecycle.views.layout.forces;
 import byecycle.views.layout.GraphElement;
 import byecycle.views.layout.NodeFigure;
 
-public class Aversion extends DistanceBasedForce {
+public class MutualExclusion extends DistanceBasedForce {
 	
 	public void actUpon(GraphElement element1, GraphElement element2) {
 		if (!(element1 instanceof NodeFigure)) return;

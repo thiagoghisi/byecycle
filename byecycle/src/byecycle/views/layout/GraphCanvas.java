@@ -19,11 +19,11 @@ import org.eclipse.draw2d.XYLayout;
 import org.eclipse.swt.widgets.Composite;
 import byecycle.JavaType;
 import byecycle.dependencygraph.Node;
-import byecycle.views.layout.forces.Attraction;
-import byecycle.views.layout.forces.Aversion;
+import byecycle.views.layout.forces.DependencySpring;
+import byecycle.views.layout.forces.MutualExclusion;
 import byecycle.views.layout.forces.Force;
-import byecycle.views.layout.forces.ProviderGravity;
-import byecycle.views.layout.forces.SpreadingOut;
+import byecycle.views.layout.forces.ProviderThrust;
+import byecycle.views.layout.forces.StaticElectricity;
 
 
 public class GraphCanvas<T> extends FigureCanvas {
@@ -32,13 +32,10 @@ public class GraphCanvas<T> extends FigureCanvas {
 		void nodeSelected(Node<LT> node);
 	}
 
-	private static final Force SPREADING_OUT = new SpreadingOut();
-	
-	private static final Force ATTRACTION = new Attraction();
-	
-	private static final Force PROVIDER_GRAVITY = new ProviderGravity();
-	
-	private static final Force AVERSION = new Aversion();
+	private static final Force STATIC_ELECTRICITY = new StaticElectricity();
+	private static final Force DEPENDENCY_SPRING = new DependencySpring();
+	private static final Force PROVIDER_THRUST = new ProviderThrust();
+	private static final Force MUTUAL_EXCLUSION = new MutualExclusion();
 
 	private static final float MARGIN_PIXELS = 3;
 	
@@ -174,10 +171,10 @@ public class GraphCanvas<T> extends FigureCanvas {
             for (int j = i + 1; j < _graphElements.size(); j++) {
             	GraphElement element2 = _graphElements.get(j);
 
-            	SPREADING_OUT.actUpon(element1, element2);
-				ATTRACTION.actUpon(element1, element2);
-				PROVIDER_GRAVITY.actUpon(element1, element2);
-				AVERSION.actUpon(element1, element2);
+            	STATIC_ELECTRICITY.actUpon(element1, element2);
+				DEPENDENCY_SPRING.actUpon(element1, element2);
+				PROVIDER_THRUST.actUpon(element1, element2);
+				MUTUAL_EXCLUSION.actUpon(element1, element2);
             }
         }
 
