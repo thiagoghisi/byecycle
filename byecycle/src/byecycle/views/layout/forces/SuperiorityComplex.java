@@ -24,12 +24,12 @@ public class SuperiorityComplex implements Force {
         }
 	}
 	
-	private void actUponDependentAndProvider(NodeFigure dependent, NodeFigure provider) {
+	private void actUponDependentAndProvider(NodeFigure<?> dependent, NodeFigure<?> provider) {
 		
 		float dY = Math.abs(provider.candidateY() - dependent.candidateY());  
 		boolean inverted = provider.candidateY() < dependent.candidateY();
 		
-		float thrust = (float) (DEPENDENCY_THRUST * 1.5 * (inverted
+		float thrust = (float) (DEPENDENCY_THRUST * (inverted
 			? 1 + (dY / 20)
 			: 10 / (10 + dY)
 		));

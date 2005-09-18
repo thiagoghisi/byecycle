@@ -102,13 +102,14 @@ public class GraphCanvas<T> extends FigureCanvas {
 	private void measureInitialStress() {
 		seekLocalStressMinimumStep();
 		_smallestStressEver = _stressMeter._stressValue;
-		prepareToSeekAnotherMinimum();
+		_previousStress = Float.MAX_VALUE;
+		_impetus = INITIAL_IMPETUS;
 	}
 	
 	public boolean tryToImproveLayout() {
 		if (_nodeFigures == null || _nodeFigures.isEmpty()) return false;
 
-		//lockOnNewTarget();  //TODO Fun: Uncomment this line to see the animation.  :)
+		lockOnNewTarget();  //TODO Fun: Uncomment this line to see the animation.  :)
 		pursueTargetStep(); //TODO Refactoring: Separate display logic from graph layout algorithm logic.
 
 		boolean localMinimumFound = seekLocalStressMinimumForAWhile();
@@ -133,7 +134,7 @@ public class GraphCanvas<T> extends FigureCanvas {
 	}
 
 	private void calmDown() {
-		_impetus /= 1.1;
+		_impetus *= 0.99;
 	}
 
 	private void prepareToSeekAnotherMinimum() {
@@ -144,10 +145,10 @@ public class GraphCanvas<T> extends FigureCanvas {
 
 
 	private boolean seekLocalStressMinimumForAWhile() {
-		long start = System.nanoTime();
-		do {
+		//long start = System.nanoTime();
+		//do {
 			if (seekLocalStressMinimumStep()) return true;
-		} while (System.nanoTime() - start < 1000000); //One millisecond at least.
+		//} while (System.nanoTime() - start < 1000000); //One millisecond at least.
 		return false;
 	}
 
