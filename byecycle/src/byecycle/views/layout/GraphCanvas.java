@@ -22,7 +22,7 @@ import byecycle.dependencygraph.Node;
 import byecycle.views.layout.forces.DependencySpring;
 import byecycle.views.layout.forces.MutualExclusion;
 import byecycle.views.layout.forces.Force;
-import byecycle.views.layout.forces.ProviderThrust;
+import byecycle.views.layout.forces.SuperiorityComplex;
 import byecycle.views.layout.forces.StaticElectricity;
 
 
@@ -34,8 +34,10 @@ public class GraphCanvas<T> extends FigureCanvas {
 
 	private static final Force STATIC_ELECTRICITY = new StaticElectricity();
 	private static final Force DEPENDENCY_SPRING = new DependencySpring();
-	private static final Force PROVIDER_THRUST = new ProviderThrust();
+	private static final Force SUPERIORITY_COMPLEX = new SuperiorityComplex();
 	private static final Force MUTUAL_EXCLUSION = new MutualExclusion();
+
+	private static final float INITIAL_IMPETUS = 3000;
 
 	private static final float MARGIN_PIXELS = 3;
 	
@@ -75,8 +77,10 @@ public class GraphCanvas<T> extends FigureCanvas {
 	private final List<NodeFigure<T>> _nodesInPursuit = new LinkedList<NodeFigure<T>>();
 	
 	private boolean _firstTime;
-	private float _smallestStressEver;
 	private final MyStressMeter _stressMeter = new MyStressMeter();
+	private float _smallestStressEver;
+	private float _previousStress;
+	private float _impetus;
 
 	private final Listener<T> _listener;
 
@@ -98,6 +102,7 @@ public class GraphCanvas<T> extends FigureCanvas {
 	private void measureInitialStress() {
 		seekLocalStressMinimumStep();
 		_smallestStressEver = _stressMeter._stressValue;
+		prepareToSeekAnotherMinimum();
 	}
 	
 	public boolean tryToImproveLayout() {
@@ -112,6 +117,9 @@ public class GraphCanvas<T> extends FigureCanvas {
 		boolean improved = stress < _smallestStressEver;
 		if (_firstTime && improved) lockOnNewTarget();
 		
+		if (stress > _previousStress) calmDown();
+		_previousStress = stress;
+		
 		if (!localMinimumFound) return false;
 		prepareToSeekAnotherMinimum();  //Interferes with the stress meter so has to be done here, after measuring the stress.
 		_firstTime = false;
@@ -124,8 +132,14 @@ public class GraphCanvas<T> extends FigureCanvas {
 		return improved;
 	}
 
+	private void calmDown() {
+		_impetus /= 1.1;
+	}
+
 	private void prepareToSeekAnotherMinimum() {
 		randomNodeFigure().nudgeNudge();
+		_previousStress = Float.MAX_VALUE;
+		_impetus = INITIAL_IMPETUS;
 	}
 
 
@@ -173,19 +187,19 @@ public class GraphCanvas<T> extends FigureCanvas {
 
             	STATIC_ELECTRICITY.actUpon(element1, element2);
 				DEPENDENCY_SPRING.actUpon(element1, element2);
-				PROVIDER_THRUST.actUpon(element1, element2);
+				SUPERIORITY_COMPLEX.actUpon(element1, element2);
 				MUTUAL_EXCLUSION.actUpon(element1, element2);
             }
         }
 
-		boolean moving = false;
+		boolean stable = true;
 		for (NodeFigure<T> figure : _nodeFigures) {
-            if (figure.give()) moving = true;
+            if (figure.give(_impetus)) stable = false;
         }
 		
 		translateToOrigin();
 
-		return !moving;
+		return stable;
 	}
 
 	private void translateToOrigin() {

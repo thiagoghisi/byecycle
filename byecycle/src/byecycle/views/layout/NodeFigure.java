@@ -17,9 +17,6 @@ import byecycle.dependencygraph.Node;
 
 public class NodeFigure<T> extends GraphElement {
 
-	private static final float VISCOSITY = 0.85f; // TODO Play with this. :)
-	private static final float IMPETUS = 900;
-
 	private static final Random RANDOM = new Random();
 	private static final int AURA_THICKNESS = 10;
 
@@ -126,28 +123,26 @@ public class NodeFigure<T> extends GraphElement {
 	}
 
 	public void addForceComponents(float x, float y) {
-		_forceComponentX += x * IMPETUS;
-		_forceComponentY += y * IMPETUS;
+		_forceComponentX += x;
+		_forceComponentY += y;
 		_stressMeter.addStress((float) Math.hypot(x, y));
 	}
 
-	private static float dampen(float value) {
-		return Math.max(Math.min(value * VISCOSITY, 20), -20);
-	}
-
 	/** "Give: To yield to physical force." Dictionary.com */
-	boolean give() {
-		float previousX = _candidateX;
-		float previousY = _candidateY;
-		
-		_candidateX += _forceComponentX;
-		_candidateY += _forceComponentY;
-		
-		_forceComponentX = dampen(_forceComponentX); // TODO: Keeping these forces from one step to the next is a weird poor man's form of inertia. Experiment with proper inertia or removing inertia altogether (removing inertia will make converging to local minimum faster, I believe). Klaus.
-		_forceComponentY = dampen(_forceComponentY);
+	boolean give(float impetus) { 		//TODO: Consider implementing inertia.
+		float forceAppliedX = _forceComponentX * impetus;
+		float forceAppliedY = _forceComponentY * impetus;
 
-		if (Math.abs(_candidateX - previousX) > 0.02) return true;
-		if (Math.abs(_candidateY - previousY) > 0.02) return true;
+		_candidateX += forceAppliedX;
+		_candidateY += forceAppliedY;
+		
+		_forceComponentX = 0;
+		_forceComponentY = 0;
+
+		if (forceAppliedX >  0.01) return true;
+		if (forceAppliedX < -0.01) return true;
+		if (forceAppliedY >  0.01) return true;
+		if (forceAppliedY < -0.01) return true;
 		return false;
 	}
 
@@ -156,7 +151,7 @@ public class NodeFigure<T> extends GraphElement {
 	}
 
 	private float nudge() {
-		return (RANDOM.nextFloat() - 0.5f) * 0.1f;
+		return (RANDOM.nextFloat() - 0.5f) * 0.3f;
 	}
 
 	void position(Point point) {
