@@ -108,7 +108,7 @@ public class GraphCanvas<T> extends FigureCanvas {
 	public boolean tryToImproveLayout() {
 		if (_nodeFigures == null || _nodeFigures.isEmpty()) return false;
 
-		lockOnNewTarget();  //TODO Fun: Uncomment this line to see the animation.  :)
+		//lockOnNewTarget();  //TODO Fun: Uncomment this line to see the animation.  :)
 		pursueTargetStep(); //TODO Refactoring: Separate display logic from graph layout algorithm logic.
 
 		boolean localMinimumFound = seekLocalStressMinimumForAWhile();
