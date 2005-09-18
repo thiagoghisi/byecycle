@@ -39,6 +39,8 @@ public class GraphCanvas<T> extends FigureCanvas {
 	private static final Force PROVIDER_GRAVITY = new ProviderGravity();
 	
 	private static final Force AVERSION = new Aversion();
+
+	private static final float MARGIN_PIXELS = 3;
 	
 	public GraphCanvas(Composite parent, Listener<T> listener) {
 		super(parent);
@@ -104,7 +106,7 @@ public class GraphCanvas<T> extends FigureCanvas {
 	public boolean tryToImproveLayout() {
 		if (_nodeFigures == null || _nodeFigures.isEmpty()) return false;
 
-		//lockOnNewTarget();  //TODO Fun: Uncomment this line to see the animation.  :)
+		lockOnNewTarget();  //TODO Fun: Uncomment this line to see the animation.  :)
 		pursueTargetStep(); //TODO Refactoring: Separate display logic from graph layout algorithm logic.
 
 		boolean localMinimumFound = seekLocalStressMinimumForAWhile();
@@ -179,15 +181,29 @@ public class GraphCanvas<T> extends FigureCanvas {
             }
         }
 
-		for (NodeFigure<T> figure : _nodeFigures)
-			figure.southEastWind(); //TODO: Add some kind of weak gravity and let the graph free in space. Simply transalate graph to origin, instead of blowing it there.
-
 		boolean moving = false;
 		for (NodeFigure<T> figure : _nodeFigures) {
             if (figure.give()) moving = true;
         }
+		
+		translateToOrigin();
 
 		return !moving;
+	}
+
+	private void translateToOrigin() {
+		float smallestX = Float.MAX_VALUE;
+		float smallestY = Float.MAX_VALUE;
+		for (NodeFigure<T> figure : _nodeFigures) {
+			if (figure._candidateX < smallestX) smallestX = figure._candidateX;
+			if (figure._candidateY < smallestY) smallestY = figure._candidateY;
+		}
+
+		float dx = -smallestX + MARGIN_PIXELS;
+		float dy = -smallestY + MARGIN_PIXELS;
+		for (NodeFigure<T> figure : _nodeFigures) {
+			figure.translateBy(dx, dy);
+		}
 	}
 
 	private NodeFigure<T> randomNodeFigure() {

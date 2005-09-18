@@ -3,17 +3,19 @@
 
 package byecycle.views.layout;
 
-import org.eclipse.draw2d.*;
+import org.eclipse.draw2d.ChopboxAnchor;
+import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.IFigure;
-import org.eclipse.draw2d.geometry.Point;
+import org.eclipse.draw2d.PolygonDecoration;
+import org.eclipse.draw2d.PolylineConnection;
 import org.eclipse.draw2d.geometry.PointList;
 import org.eclipse.swt.graphics.Color;
 
 
 class DependencyFigure extends GraphElement {
 
-	private final NodeFigure _dependent;
-	private final NodeFigure _provider;
+	private final NodeFigure<?> _dependent;
+	private final NodeFigure<?> _provider;
 
 	private PolylineConnection _arrow;
 	private ChopboxAnchor _sourceAnchor;
@@ -25,12 +27,12 @@ class DependencyFigure extends GraphElement {
 	
 	}
 
-    public Point candidatePosition() {
-		Point p1 = _dependent.candidatePosition();
-		Point p2 = _provider.candidatePosition();
-		int centerX = (p1.x + p2.x) / 2;
-		int centerY = (p1.y + p2.y) / 2;
-		return new Point(centerX, centerY);
+    public Coordinates candidatePosition() {
+		Coordinates p1 = _dependent.candidatePosition();
+		Coordinates p2 = _provider.candidatePosition();
+		float centerX = (p1._x + p2._x) / 2;
+		float centerY = (p1._y + p2._y) / 2;
+		return new Coordinates(centerX, centerY);
 	}
 
 	public void addForceComponents(float x, float y) {

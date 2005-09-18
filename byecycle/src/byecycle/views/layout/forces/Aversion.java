@@ -1,7 +1,5 @@
 package byecycle.views.layout.forces;
 
-import org.eclipse.draw2d.geometry.Rectangle;
-
 import byecycle.views.layout.GraphElement;
 import byecycle.views.layout.NodeFigure;
 
@@ -18,8 +16,7 @@ public class Aversion extends DistanceBasedForce {
     	NodeFigure<?> figure1 = (NodeFigure)element1;
 		NodeFigure<?> figure2 = (NodeFigure)element2;
 		
-		Rectangle intersection = figure1.aura().getIntersection(figure2.aura());
-		int area = intersection.getSize().getArea();
+		float area = figure1.aura().areaOfIntersection(figure2.aura());
 		return -0.0000001f * (float)Math.pow(area, 1.5);
 	}
 

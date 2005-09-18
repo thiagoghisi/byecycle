@@ -9,7 +9,6 @@ import org.eclipse.draw2d.Label;
 import org.eclipse.draw2d.LineBorder;
 import org.eclipse.draw2d.ToolbarLayout;
 import org.eclipse.draw2d.geometry.Point;
-import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
@@ -18,12 +17,11 @@ import byecycle.dependencygraph.Node;
 
 public class NodeFigure<T> extends GraphElement {
 
-	private static final int MARGIN_PIXELS = 3;
-
 	private static final float VISCOSITY = 0.85f; // TODO Play with this. :)
 	private static final float IMPETUS = 900;
 
 	private static final Random RANDOM = new Random();
+	private static final int AURA_THICKNESS = 10;
 
 	NodeFigure(Node<T> node, StressMeter stressMeter) {
 		_node = node;
@@ -95,15 +93,15 @@ public class NodeFigure<T> extends GraphElement {
 
 	private float _targetY;
 
-	private float _candidateX;
+	float _candidateX;
 
-	private float _candidateY;
+	float _candidateY;
 
 	private float _forceComponentX;
 
 	private float _forceComponentY;
 
-	private Rectangle _aura;
+	private FloatRectangle _aura;
 
 	private final StressMeter _stressMeter;
 
@@ -123,8 +121,8 @@ public class NodeFigure<T> extends GraphElement {
 		addForceComponents(0, thrust);
 	}
 
-	public Point candidatePosition() {
-		return new Point(_candidateX, _candidateY);
+	public Coordinates candidatePosition() {
+		return new Coordinates(_candidateX, _candidateY);
 	}
 
 	public void addForceComponents(float x, float y) {
@@ -145,8 +143,6 @@ public class NodeFigure<T> extends GraphElement {
 		_candidateX += _forceComponentX;
 		_candidateY += _forceComponentY;
 		
-		respectMargin(); // TODO: This can be removed once the southEastWind is removed and the graph is free in space (See related TO DO comment in this file).
-		
 		_forceComponentX = dampen(_forceComponentX); // TODO: Keeping these forces from one step to the next is a weird poor man's form of inertia. Experiment with proper inertia or removing inertia altogether (removing inertia will make converging to local minimum faster, I believe). Klaus.
 		_forceComponentY = dampen(_forceComponentY);
 
@@ -161,15 +157,6 @@ public class NodeFigure<T> extends GraphElement {
 
 	private float nudge() {
 		return (RANDOM.nextFloat() - 0.5f) * 0.1f;
-	}
-
-	void southEastWind() {
-		addForceComponents((-_candidateX * 0.0000002f), (-_candidateY * 0.0000002f));
-	}
-
-	private void respectMargin() {
-		if (_candidateX < MARGIN_PIXELS) _candidateX = MARGIN_PIXELS;
-		if (_candidateY < MARGIN_PIXELS) _candidateY = MARGIN_PIXELS;
 	}
 
 	void position(Point point) {
@@ -212,23 +199,27 @@ public class NodeFigure<T> extends GraphElement {
 		return _node.dependsDirectlyOn(other.node());
 	}
 
-	public Rectangle aura() {
-		int auraThickness = 10;
-		Point candidatePosition = candidatePosition();
+	public FloatRectangle aura() {
+		Coordinates candidatePosition = candidatePosition();
+
 		if (_aura == null) {
-			_aura = new Rectangle(candidatePosition, figure().getBounds().getSize());
-			_aura.x -= auraThickness;
-			_aura.y -= auraThickness;
-			_aura.width += auraThickness;
-			_aura.height += auraThickness;
-		} else {
-			_aura.x = candidatePosition.x - auraThickness;
-			_aura.y = candidatePosition.y - auraThickness;
+			_aura = new FloatRectangle();
+			_aura._width = figure().getBounds().width + AURA_THICKNESS;
+			_aura._height = figure().getBounds().height + AURA_THICKNESS;
 		}
+
+		_aura._x = candidatePosition._x - AURA_THICKNESS;
+		_aura._y = candidatePosition._y - AURA_THICKNESS;
+
 		return _aura;
 	}
 
 	Point targetPosition() {
 		return new Point(_targetX, _targetY);
+	}
+
+	void translateBy(float dx, float dy) {
+		_candidateX += dx;
+		_candidateY += dy;
 	}
 }

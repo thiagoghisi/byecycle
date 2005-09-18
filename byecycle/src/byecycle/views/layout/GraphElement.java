@@ -4,14 +4,13 @@
 package byecycle.views.layout;
 
 import org.eclipse.draw2d.IFigure;
-import org.eclipse.draw2d.geometry.Point;
 
 
 public abstract class GraphElement {
 
     private IFigure _figure;
 
-	public abstract Point candidatePosition();
+	public abstract Coordinates candidatePosition();
 
 	public abstract void addForceComponents(float f, float g);
 	
