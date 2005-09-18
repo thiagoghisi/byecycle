@@ -8,7 +8,6 @@ import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.Label;
 import org.eclipse.draw2d.LineBorder;
 import org.eclipse.draw2d.ToolbarLayout;
-import org.eclipse.draw2d.XYLayout;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.jdt.ui.JavaUI;
@@ -18,10 +17,10 @@ import byecycle.JavaType;
 import byecycle.dependencygraph.Node;
 
 public class NodeFigure<T> extends GraphElement {
+
 	private static final int MARGIN_PIXELS = 3;
 
 	private static final float VISCOSITY = 0.85f; // TODO Play with this. :)
-
 	private static final float IMPETUS = 900;
 
 	private static final Random RANDOM = new Random();
@@ -32,25 +31,28 @@ public class NodeFigure<T> extends GraphElement {
 	}
 
 	private Label label(String text, Image icon) {
-		return icon == null ? new Label(" " + text, icon) : new Label(text, icon);
+		return icon == null
+			? new Label(" " + text, icon)
+			: new Label(text, icon);
 	}
 
 	IFigure produceFigure() {
 		IFigure result;
+
 		String name = name();
-		Color color = getPastelColor(_node);
 		if (name.length() < 20) {
 			result = label(name, imageForNode(_node));
 		} else {
-			result = new CompartmentFigure(color);
+			result = new CompartmentFigure();
 			int cut = (name.length() / 2) - 1;
 			result.add(label(name.substring(0, cut), imageForNode(_node)));
 			result.add(label(name.substring(cut), null));
 		}
+		
 		result.setBorder(new LineBorder());
-		result.setBackgroundColor(color);
+		result.setBackgroundColor(pastelColorDeterminedBy(name));
 		result.setOpaque(true);
-		// result.setSize(result.getPreferredSize());
+		
 		return result;
 	}
 
@@ -62,7 +64,7 @@ public class NodeFigure<T> extends GraphElement {
 	}
 
 	static class CompartmentFigure extends Figure {
-		public CompartmentFigure(Color color) {
+		public CompartmentFigure() {
 			ToolbarLayout layout = new ToolbarLayout();
 			layout.setMinorAlignment(ToolbarLayout.ALIGN_TOPLEFT);
 			layout.setStretchMinorAxis(false);
@@ -75,8 +77,8 @@ public class NodeFigure<T> extends GraphElement {
 		return JavaUI.getSharedImages().getImage(resourcename);
 	}
 
-	private Color getPastelColor(Node<?> node) { // TODO: Rename
-		Random random = new Random(node.name().hashCode() * 713);
+	private static Color pastelColorDeterminedBy(String string) {
+		Random random = new Random(string.hashCode() * 713);
 		int r = 210 + random.nextInt(46);
 		int g = 210 + random.nextInt(46);
 		int b = 210 + random.nextInt(46);
@@ -139,19 +141,17 @@ public class NodeFigure<T> extends GraphElement {
 	boolean give() {
 		float previousX = _candidateX;
 		float previousY = _candidateY;
+		
 		_candidateX += _forceComponentX;
 		_candidateY += _forceComponentY;
-		respectMargin(); // TODO: This can be removed once the southEastWind is removed and the graph is free in space (See
-							// related TO DO comment in this file).
-		_forceComponentX = dampen(_forceComponentX); // TODO: Keeping these forces from one step to the next is a weird poor
-														// man's form of inertia. Experiment with proper inertia or removing inertia
-														// altogether (removing inertia will make converging to local minimum
-														// faster, I believe). Klaus.
+		
+		respectMargin(); // TODO: This can be removed once the southEastWind is removed and the graph is free in space (See related TO DO comment in this file).
+		
+		_forceComponentX = dampen(_forceComponentX); // TODO: Keeping these forces from one step to the next is a weird poor man's form of inertia. Experiment with proper inertia or removing inertia altogether (removing inertia will make converging to local minimum faster, I believe). Klaus.
 		_forceComponentY = dampen(_forceComponentY);
-		if (Math.abs(_candidateX - previousX) > 0.02)
-			return true;
-		if (Math.abs(_candidateY - previousY) > 0.02)
-			return true;
+
+		if (Math.abs(_candidateX - previousX) > 0.02) return true;
+		if (Math.abs(_candidateY - previousY) > 0.02) return true;
 		return false;
 	}
 
@@ -168,19 +168,20 @@ public class NodeFigure<T> extends GraphElement {
 	}
 
 	private void respectMargin() {
-		if (_candidateX < MARGIN_PIXELS)
-			_candidateX = MARGIN_PIXELS;
-		if (_candidateY < MARGIN_PIXELS)
-			_candidateY = MARGIN_PIXELS;
+		if (_candidateX < MARGIN_PIXELS) _candidateX = MARGIN_PIXELS;
+		if (_candidateY < MARGIN_PIXELS) _candidateY = MARGIN_PIXELS;
 	}
 
 	void position(Point point) {
 		_currentX = point.x;
 		_currentY = point.y;
+		
 		_targetX = point.x;
 		_targetY = point.y;
+		
 		_candidateX = point.x;
 		_candidateY = point.y;
+		
 		layout();
 	}
 
@@ -192,8 +193,10 @@ public class NodeFigure<T> extends GraphElement {
 	void pursueTarget() {
 		float dX = Math.max(Math.min(_targetX - _currentX, 3), -3);
 		float dY = Math.max(Math.min(_targetY - _currentY, 3), -3);
+		
 		_currentX += dX;
 		_currentY += dY;
+		
 		layout();
 	}
 

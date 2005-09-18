@@ -88,8 +88,7 @@ public class PackageDependencyAnalysis {
 	}
 
 	private boolean ignorePackage(String packageName) {
-        return "java.lang".equals(packageName)
-                || getExcludedPackages().contains(packageName);
+        return getExcludedPackages().contains(packageName);
 	}
 
 	private List<String> getExcludedPackages() {
@@ -217,11 +216,11 @@ public class PackageDependencyAnalysis {
 				}
 				return;
 			}
-			if (type.getQualifiedName().equals(""))
-				return; // TODO: Check why this happens.
+			if (type.getQualifiedName().equals(""))	return; // TODO: Check why this happens.
+
 			String packageName = type.getPackage().getName();
-			if (ignorePackage(packageName))
-				return;
+			if (ignorePackage(packageName))	return;
+			
 			if (isSelectedPackage(packageName)) {
 				if (type.isParameterizedType()) { // if Map<K,V>
 					for (ITypeBinding subtype : type.getTypeArguments()) { // <K,V>
