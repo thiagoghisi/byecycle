@@ -20,7 +20,7 @@ import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaModelException;
-import byecycle.views.layout.GraphLayoutMemento;
+import byecycle.views.layout.algorithm.GraphLayoutMemento;
 
 public class PackageLayoutMap {
 

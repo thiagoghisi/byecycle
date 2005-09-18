@@ -1,7 +1,7 @@
-package byecycle.views.layout.forces;
+package byecycle.views.layout.algorithm.forces;
 
-import byecycle.views.layout.Coordinates;
 import byecycle.views.layout.GraphElement;
+import byecycle.views.layout.algorithm.Coordinates;
 
 public abstract class DistanceBasedForce implements Force {
 

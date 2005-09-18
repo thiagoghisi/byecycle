@@ -1,4 +1,4 @@
-package byecycle.views.layout.forces;
+package byecycle.views.layout.algorithm.forces;
 
 import byecycle.views.layout.GraphElement;
 import byecycle.views.layout.NodeFigure;

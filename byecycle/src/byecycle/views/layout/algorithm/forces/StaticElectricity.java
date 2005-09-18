@@ -1,4 +1,4 @@
-package byecycle.views.layout.forces;
+package byecycle.views.layout.algorithm.forces;
 
 public class StaticElectricity extends DistanceBasedForce {
 

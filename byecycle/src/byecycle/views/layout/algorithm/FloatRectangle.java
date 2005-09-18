@@ -1,12 +1,12 @@
-package byecycle.views.layout;
+package byecycle.views.layout.algorithm;
 
 
 public class FloatRectangle {
 
-	float _x;  //Left
-	float _y;  //Top (NOT BOTTOM!).
-	float _width;
-	float _height;
+	public float _x;  //Left
+	public float _y;  //Top (NOT BOTTOM!).
+	public float _width;
+	public float _height;
 
 	public float areaOfIntersection(FloatRectangle other) {
 		float left = Math.max(this.left(), other.left());

@@ -7,6 +7,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IPackageFragment;
@@ -24,7 +25,10 @@ import org.eclipse.ui.progress.UIJob;
 import byecycle.PackageDependencyAnalysis;
 import byecycle.dependencygraph.Node;
 import byecycle.views.layout.GraphCanvas;
-import byecycle.views.layout.GraphLayoutMemento;
+import byecycle.views.layout.algorithm.FloatRectangle;
+import byecycle.views.layout.algorithm.GraphLayoutMemento;
+import byecycle.views.layout.algorithm.LayoutAlgorithm;
+import byecycle.views.layout.algorithm.NodeSizeProvider;
 
 public class ByecycleView extends ViewPart implements IByecycleView {
 
@@ -33,6 +37,9 @@ public class ByecycleView extends ViewPart implements IByecycleView {
 
 	private IViewSite _site;
 
+	private LayoutAlgorithm _algorithm;
+
+	private Composite _parent;
 	private GraphCanvas<IBinding> _canvas;
 
 	private IPackageFragment _selectedPackage;
@@ -46,6 +53,7 @@ public class ByecycleView extends ViewPart implements IByecycleView {
 
 	private boolean _paused;
 	private IJavaElement _deferredSelection;
+	
 
 
 	public void init(IViewSite site) throws PartInitException {
@@ -68,10 +76,15 @@ public class ByecycleView extends ViewPart implements IByecycleView {
 				if (_paused) return Status.OK_STATUS;
 				
 				_timeLastLayoutJobStarted = System.nanoTime();
-				boolean improved = _canvas.tryToImproveLayout();
+				_canvas.animationStep();
+				boolean improved = _algorithm.tryToImproveLayout();
 				this.schedule(nanosecondsToSleep() / 1000000);
 
-				if (improved) _layoutCache.keep(_packageBeingDisplayed, _canvas.layoutMemento());
+				if (improved) {
+					GraphLayoutMemento bestSoFar = _algorithm.layoutMemento();
+					_canvas.useLayout(bestSoFar);
+					_layoutCache.keep(_packageBeingDisplayed, bestSoFar);
+				}
 				
 				return Status.OK_STATUS;
 			}
@@ -85,12 +98,40 @@ public class ByecycleView extends ViewPart implements IByecycleView {
 					myGraph = _selectedPackageGraph;
 					_selectedPackageGraph = null;
 				}
-				GraphLayoutMemento bestLayoutTillNow = _layoutCache.getLayoutFor(_packageBeingDisplayed);
-				_canvas.setGraph((Collection<Node<IBinding>>)myGraph, bestLayoutTillNow);
+				GraphLayoutMemento bestSoFar = _layoutCache.getLayoutFor(_packageBeingDisplayed);
+				if (bestSoFar == null)
+					bestSoFar = GraphLayoutMemento.random();
+
+				newCanvas((Collection<Node<IBinding>>)myGraph, bestSoFar);
+				newAlgorithm((Collection<Node<IBinding>>)myGraph, bestSoFar);
 			}
+
 		};
 		_layoutJob.setSystem(true);
 		_layoutJob.setPriority(Job.DECORATE); //Low priority;
+	}
+
+	private void newCanvas(Collection<Node<IBinding>> graph, GraphLayoutMemento initialLayout) {
+		if (_canvas != null) _canvas.dispose();
+		
+		_canvas = new GraphCanvas<IBinding>(_parent, graph, initialLayout, new GraphCanvas.Listener<IBinding>() {
+			public void nodeSelected(Node<IBinding> node) {
+				selectNode(node);
+			}
+		});
+	}
+
+	private void newAlgorithm(Collection<Node<IBinding>> graph, GraphLayoutMemento initialLayout) {
+		_algorithm = new LayoutAlgorithm(graph, initialLayout, new NodeSizeProvider(){
+			public FloatRectangle sizeGiven(Node node) {
+				FloatRectangle result = new FloatRectangle();
+				Rectangle size = _canvas.sizeGiven(node);
+				result._width = size.width;
+				result._height = size.height;
+				return result;
+			}
+			
+		});
 	}
 
 	@Override
@@ -100,11 +141,7 @@ public class ByecycleView extends ViewPart implements IByecycleView {
 	}
 
 	public void createPartControl(Composite parent) {
-		_canvas = new GraphCanvas<IBinding>(parent, new GraphCanvas.Listener<IBinding>() {
-			public void nodeSelected(Node<IBinding> node) {
-				selectNode(node);
-			}
-		});
+		_parent = parent;
 	}
 
 	public void selectionChanged(IWorkbenchPart ignored, ISelection selectionCandidate) { //FIXME: After the "Show Dependencies" popup menu action, this method is no longer called (Byecycle is no longer notified of selections changes and no longer changes the graph display). If focus is changed to another View and back, for example, everything comes back to normal. Is this an Eclipse bug?
