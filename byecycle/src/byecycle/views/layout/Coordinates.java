@@ -1,4 +1,4 @@
-package byecycle.views.layout.algorithm;
+package byecycle.views.layout;
 
 public class Coordinates {
 	
@@ -12,5 +12,9 @@ public class Coordinates {
 
 	public float getDistance(Coordinates other) {
 		return (float)Math.hypot(_x - other._x, _y - other._y);
+	}
+
+	public Coordinates translatedBy(float dx, float dy) {
+		return new Coordinates(_x + dx, _y + dy);
 	}
 }

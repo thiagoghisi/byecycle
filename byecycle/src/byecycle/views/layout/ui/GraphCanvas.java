@@ -1,12 +1,11 @@
 //Copyright (C) 2004 Klaus Wuestefeld and Rodrigo B de Oliveira.
 //This is free software. See the license distributed along with this file.
 
-package byecycle.views.layout;
+package byecycle.views.layout.ui;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import org.eclipse.draw2d.Figure;
@@ -17,20 +16,23 @@ import org.eclipse.draw2d.MouseListener;
 import org.eclipse.draw2d.XYLayout;
 import org.eclipse.draw2d.MouseListener.Stub;
 import org.eclipse.draw2d.geometry.Rectangle;
-import org.eclipse.jdt.core.dom.IBinding;
 import org.eclipse.swt.widgets.Composite;
 import byecycle.JavaType;
 import byecycle.dependencygraph.Node;
-import byecycle.views.layout.algorithm.CartesianLayout;
+import byecycle.views.layout.CartesianLayout;
+import byecycle.views.layout.Coordinates;
+import byecycle.views.layout.FloatRectangle;
+import byecycle.views.layout.NodeSizeProvider;
 
+public class GraphCanvas<T> extends FigureCanvas implements NodeSizeProvider {
 
-public class GraphCanvas<T> extends FigureCanvas {
+	private static final float MARGIN_PIXELS = 3;
 
 	public interface Listener<LT> {
 		void nodeSelected(Node<LT> node);
 	}
 
-	public GraphCanvas(Composite parent, Collection<Node<IBinding>> graph, CartesianLayout initialLayout, Listener<T> listener) {
+	public GraphCanvas(Composite parent, Collection<Node<T>> graph, CartesianLayout initialLayout, Listener<T> listener) {
 		super(parent);
 
 		this.setContents(_graphFigure);
@@ -38,8 +40,12 @@ public class GraphCanvas<T> extends FigureCanvas {
 
 		if (listener == null) throw new IllegalArgumentException("listener");
 		_listener = listener;
-			
 		_graphFigure.addMouseListener(backgroundDoubleClickListener());
+		
+		initGraphElements(graph);
+		initGraphFigure();
+
+		useLayout(initialLayout);
 	}
 
 	private final MouseListener _nodeDoubleClickListener = nodeDoubleClickListener();
@@ -73,17 +79,9 @@ public class GraphCanvas<T> extends FigureCanvas {
 			}
 		};
 	}
-
-
-	public void setGraph(Iterable<Node<T>> nodeGraph, CartesianLayout initialLayout) {
-		initGraphElements(nodeGraph);
-		initGraphFigure();
-
-		useLayout(initialLayout);
-	}
 	
 	public void animationStep() {
-		if (_morpher != null) return;
+		if (_morpher == null) return;
 		_morpher.morphingStep();
 		if (_morpher.done()) _morpher = null;
 		
@@ -115,9 +113,7 @@ public class GraphCanvas<T> extends FigureCanvas {
 		
 		for (Node<T> node : nodeGraph) {
 			NodeFigure dependentFigure = produceNodeFigureFor(node);
-			Iterator<Node<T>> providers = node.providers();
-			while (providers.hasNext()) {
-				Node<T> provider = providers.next();
+			for (Node<T> provider : node.providers()) {
 				NodeFigure providerFigure = produceNodeFigureFor(provider);
 				dependencyFigures.add(new DependencyFigure(dependentFigure, providerFigure));
 			}
@@ -138,16 +134,39 @@ public class GraphCanvas<T> extends FigureCanvas {
 		return result;
 	}
 
-	public void setGraph(Iterable<Node<T>> _graph) {
-		setGraph(_graph, null);
-	}
-
 	public void useLayout(CartesianLayout newLayout) {
-		_morpher = new GraphMorpher(nodeFigures(), newLayout);
+		CartesianLayout translatedLayout = translateToOrigin(newLayout);
+		_morpher = new GraphMorpher(nodeFigures(), translatedLayout);
 	}
 
-	public Rectangle sizeGiven(Node node) {
-		return _nodeFiguresByNode.get(node).figure().getBounds();
+	public FloatRectangle sizeGiven(Node node) {
+		Rectangle bounds = _nodeFiguresByNode.get(node).figure().getBounds();
+
+		FloatRectangle result = new FloatRectangle();
+		result._width = bounds.width;
+		result._height = bounds.height;
+		return result;
 	}
 
+	private static CartesianLayout translateToOrigin(CartesianLayout layout) {
+		float smallestX = Float.MAX_VALUE;
+		float smallestY = Float.MAX_VALUE;
+		
+		for (String nodeName : layout.nodeNames()) {
+			Coordinates coordinates = layout.coordinatesFor(nodeName);
+			if (coordinates._x < smallestX) smallestX = coordinates._x;
+			if (coordinates._y < smallestY) smallestY = coordinates._y;
+		}
+
+		float dx = -smallestX + MARGIN_PIXELS;
+		float dy = -smallestY + MARGIN_PIXELS;
+
+		CartesianLayout result = new CartesianLayout();
+		for (String nodeName : layout.nodeNames()) {
+			Coordinates coordinates = layout.coordinatesFor(nodeName);
+			result.keep(nodeName, coordinates.translatedBy(dx, dy));
+		}
+		return result;
+	}
+	
 }

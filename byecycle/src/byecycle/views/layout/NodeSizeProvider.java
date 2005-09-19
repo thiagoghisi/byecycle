@@ -1,4 +1,4 @@
-package byecycle.views.layout.algorithm;
+package byecycle.views.layout;
 
 import byecycle.dependencygraph.Node;
 

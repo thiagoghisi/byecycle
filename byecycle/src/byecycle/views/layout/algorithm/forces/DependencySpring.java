@@ -1,7 +1,7 @@
 package byecycle.views.layout.algorithm.forces;
 
-import byecycle.views.layout.GraphElement;
-import byecycle.views.layout.NodeFigure;
+import byecycle.views.layout.algorithm.GraphElement;
+import byecycle.views.layout.algorithm.NodeElement;
 
 public class DependencySpring extends DistanceBasedForce {
 
@@ -11,15 +11,15 @@ public class DependencySpring extends DistanceBasedForce {
     }
 	
 	@Override
-	public void actUpon(GraphElement element1, GraphElement element2) {
+	public void applyTo(GraphElement element1, GraphElement element2) {
 		
-		if (element1 instanceof NodeFigure && element2 instanceof NodeFigure) {
+		if (element1 instanceof NodeElement && element2 instanceof NodeElement) {
 		
-			NodeFigure figure1 = (NodeFigure)element1;
-			NodeFigure figure2 = (NodeFigure)element2;
-			if (figure1.dependsOn(figure2) ||
-				figure2.dependsOn(figure1)) {
-				super.actUpon(element1, element2);
+			NodeElement Element1 = (NodeElement)element1;
+			NodeElement Element2 = (NodeElement)element2;
+			if (Element1.dependsDirectlyOn(Element2) ||
+				Element2.dependsDirectlyOn(Element1)) {
+				super.applyTo(element1, element2);
 			}
 		}
 	}

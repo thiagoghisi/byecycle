@@ -24,11 +24,11 @@ import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.progress.UIJob;
 import byecycle.PackageDependencyAnalysis;
 import byecycle.dependencygraph.Node;
-import byecycle.views.layout.GraphCanvas;
-import byecycle.views.layout.algorithm.FloatRectangle;
-import byecycle.views.layout.algorithm.CartesianLayout;
+import byecycle.views.layout.CartesianLayout;
+import byecycle.views.layout.FloatRectangle;
+import byecycle.views.layout.NodeSizeProvider;
 import byecycle.views.layout.algorithm.LayoutAlgorithm;
-import byecycle.views.layout.algorithm.NodeSizeProvider;
+import byecycle.views.layout.ui.GraphCanvas;
 
 public class ByecycleView extends ViewPart implements IByecycleView {
 
@@ -37,7 +37,7 @@ public class ByecycleView extends ViewPart implements IByecycleView {
 
 	private IViewSite _site;
 
-	private LayoutAlgorithm _algorithm;
+	private LayoutAlgorithm<IBinding> _algorithm;
 
 	private Composite _parent;
 	private GraphCanvas<IBinding> _canvas;
@@ -77,7 +77,7 @@ public class ByecycleView extends ViewPart implements IByecycleView {
 				
 				_timeLastLayoutJobStarted = System.nanoTime();
 				_canvas.animationStep();
-				boolean improved = _algorithm.improveLayoutStep();
+				boolean improved = _algorithm.improveLayoutForAWhile();
 				this.schedule(nanosecondsToSleep() / 1000000);
 
 				if (improved) {
@@ -122,16 +122,7 @@ public class ByecycleView extends ViewPart implements IByecycleView {
 	}
 
 	private void newAlgorithm(Collection<Node<IBinding>> graph, CartesianLayout initialLayout) {
-		_algorithm = new LayoutAlgorithm(graph, initialLayout, new NodeSizeProvider(){
-			public FloatRectangle sizeGiven(Node node) {
-				FloatRectangle result = new FloatRectangle();
-				Rectangle size = _canvas.sizeGiven(node);
-				result._width = size.width;
-				result._height = size.height;
-				return result;
-			}
-			
-		});
+		_algorithm = new LayoutAlgorithm<IBinding>(graph, initialLayout, _canvas);
 	}
 
 	@Override

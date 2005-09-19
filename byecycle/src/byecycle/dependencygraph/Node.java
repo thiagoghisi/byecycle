@@ -6,7 +6,6 @@ package byecycle.dependencygraph;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
@@ -80,8 +79,8 @@ public class Node<PayloadType> {
         return _kind.toString().toLowerCase();
     }
 
-    public Iterator<Node<PayloadType>> providers() {
-        return _providers.iterator();
+    public Iterable<Node<PayloadType>> providers() {
+        return _providers;
     }
 
     public void addProvider(Node<PayloadType> provider) {

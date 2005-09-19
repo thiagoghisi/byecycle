@@ -1,9 +1,12 @@
 import java.util.Collection;
+import org.eclipse.jdt.core.dom.IBinding;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import byecycle.dependencygraph.Node;
-import byecycle.views.layout.GraphCanvas;
+import byecycle.views.layout.CartesianLayout;
+import byecycle.views.layout.algorithm.LayoutAlgorithm;
+import byecycle.views.layout.ui.GraphCanvas;
 
 public class StandAlone {
 
@@ -29,19 +32,19 @@ public class StandAlone {
 		FillLayout layout = new FillLayout();
 		shell.setLayout(layout);
 
-		GraphCanvas<String> canvas = new GraphCanvas<String>(shell, new GraphCanvas.Listener<String>(){
+		GraphCanvas<String> canvas = new GraphCanvas<String>(shell, _graph, CartesianLayout.random(), new GraphCanvas.Listener<String>(){
 			public void nodeSelected(Node<String> node) {
 				System.out.println("Node:" + node);
 			}
 		});
-		canvas.setGraph(_graph);
+		LayoutAlgorithm<String> algorithm = new LayoutAlgorithm<String>(_graph, CartesianLayout.random(), canvas);
 
 		shell.open();
 		shell.layout();
 
 		while (!shell.isDisposed()) {
 			while (!_display.readAndDispatch()) {
-				canvas.tryToImproveLayout();
+				algorithm.improveLayoutForAWhile();
 				_display.sleep();
 			}
 		}

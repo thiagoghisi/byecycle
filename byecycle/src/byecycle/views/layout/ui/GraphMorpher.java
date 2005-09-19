@@ -1,12 +1,12 @@
-package byecycle.views.layout;
+package byecycle.views.layout.ui;
 
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import org.eclipse.draw2d.geometry.Point;
-import byecycle.views.layout.algorithm.Coordinates;
-import byecycle.views.layout.algorithm.CartesianLayout;
+import byecycle.views.layout.CartesianLayout;
+import byecycle.views.layout.Coordinates;
 
 public class GraphMorpher {
 
@@ -18,7 +18,7 @@ public class GraphMorpher {
 	}
 
 	private void addNodeMorpherFor(NodeFigure<?> node, CartesianLayout targets) {
-		Coordinates myTarget = targets.getCoordinatesFor(node.name());
+		Coordinates myTarget = targets.coordinatesFor(node.name());
 		_nodeMorphers.add(new NodeMorpher(node, myTarget));
 	}
 

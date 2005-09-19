@@ -1,4 +1,4 @@
-package byecycle.views.layout.algorithm;
+package byecycle.views.layout;
 
 
 public class FloatRectangle {

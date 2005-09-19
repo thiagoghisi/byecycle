@@ -1,4 +1,4 @@
-package byecycle.views.layout.algorithm;
+package byecycle.views.layout;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -13,11 +13,11 @@ public class CartesianLayout implements Serializable {
 
 	private final Map<String, Coordinates> _coordinatesByName = new HashMap<String, Coordinates>();
 
-	public void remember(String name, Coordinates coordinates) {
+	public void keep(String name, Coordinates coordinates) {
 		_coordinatesByName.put(name, coordinates);
 	}
 
-	public Coordinates getCoordinatesFor(String name) {
+	public Coordinates coordinatesFor(String name) {
 		Coordinates result = _coordinatesByName.get(name);
 		return result == null ? randomCoordinates() : result;
 	}
@@ -30,6 +30,10 @@ public class CartesianLayout implements Serializable {
 
 	public static CartesianLayout random() {
 		return new CartesianLayout();
+	}
+
+	public Iterable<String> nodeNames() {
+		return _coordinatesByName.keySet();
 	}
 
 

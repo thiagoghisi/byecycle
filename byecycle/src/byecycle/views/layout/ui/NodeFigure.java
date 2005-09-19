@@ -1,6 +1,6 @@
 //Copyright (C) 2004 Klaus Wuestefeld and Rodrigo B de Oliveira.
 //This is free software. See the license distributed along with this file.
-package byecycle.views.layout;
+package byecycle.views.layout.ui;
 
 import java.util.Random;
 import org.eclipse.draw2d.Figure;
@@ -15,7 +15,7 @@ import org.eclipse.swt.graphics.Image;
 import byecycle.JavaType;
 import byecycle.dependencygraph.Node;
 
-public class NodeFigure<T> extends GraphElement {
+public class NodeFigure<T> extends GraphFigure {
 
 	public NodeFigure(Node<T> node) {
 		_node = node;
