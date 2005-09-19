@@ -53,6 +53,8 @@ public class PackageLayoutMap {
 			InputStream contents = file.getContents();
 			try {
 				return (CartesianLayout)new ObjectInputStream(contents).readObject();
+			} catch (ClassNotFoundException expectedForOldCacheFiles) {
+				return null;
 			} finally {
 				contents.close();
 			}

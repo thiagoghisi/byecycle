@@ -7,7 +7,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IPackageFragment;
@@ -25,8 +24,6 @@ import org.eclipse.ui.progress.UIJob;
 import byecycle.PackageDependencyAnalysis;
 import byecycle.dependencygraph.Node;
 import byecycle.views.layout.CartesianLayout;
-import byecycle.views.layout.FloatRectangle;
-import byecycle.views.layout.NodeSizeProvider;
 import byecycle.views.layout.algorithm.LayoutAlgorithm;
 import byecycle.views.layout.ui.GraphCanvas;
 
@@ -67,13 +64,13 @@ public class ByecycleView extends ViewPart implements IByecycleView {
 
 			@Override
 			public IStatus runInUIThread(IProgressMonitor monitor) {
-			
-				if (_canvas == null || _canvas.isDisposed() || monitor.isCanceled())
+				if (monitor.isCanceled())
 					return Status.OK_STATUS;
 
-				checkForNewGraph();
-
 				if (_paused) return Status.OK_STATUS;
+
+				checkForNewGraph();
+				if (_canvas == null || _canvas.isDisposed()) return Status.OK_STATUS;
 				
 				_timeLastLayoutJobStarted = System.nanoTime();
 				_canvas.animationStep();

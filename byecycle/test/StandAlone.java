@@ -1,5 +1,4 @@
 import java.util.Collection;
-import org.eclipse.jdt.core.dom.IBinding;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
@@ -44,7 +43,10 @@ public class StandAlone {
 
 		while (!shell.isDisposed()) {
 			while (!_display.readAndDispatch()) {
-				algorithm.improveLayoutForAWhile();
+				
+				if (algorithm.improveLayoutForAWhile())
+					canvas.useLayout(algorithm.layoutMemento());
+				
 				_display.sleep();
 			}
 		}

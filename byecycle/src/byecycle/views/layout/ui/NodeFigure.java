@@ -69,7 +69,11 @@ public class NodeFigure<T> extends GraphFigure {
 
 	private static Image imageForNode(Node<?> node) {
 		String resourcename = node.kind2().getResourceName();
-		return JavaUI.getSharedImages().getImage(resourcename);
+		try {
+			return JavaUI.getSharedImages().getImage(resourcename);
+		} catch (NoClassDefFoundError ignored) {
+			return null;
+		}
 	}
 
 	private static Color pastelColorDeterminedBy(String string) {
