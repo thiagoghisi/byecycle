@@ -73,10 +73,11 @@ class Relaxer {
 			return;
 		}
 
-		_hasConverged = greatestForce < 0.0003;
+		_hasConverged = greatestForce < 0.00003;
 		if (_hasConverged) return;
 		
-		float timeFrame = 0.03f / greatestForce;
+		float timeFrame = 0.3f / greatestForce;
+		if (timeFrame > 100) timeFrame = 100; 
 		System.out.println(timeFrame);
 		for (NodeElement node : _nodeElements)
 			node.give(timeFrame);
