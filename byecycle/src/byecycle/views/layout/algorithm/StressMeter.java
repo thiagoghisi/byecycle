@@ -4,8 +4,16 @@
 package byecycle.views.layout.algorithm;
 
 
-interface StressMeter {
+class StressMeter {
 
-	void addStress(float stress);
+	float _reading;
+
+	void addStress(float stress) {
+		_reading += stress;
+	}
+	
+	void reset() {
+		_reading = 0;
+	}
 	
 }

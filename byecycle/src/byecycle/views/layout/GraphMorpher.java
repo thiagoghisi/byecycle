@@ -6,18 +6,18 @@ import java.util.LinkedList;
 import java.util.List;
 import org.eclipse.draw2d.geometry.Point;
 import byecycle.views.layout.algorithm.Coordinates;
-import byecycle.views.layout.algorithm.GraphLayoutMemento;
+import byecycle.views.layout.algorithm.CartesianLayout;
 
 public class GraphMorpher {
 
 	private final List<NodeMorpher> _nodeMorphers = new LinkedList<NodeMorpher>();
 
-	public <T> GraphMorpher(Collection<NodeFigure<T>> nodes, GraphLayoutMemento targets) {
+	public <T> GraphMorpher(Collection<NodeFigure<T>> nodes, CartesianLayout targets) {
 		for (NodeFigure<T> node : nodes)
 			addNodeMorpherFor(node, targets);
 	}
 
-	private void addNodeMorpherFor(NodeFigure<?> node, GraphLayoutMemento targets) {
+	private void addNodeMorpherFor(NodeFigure<?> node, CartesianLayout targets) {
 		Coordinates myTarget = targets.getCoordinatesFor(node.name());
 		_nodeMorphers.add(new NodeMorpher(node, myTarget));
 	}

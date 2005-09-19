@@ -20,39 +20,39 @@ import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaModelException;
-import byecycle.views.layout.algorithm.GraphLayoutMemento;
+import byecycle.views.layout.algorithm.CartesianLayout;
 
 public class PackageLayoutMap {
 
 	private static final String FILE_EXTENSION = ".serialized";
 	
 	private final WorkspaceJob _saveJob = createSaveJob();
-	private Map<IPackageFragment, GraphLayoutMemento> _scheduledSaves;
+	private Map<IPackageFragment, CartesianLayout> _scheduledSaves;
 	private final Object _scheduledSavesMonitor = new Object();
 
-	public GraphLayoutMemento getLayoutFor(IPackageFragment aPackage) {
-		GraphLayoutMemento newest = mementoToBeWrittenFor(aPackage);
+	public CartesianLayout getLayoutFor(IPackageFragment aPackage) {
+		CartesianLayout newest = mementoToBeWrittenFor(aPackage);
 		if (newest != null) return newest;
 		
 		return read(aPackage);
 		//TODO: Optimize: Use an LRU cache. This is not so urgent because Eclipse apparently does a lot of caching of the workspace files.
 	}
 
-	private GraphLayoutMemento mementoToBeWrittenFor(IPackageFragment aPackage) {
+	private CartesianLayout mementoToBeWrittenFor(IPackageFragment aPackage) {
 		synchronized (_scheduledSavesMonitor) {
 			if (_scheduledSaves == null) return null;
 			return _scheduledSaves.get(aPackage);
 		}
 	}
 
-	private GraphLayoutMemento read(IPackageFragment aPackage) {
+	private CartesianLayout read(IPackageFragment aPackage) {
 		try {
 			IFile file = fileForReading(aPackage);
 			if (file == null) return null;
 			
 			InputStream contents = file.getContents();
 			try {
-				return (GraphLayoutMemento)new ObjectInputStream(contents).readObject();
+				return (CartesianLayout)new ObjectInputStream(contents).readObject();
 			} finally {
 				contents.close();
 			}
@@ -62,18 +62,18 @@ public class PackageLayoutMap {
 		}
 	}
 
-	public void keep(IPackageFragment aPackage, GraphLayoutMemento memento) {
+	public void keep(IPackageFragment aPackage, CartesianLayout memento) {
 		scheduleSave(aPackage, memento);
 	}
 	
-	private void scheduleSave(IPackageFragment aPackage, GraphLayoutMemento memento) {
+	private void scheduleSave(IPackageFragment aPackage, CartesianLayout memento) {
 		synchronized (_scheduledSavesMonitor) {
 			scheduledSaves().put(aPackage, memento);
 		}
 		_saveJob.schedule(1000 * 10);
 	}
 
-	private void save(IPackageFragment aPackage, GraphLayoutMemento memento) {
+	private void save(IPackageFragment aPackage, CartesianLayout memento) {
 		try {
 			IFile file = createTimestampedFileToAvoidScmMergeConflicts(aPackage);
 
@@ -86,7 +86,7 @@ public class PackageLayoutMap {
 	}
 
 	private void performScheduledSaves() {
-		Map<IPackageFragment, GraphLayoutMemento> mySaves;
+		Map<IPackageFragment, CartesianLayout> mySaves;
 		synchronized (_scheduledSavesMonitor) {
 			mySaves = scheduledSaves();
 			_scheduledSaves = null;
@@ -183,10 +183,10 @@ public class PackageLayoutMap {
 		return job;
 	}
 
-	private Map<IPackageFragment, GraphLayoutMemento> scheduledSaves() {
+	private Map<IPackageFragment, CartesianLayout> scheduledSaves() {
 		synchronized (_scheduledSavesMonitor) {
 			if (_scheduledSaves == null)
-				_scheduledSaves = new HashMap<IPackageFragment, GraphLayoutMemento>();
+				_scheduledSaves = new HashMap<IPackageFragment, CartesianLayout>();
 			return _scheduledSaves;
 		}
 	}

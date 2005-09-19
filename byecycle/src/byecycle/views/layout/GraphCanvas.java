@@ -21,7 +21,7 @@ import org.eclipse.jdt.core.dom.IBinding;
 import org.eclipse.swt.widgets.Composite;
 import byecycle.JavaType;
 import byecycle.dependencygraph.Node;
-import byecycle.views.layout.algorithm.GraphLayoutMemento;
+import byecycle.views.layout.algorithm.CartesianLayout;
 
 
 public class GraphCanvas<T> extends FigureCanvas {
@@ -30,7 +30,7 @@ public class GraphCanvas<T> extends FigureCanvas {
 		void nodeSelected(Node<LT> node);
 	}
 
-	public GraphCanvas(Composite parent, Collection<Node<IBinding>> graph, GraphLayoutMemento initialLayout, Listener<T> listener) {
+	public GraphCanvas(Composite parent, Collection<Node<IBinding>> graph, CartesianLayout initialLayout, Listener<T> listener) {
 		super(parent);
 
 		this.setContents(_graphFigure);
@@ -75,7 +75,7 @@ public class GraphCanvas<T> extends FigureCanvas {
 	}
 
 
-	public void setGraph(Iterable<Node<T>> nodeGraph, GraphLayoutMemento initialLayout) {
+	public void setGraph(Iterable<Node<T>> nodeGraph, CartesianLayout initialLayout) {
 		initGraphElements(nodeGraph);
 		initGraphFigure();
 
@@ -142,7 +142,7 @@ public class GraphCanvas<T> extends FigureCanvas {
 		setGraph(_graph, null);
 	}
 
-	public void useLayout(GraphLayoutMemento newLayout) {
+	public void useLayout(CartesianLayout newLayout) {
 		_morpher = new GraphMorpher(nodeFigures(), newLayout);
 	}
 

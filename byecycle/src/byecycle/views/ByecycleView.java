@@ -26,7 +26,7 @@ import byecycle.PackageDependencyAnalysis;
 import byecycle.dependencygraph.Node;
 import byecycle.views.layout.GraphCanvas;
 import byecycle.views.layout.algorithm.FloatRectangle;
-import byecycle.views.layout.algorithm.GraphLayoutMemento;
+import byecycle.views.layout.algorithm.CartesianLayout;
 import byecycle.views.layout.algorithm.LayoutAlgorithm;
 import byecycle.views.layout.algorithm.NodeSizeProvider;
 
@@ -77,11 +77,11 @@ public class ByecycleView extends ViewPart implements IByecycleView {
 				
 				_timeLastLayoutJobStarted = System.nanoTime();
 				_canvas.animationStep();
-				boolean improved = _algorithm.tryToImproveLayout();
+				boolean improved = _algorithm.improveLayoutStep();
 				this.schedule(nanosecondsToSleep() / 1000000);
 
 				if (improved) {
-					GraphLayoutMemento bestSoFar = _algorithm.layoutMemento();
+					CartesianLayout bestSoFar = _algorithm.layoutMemento();
 					_canvas.useLayout(bestSoFar);
 					_layoutCache.keep(_packageBeingDisplayed, bestSoFar);
 				}
@@ -98,9 +98,9 @@ public class ByecycleView extends ViewPart implements IByecycleView {
 					myGraph = _selectedPackageGraph;
 					_selectedPackageGraph = null;
 				}
-				GraphLayoutMemento bestSoFar = _layoutCache.getLayoutFor(_packageBeingDisplayed);
+				CartesianLayout bestSoFar = _layoutCache.getLayoutFor(_packageBeingDisplayed);
 				if (bestSoFar == null)
-					bestSoFar = GraphLayoutMemento.random();
+					bestSoFar = CartesianLayout.random();
 
 				newCanvas((Collection<Node<IBinding>>)myGraph, bestSoFar);
 				newAlgorithm((Collection<Node<IBinding>>)myGraph, bestSoFar);
@@ -111,7 +111,7 @@ public class ByecycleView extends ViewPart implements IByecycleView {
 		_layoutJob.setPriority(Job.DECORATE); //Low priority;
 	}
 
-	private void newCanvas(Collection<Node<IBinding>> graph, GraphLayoutMemento initialLayout) {
+	private void newCanvas(Collection<Node<IBinding>> graph, CartesianLayout initialLayout) {
 		if (_canvas != null) _canvas.dispose();
 		
 		_canvas = new GraphCanvas<IBinding>(_parent, graph, initialLayout, new GraphCanvas.Listener<IBinding>() {
@@ -121,7 +121,7 @@ public class ByecycleView extends ViewPart implements IByecycleView {
 		});
 	}
 
-	private void newAlgorithm(Collection<Node<IBinding>> graph, GraphLayoutMemento initialLayout) {
+	private void newAlgorithm(Collection<Node<IBinding>> graph, CartesianLayout initialLayout) {
 		_algorithm = new LayoutAlgorithm(graph, initialLayout, new NodeSizeProvider(){
 			public FloatRectangle sizeGiven(Node node) {
 				FloatRectangle result = new FloatRectangle();

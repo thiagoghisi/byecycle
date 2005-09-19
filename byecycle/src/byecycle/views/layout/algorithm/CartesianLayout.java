@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
-public class GraphLayoutMemento implements Serializable {
+public class CartesianLayout implements Serializable {
 	
 	private static final long serialVersionUID = 1L;
 
@@ -28,8 +28,8 @@ public class GraphLayoutMemento implements Serializable {
 		return new Coordinates(x, y);
 	}
 
-	public static GraphLayoutMemento random() {
-		return new GraphLayoutMemento();
+	public static CartesianLayout random() {
+		return new CartesianLayout();
 	}
 
 
