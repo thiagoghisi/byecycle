@@ -10,7 +10,6 @@ import org.eclipse.draw2d.PolygonDecoration;
 import org.eclipse.draw2d.PolylineConnection;
 import org.eclipse.draw2d.geometry.PointList;
 import org.eclipse.swt.graphics.Color;
-import byecycle.views.layout.algorithm.Coordinates;
 
 
 class DependencyFigure extends GraphElement {
@@ -27,21 +26,6 @@ class DependencyFigure extends GraphElement {
 		_provider = provider;
 	
 	}
-
-    public Coordinates candidatePosition() {
-		Coordinates p1 = _dependent.candidatePosition();
-		Coordinates p2 = _provider.candidatePosition();
-		float centerX = (p1._x + p2._x) / 2;
-		float centerY = (p1._y + p2._y) / 2;
-		return new Coordinates(centerX, centerY);
-	}
-
-	public void addForceComponents(float x, float y) {
-        float halfX = x / 2;
-		float halfY = y / 2;
-		_dependent.addForceComponents(halfX, halfY);
-        _provider.addForceComponents(halfX, halfY);
-    }
 	
 	IFigure produceFigure() {
 		_arrow = new PolylineConnection();

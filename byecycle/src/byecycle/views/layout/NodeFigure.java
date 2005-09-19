@@ -88,4 +88,8 @@ public class NodeFigure<T> extends GraphElement {
 		this.figure().setLocation(point);
 	}
 
+	public Point position() {
+		return this.figure().getBounds().getLocation();
+	}
+
 }

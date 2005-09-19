@@ -4,26 +4,11 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import org.eclipse.draw2d.geometry.Point;
 import byecycle.views.layout.algorithm.Coordinates;
 import byecycle.views.layout.algorithm.GraphLayoutMemento;
 
 public class GraphMorpher {
-
-	private static class NodeMorpher {
-
-		NodeMorpher(NodeFigure<?> figure, Coordinates target) {
-			// TODO Auto-generated constructor stub
-		}
-
-		void morphingStep() {
-			// TODO Auto-generated method stub
-		}
-
-		public boolean onTarget() {
-			// TODO Auto-generated method stub
-			return false;
-		}
-	}
 
 	private final List<NodeMorpher> _nodeMorphers = new LinkedList<NodeMorpher>();
 
@@ -50,4 +35,41 @@ public class GraphMorpher {
 		return _nodeMorphers.isEmpty();
 	}
 
+	
+	private static class NodeMorpher {
+
+		private static final int MAX_ANIMATION_STEP_PIXELS = 3;
+		private final NodeFigure<?> _figure;
+		private final int _targetX;
+		private final int _targetY;
+
+		NodeMorpher(NodeFigure<?> figure, Coordinates target) {
+			_figure = figure;
+			_targetX = Math.round(target._x);
+			_targetY = Math.round(target._y);
+		}
+
+		void morphingStep() {
+			int newX = currentX();
+			int newY = currentY();
+			
+			int step = MAX_ANIMATION_STEP_PIXELS;
+			int dX = Math.max(Math.min(_targetX - newX, step), -step);
+			int dY = Math.max(Math.min(_targetY - newY, step), -step);
+			
+			newX += dX;
+			newY += dY;
+			
+			_figure.position(new Point(newX, newY));
+		}
+
+		private int currentX() { return _figure.position().x; }
+		private int currentY() { return _figure.position().y; }
+
+		public boolean onTarget() {
+			return currentX() == _targetX && currentY() == _targetY;
+		}
+	}
+
+	
 }
