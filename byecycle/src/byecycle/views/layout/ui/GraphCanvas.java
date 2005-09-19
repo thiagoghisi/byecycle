@@ -97,8 +97,12 @@ public class GraphCanvas<T> extends FigureCanvas implements NodeSizeProvider {
 	}
 	
 	private void initGraphFigure() {
-		for (NodeFigure<?> nodeFigure : nodeFigures())
-			_graphFigure.add(nodeFigure.figure());
+		for (NodeFigure<?> nodeFigure : nodeFigures()) {
+			IFigure figure = nodeFigure.figure();
+			_graphFigure.add(figure);
+			figure.setSize(figure.getPreferredSize());
+		}
+		
 		for (DependencyFigure dependencyFigure : _dependencyFigures)
 			_graphFigure.add(dependencyFigure.figure());
 	}

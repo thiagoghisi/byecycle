@@ -23,8 +23,8 @@ public class CartesianLayout implements Serializable {
 	}
 	
 	private Coordinates randomCoordinates() {
-		float x = _random.nextFloat();
-		float y = _random.nextFloat();
+		float x = _random.nextFloat() * 200;
+		float y = _random.nextFloat() * 200;
 		return new Coordinates(x, y);
 	}
 

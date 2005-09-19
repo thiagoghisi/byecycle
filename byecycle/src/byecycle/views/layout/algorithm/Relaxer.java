@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import byecycle.views.layout.algorithm.forces.DependencySpring;
 import byecycle.views.layout.algorithm.forces.Force;
+import byecycle.views.layout.algorithm.forces.Gravity;
 import byecycle.views.layout.algorithm.forces.MutualExclusion;
 import byecycle.views.layout.algorithm.forces.StaticElectricity;
 import byecycle.views.layout.algorithm.forces.SuperiorityComplex;
@@ -11,6 +12,7 @@ import byecycle.views.layout.algorithm.forces.SuperiorityComplex;
 class Relaxer {
 
 	private static final Force STATIC_ELECTRICITY = new StaticElectricity();
+	private static final Force GRAVITY = new Gravity();
 	private static final Force DEPENDENCY_SPRING = new DependencySpring();
 	private static final Force SUPERIORITY_COMPLEX = new SuperiorityComplex();
 	private static final Force MUTUAL_EXCLUSION = new MutualExclusion();
@@ -59,6 +61,7 @@ class Relaxer {
 		    	GraphElement element2 = _graphElements.get(j);
 		
 		    	STATIC_ELECTRICITY.applyTo(element1, element2);
+		    	GRAVITY.applyTo(element1, element2);
 				DEPENDENCY_SPRING.applyTo(element1, element2);
 				SUPERIORITY_COMPLEX.applyTo(element1, element2);
 				MUTUAL_EXCLUSION.applyTo(element1, element2);
@@ -73,7 +76,8 @@ class Relaxer {
 	}
 
 	private void calmDownToConverge() {
-		_impetus *= 0.9;
+			//_impetus *= 0.9;
+			System.out.println(_impetus);
 	}
 	
 }

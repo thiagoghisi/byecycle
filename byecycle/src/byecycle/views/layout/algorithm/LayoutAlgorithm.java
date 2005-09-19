@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Random;
 import byecycle.dependencygraph.Node;
 import byecycle.views.layout.CartesianLayout;
+import byecycle.views.layout.Coordinates;
 import byecycle.views.layout.NodeSizeProvider;
 
 public class LayoutAlgorithm<T> {
@@ -93,7 +94,9 @@ public class LayoutAlgorithm<T> {
 		NodeElement node1 = randomNode();
 		NodeElement node2 = anotherRandomNode(node1);
 		
-		node1.addForceComponents(nudgeX, nudgeY, node2);
+		//node1.addForceComponents(nudgeX, nudgeY, node2);
+		node1.position(new Coordinates(nudgeX, nudgeY));
+		node2.position(new Coordinates(-nudgeX, -nudgeY));
 	}
 
 	private float nudge() {
@@ -124,7 +127,7 @@ public class LayoutAlgorithm<T> {
 		return false;
 	}
 
-	private boolean improveLayoutStep() {
+	public boolean improveLayoutStep() {
 		relaxer().step();
 		
 		if (_stressMeter._reading < _lowestStressEver) {

@@ -32,6 +32,9 @@ import byecycle.views.layout.FloatRectangle;
 
 	private int _height;
 
+	private float _velocityX;
+	private float _velocityY;
+
 	Node node() {
 		return _node;
 	}
@@ -45,23 +48,42 @@ import byecycle.views.layout.FloatRectangle;
 	}
 
 	protected void addForceComponents(float x, float y) {
-		_pendingForceX += x;
-		_pendingForceY += y;
+		_pendingForceX += Math.max(Math.min(x, 0.05), -0.05);
+		_pendingForceY += Math.max(Math.min(y, 0.05), -0.05);
 		_stressMeter.addStress((float) Math.hypot(x, y));
 	}
 
 	/** "Give: To yield to physical force." Dictionary.com */
-	void give(float impetus) { 		//TODO: Consider implementing inertia.
-		_x += _pendingForceX * impetus;
-		_y += _pendingForceY * impetus;
+	void give(float impetus) {
 		
+		if (detectPotentialQuivering(_velocityX, _pendingForceX)) _pendingForceX = 0;
+		if (detectPotentialQuivering(_velocityY, _pendingForceY)) _pendingForceY = 0;
+		
+		_velocityX = (_velocityX + _pendingForceX) * 0.93f;
+		_velocityY = (_velocityY + _pendingForceY) * 0.93f;
+
 		_pendingForceX = 0;
 		_pendingForceY = 0;
+
+		float newX = _x + (_velocityX * impetus);
+		float newY = _y + (_velocityY * impetus);
+		position(newX, newY);
+	}
+
+	private boolean detectPotentialQuivering(float velocity, float pendingForce) {
+		if (velocity == 0) return false;
+		boolean changingDirection = (velocity < 0) == (velocity + pendingForce < 0);
+		return changingDirection;
 	}
 
 	void position(Coordinates coordinates) {
-		_x = coordinates._x;
-		_y = coordinates._y;
+		position(coordinates._x, coordinates._y);
+	}
+
+	private void position(float x, float y) {
+		_x = x;
+		_y = y;
+		positionAura();
 	}
 
 	public boolean dependsDirectlyOn(NodeElement other) {
@@ -77,13 +99,6 @@ import byecycle.views.layout.FloatRectangle;
 
 	public FloatRectangle aura() {
 		return _aura;
-	}
-
-
-	void translateBy(float dx, float dy) {
-		_x += dx;
-		_y += dy;
-		positionAura();
 	}
 
 	private void positionAura() {

@@ -17,7 +17,7 @@ public class MutualExclusion extends DistanceBasedForce {
 		NodeElement Element2 = (NodeElement)element2;
 		
 		float area = Element1.aura().areaOfIntersection(Element2.aura());
-		return -0.0000001f * (float)Math.pow(area, 1.5);
+		return -0.005f * (float)Math.pow(area, 1.2);
 	}
 
 	float intensityGiven(float distance) {

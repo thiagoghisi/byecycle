@@ -43,9 +43,18 @@ public class StandAlone {
 
 		while (!shell.isDisposed()) {
 			while (!_display.readAndDispatch()) {
+//				try {
+//					Thread.sleep(50);
+//				} catch (InterruptedException e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//				}
 				
-				if (algorithm.improveLayoutForAWhile())
+				boolean improved = algorithm.improveLayoutForAWhile();
+				//if (improved)
 					canvas.useLayout(algorithm.layoutMemento());
+				
+				canvas.animationStep();
 				
 				_display.sleep();
 			}
@@ -53,7 +62,7 @@ public class StandAlone {
 	}
 
 	private Collection<Node<String> > graph() {
-	    String[] names = new String[36];
+	    String[] names = new String[16];
 	    for (int i = 0; i < names.length; i++) {
             //names[i] = "Node skdjfhskdfh.sdkfskdlf.sdfksdfj" + i;
             names[i] = "Node " + i;

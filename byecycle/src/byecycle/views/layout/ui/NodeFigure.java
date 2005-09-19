@@ -45,8 +45,6 @@ public class NodeFigure<T> extends GraphFigure {
 		result.setBorder(new LineBorder());
 		result.setBackgroundColor(pastelColorDeterminedBy(name));
 		result.setOpaque(true);
-
-		//result.setSize(getPreferredSize()); //TODO Is this necessary?
 		
 		return result;
 	}

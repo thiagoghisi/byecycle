@@ -116,6 +116,7 @@ public class ByecycleView extends ViewPart implements IByecycleView {
 				selectNode(node);
 			}
 		});
+		_parent.layout();
 	}
 
 	private void newAlgorithm(Collection<Node<IBinding>> graph, CartesianLayout initialLayout) {
