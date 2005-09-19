@@ -48,30 +48,32 @@ import byecycle.views.layout.FloatRectangle;
 	}
 
 	protected void addForceComponents(float x, float y) {
-		_pendingForceX += Math.max(Math.min(x, 0.05), -0.05);
-		_pendingForceY += Math.max(Math.min(y, 0.05), -0.05);
+		_pendingForceX += x;
+		_pendingForceY += y;
 		_stressMeter.addStress((float) Math.hypot(x, y));
 	}
 
+	float pendingForceMagnitude() {
+		return (float)Math.hypot(_pendingForceX, _pendingForceY);
+	}
+	
 	/** "Give: To yield to physical force." Dictionary.com */
-	void give(float impetus) {
-		
-		if (detectPotentialQuivering(_velocityX, _pendingForceX)) _pendingForceX = 0;
-		if (detectPotentialQuivering(_velocityY, _pendingForceY)) _pendingForceY = 0;
-		
-		_velocityX = (_velocityX + _pendingForceX) * 0.93f;
-		_velocityY = (_velocityY + _pendingForceY) * 0.93f;
+	void give(float timeFrame) {
+		if (detectPotentialQuivering(_velocityX, _pendingForceX)) {_pendingForceX *= 0.5; }
+		if (detectPotentialQuivering(_velocityY, _pendingForceY)) {_pendingForceY *= 0.5; }
+
+		_velocityX = (_velocityX + (_pendingForceX * timeFrame)) * 0.8f;
+		_velocityY = (_velocityY + (_pendingForceY * timeFrame)) * 0.8f;
 
 		_pendingForceX = 0;
 		_pendingForceY = 0;
 
-		float newX = _x + (_velocityX * impetus);
-		float newY = _y + (_velocityY * impetus);
+		float newX = _x + (_velocityX * timeFrame);
+		float newY = _y + (_velocityY * timeFrame);
 		position(newX, newY);
 	}
 
 	private boolean detectPotentialQuivering(float velocity, float pendingForce) {
-		if (velocity == 0) return false;
 		boolean changingDirection = (velocity < 0) == (velocity + pendingForce < 0);
 		return changingDirection;
 	}

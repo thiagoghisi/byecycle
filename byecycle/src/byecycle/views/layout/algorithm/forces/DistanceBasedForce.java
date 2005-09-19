@@ -15,7 +15,7 @@ public abstract class DistanceBasedForce implements Force {
 		Coordinates p1 = element1.position();
 		Coordinates p2 = element2.position();
 		
-		float distance = (float)Math.max(p1.getDistance(p2), 2);
+		float distance = (float)Math.max(p1.getDistance(p2), 0.1);
 		float intensity = this.intensityGiven(element1, element2, distance);
 		
 		float xComponent = ((p2._x - p1._x) / distance) * intensity;

@@ -84,6 +84,12 @@ public class LayoutAlgorithm<T> {
 	}
 
 	private void prepareToSeekNonLocalMinimum() {
+		System.out.println("NUDGE ==============================================");
+		System.out.println("NUDGE ==============================================");
+		System.out.println("NUDGE ==============================================");
+		System.out.println("NUDGE ==============================================");
+		System.out.println("NUDGE ==============================================");
+		System.out.println("NUDGE ==============================================");
 		nudgeNudge();
 	}
 
@@ -94,7 +100,6 @@ public class LayoutAlgorithm<T> {
 		NodeElement node1 = randomNode();
 		NodeElement node2 = anotherRandomNode(node1);
 		
-		//node1.addForceComponents(nudgeX, nudgeY, node2);
 		node1.position(new Coordinates(nudgeX, nudgeY));
 		node2.position(new Coordinates(-nudgeX, -nudgeY));
 	}
@@ -129,6 +134,8 @@ public class LayoutAlgorithm<T> {
 
 	public boolean improveLayoutStep() {
 		relaxer().step();
+		
+		if (_relaxer.hasConverged()) return true; //FIXME Use StressMeter
 		
 		if (_stressMeter._reading < _lowestStressEver) {
 			_lowestStressEver = _stressMeter._reading;
