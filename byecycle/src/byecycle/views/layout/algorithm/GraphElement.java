@@ -3,24 +3,17 @@
 
 package byecycle.views.layout.algorithm;
 
-import org.eclipse.draw2d.IFigure;
-import byecycle.views.layout.algorithm.Coordinates;
+import byecycle.views.layout.Coordinates;
 
 
 public abstract class GraphElement {
 
-    private IFigure _figure;
+	public abstract Coordinates position();
 
-	public abstract Coordinates candidatePosition();
-
-	public abstract void addForceComponents(float f, float g);
-	
-	IFigure figure() {
-		return _figure == null
-			? _figure = produceFigure()
-			: _figure;
+	public void addForceComponents(float x, float y, GraphElement counterpart) {
+		addForceComponents(x, y);
+		counterpart.addForceComponents(-x, -y);
 	}
 
-	abstract IFigure produceFigure();
-	
+	protected abstract void addForceComponents(float f, float g);
 }

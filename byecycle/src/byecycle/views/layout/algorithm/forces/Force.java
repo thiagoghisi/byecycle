@@ -3,10 +3,10 @@
 
 package byecycle.views.layout.algorithm.forces;
 
-import byecycle.views.layout.GraphElement;
+import byecycle.views.layout.algorithm.GraphElement;
 
 public interface Force {
 	
-	void actUpon(GraphElement element1, GraphElement element2);
+	void applyTo(GraphElement element1, GraphElement element2);
 
 }
