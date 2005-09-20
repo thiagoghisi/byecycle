@@ -1,7 +1,7 @@
 package byecycle.views.layout.algorithm;
 
 class Constants {
-	
+
 	static final float AURA_THICKNESS = 20;
 
 	static final float INITIAL_IMPETUS = 10;

@@ -32,6 +32,7 @@ import org.eclipse.jdt.core.dom.TypeDeclaration;
 import byecycle.dependencygraph.Node;
 import byecycle.preferences.PreferenceConstants;
 
+
 public class PackageDependencyAnalysis {
 	private final Map<String, Node<IBinding>> _nodes = new HashMap<String, Node<IBinding>>();
 
@@ -39,26 +40,26 @@ public class PackageDependencyAnalysis {
 
 	private List<Pattern> _excludedClassPattern;
 
-    public PackageDependencyAnalysis(ICompilationUnit[] compilationUnits,
-            IProgressMonitor monitor) throws JavaModelException {
+
+	public PackageDependencyAnalysis(ICompilationUnit[] compilationUnits, IProgressMonitor monitor) throws JavaModelException {
 
 		if (null == monitor) {
 			monitor = new NullProgressMonitor();
 		}
-		
+
 		ASTParser parser = ASTParser.newParser(AST.JLS3);
-		
+
 		DependencyVisitor visitor = new DependencyVisitor();
-		
+
 		monitor.beginTask("dependency analysis", compilationUnits.length);
-		
+
 		for (ICompilationUnit each : compilationUnits) {
 			parser.setResolveBindings(true);
 			parser.setSource(each);
-			
+
 			monitor.subTask(each.getElementName());
-			
-			CompilationUnit node = (CompilationUnit) parser.createAST(monitor);
+
+			CompilationUnit node = (CompilationUnit)parser.createAST(monitor);
 			node.accept(visitor);
 			monitor.worked(1);
 			if (monitor.isCanceled()) {
@@ -88,13 +89,12 @@ public class PackageDependencyAnalysis {
 	}
 
 	private boolean ignorePackage(String packageName) {
-        return getExcludedPackages().contains(packageName);
+		return getExcludedPackages().contains(packageName);
 	}
 
 	private List<String> getExcludedPackages() {
 		if (_excludedPackages == null) {
-			_excludedPackages = Arrays.asList(ByecyclePlugin.getDefault().getPreferenceStore().getString(
-					PreferenceConstants.P_PACKAGE_EXCLUDES).split("\\s+"));
+			_excludedPackages = Arrays.asList(ByecyclePlugin.getDefault().getPreferenceStore().getString(PreferenceConstants.P_PACKAGE_EXCLUDES).split("\\s+"));
 		}
 		return _excludedPackages;
 	}
@@ -102,8 +102,7 @@ public class PackageDependencyAnalysis {
 	private List<Pattern> getClassExcludePattern() {
 		if (_excludedClassPattern == null) {
 			_excludedClassPattern = new ArrayList<Pattern>();
-			for (String str : ByecyclePlugin.getDefault().getPreferenceStore().getString(PreferenceConstants.P_PATTERN_EXCLUDES)
-					.split("\\s+")) {
+			for (String str : ByecyclePlugin.getDefault().getPreferenceStore().getString(PreferenceConstants.P_PATTERN_EXCLUDES).split("\\s+")) {
 				_excludedClassPattern.add(Pattern.compile(str));
 			}
 		}
@@ -119,10 +118,12 @@ public class PackageDependencyAnalysis {
 		return false;
 	}
 
+
 	class DependencyVisitor extends ASTVisitor {
 		private Node<IBinding> _currentNode;
 
 		private String _currentPackageName;
+
 
 		private boolean visit0(AbstractTypeDeclaration node) {
 			Node<IBinding> saved = _currentNode;
@@ -140,7 +141,7 @@ public class PackageDependencyAnalysis {
 			_currentNode = saved;
 			_currentPackageName = savedPackage;
 			return false;
-			
+
 		}
 
 		@Override
@@ -165,7 +166,7 @@ public class PackageDependencyAnalysis {
 
 		private void visitList(List l) {
 			for (Iterator iter = l.iterator(); iter.hasNext();) {
-				ASTNode child = (ASTNode) iter.next();
+				ASTNode child = (ASTNode)iter.next();
 				child.accept(this);
 			}
 		}
@@ -216,11 +217,13 @@ public class PackageDependencyAnalysis {
 				}
 				return;
 			}
-			if (type.getQualifiedName().equals(""))	return; // TODO: Check why this happens.
+			if (type.getQualifiedName().equals(""))
+				return; // TODO: Check why this happens.
 
 			String packageName = type.getPackage().getName();
-			if (ignorePackage(packageName))	return;
-			
+			if (ignorePackage(packageName))
+				return;
+
 			if (isSelectedPackage(packageName)) {
 				if (type.isParameterizedType()) { // if Map<K,V>
 					for (ITypeBinding subtype : type.getTypeArguments()) { // <K,V>
@@ -239,8 +242,7 @@ public class PackageDependencyAnalysis {
 				}
 				return;
 			}
-            _currentNode.addProvider(getNode(type.getPackage(), packageName,
-                    JavaType.PACKAGE));
+			_currentNode.addProvider(getNode(type.getPackage(), packageName, JavaType.PACKAGE));
 		}
 	}
 }

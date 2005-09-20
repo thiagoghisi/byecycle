@@ -15,18 +15,19 @@ import org.eclipse.swt.graphics.Image;
 import byecycle.JavaType;
 import byecycle.dependencygraph.Node;
 
+
 public class NodeFigure<T> extends GraphFigure {
 
 	public NodeFigure(Node<T> node) {
 		_node = node;
 	}
 
+
 	private final Node<T> _node;
 
+
 	private Label label(String text, Image icon) {
-		return icon == null
-			? new Label(" " + text, icon)
-			: new Label(text, icon);
+		return icon == null ? new Label(" " + text, icon) : new Label(text, icon);
 	}
 
 	IFigure produceFigure() {
@@ -41,11 +42,11 @@ public class NodeFigure<T> extends GraphFigure {
 			result.add(label(name.substring(0, cut), imageForNode(_node)));
 			result.add(label(name.substring(cut), null));
 		}
-		
+
 		result.setBorder(new LineBorder());
 		result.setBackgroundColor(pastelColorDeterminedBy(name));
 		result.setOpaque(true);
-		
+
 		return result;
 	}
 
@@ -56,6 +57,7 @@ public class NodeFigure<T> extends GraphFigure {
 		return result.substring(result.lastIndexOf('.') + 1);
 	}
 
+
 	static class CompartmentFigure extends Figure {
 		public CompartmentFigure() {
 			ToolbarLayout layout = new ToolbarLayout();
@@ -64,6 +66,7 @@ public class NodeFigure<T> extends GraphFigure {
 			setLayoutManager(layout);
 		}
 	}
+
 
 	private static Image imageForNode(Node<?> node) {
 		String resourcename = node.kind2().getResourceName();

@@ -6,15 +6,17 @@ import byecycle.dependencygraph.Node;
 import byecycle.views.layout.Coordinates;
 import byecycle.views.layout.FloatRectangle;
 
- public class NodeElement extends GraphElement {
+
+public class NodeElement extends GraphElement {
 
 	NodeElement(Node node, StressMeter stressMeter) {
 		_node = node;
 		_stressMeter = stressMeter;
-		
+
 		_aura = createAura();
 		positionAura();
 	}
+
 
 	private final Node<?> _node;
 
@@ -35,6 +37,7 @@ import byecycle.views.layout.FloatRectangle;
 	private float _velocityX;
 	private float _velocityY;
 
+
 	Node node() {
 		return _node;
 	}
@@ -50,17 +53,21 @@ import byecycle.views.layout.FloatRectangle;
 	protected void addForceComponents(float x, float y) {
 		_pendingForceX += x;
 		_pendingForceY += y;
-		_stressMeter.addStress((float) Math.hypot(x, y));
+		_stressMeter.addStress((float)Math.hypot(x, y));
 	}
 
 	float pendingForceMagnitude() {
 		return (float)Math.hypot(_pendingForceX, _pendingForceY);
 	}
-	
+
 	/** "Give: To yield to physical force." Dictionary.com */
 	void give(float timeFrame) {
-		if (detectPotentialQuivering(_velocityX, _pendingForceX)) {_pendingForceX *= 0.5; }
-		if (detectPotentialQuivering(_velocityY, _pendingForceY)) {_pendingForceY *= 0.5; }
+		if (detectPotentialQuivering(_velocityX, _pendingForceX)) {
+			_pendingForceX *= 0.5;
+		}
+		if (detectPotentialQuivering(_velocityY, _pendingForceY)) {
+			_pendingForceY *= 0.5;
+		}
 
 		_velocityX = (_velocityX + (_pendingForceX * timeFrame)) * 0.8f;
 		_velocityY = (_velocityY + (_pendingForceY * timeFrame)) * 0.8f;

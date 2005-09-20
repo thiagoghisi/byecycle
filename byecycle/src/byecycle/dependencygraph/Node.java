@@ -12,128 +12,129 @@ import java.util.Set;
 
 import byecycle.JavaType;
 
+
 public class Node<PayloadType> {
 
-    private final static Random RANDOM = new Random();
+	private final static Random RANDOM = new Random();
 
-    public static Collection<Node<String>> createGraph(
-            String[] names) {
 
-        List<Node<String>> result = new ArrayList<Node<String>>();
+	public static Collection<Node<String>> createGraph(String[] names) {
 
-        for (String element : names) {
-            result.add(new Node<String>(element, JavaType.PACKAGE));
-        }
+		List<Node<String>> result = new ArrayList<Node<String>>();
 
-        produceRandomDependencies(result);
+		for (String element : names) {
+			result.add(new Node<String>(element, JavaType.PACKAGE));
+		}
 
-        return result;
-    }
+		produceRandomDependencies(result);
 
-    private static <PayloadType> void produceRandomDependencies(
-            List<Node<PayloadType>> graph) {
-        int dependenciesToCreate = (int) (graph.size() * 1.1);
+		return result;
+	}
 
-        while (dependenciesToCreate-- > 0) {
-            Node<PayloadType> node1 = drawOneFrom(graph);
-            Node<PayloadType> node2 = drawOneFrom(graph);
-            if (node1 == node2)
-                continue;
+	private static <PayloadType> void produceRandomDependencies(List<Node<PayloadType>> graph) {
+		int dependenciesToCreate = (int)(graph.size() * 1.1);
 
-            node1.addProvider(node2);
-        }
-    }
+		while (dependenciesToCreate-- > 0) {
+			Node<PayloadType> node1 = drawOneFrom(graph);
+			Node<PayloadType> node2 = drawOneFrom(graph);
+			if (node1 == node2)
+				continue;
 
-    public static <PayloadType> Node<PayloadType> drawOneFrom(
-            List<Node<PayloadType>> hat) {
-        return hat.get(RANDOM.nextInt(hat.size()));
-    }
+			node1.addProvider(node2);
+		}
+	}
 
-    public Node(String name) {
-        this(name, JavaType.CLASS);
-    }
+	public static <PayloadType> Node<PayloadType> drawOneFrom(List<Node<PayloadType>> hat) {
+		return hat.get(RANDOM.nextInt(hat.size()));
+	}
 
-    public Node(String name, JavaType kind) {
-        _name = name;
-        _kind = kind;
-    }
+	public Node(String name) {
+		this(name, JavaType.CLASS);
+	}
 
-    private final String _name;
+	public Node(String name, JavaType kind) {
+		_name = name;
+		_kind = kind;
+	}
 
-    private final JavaType _kind;
 
-    private final Set<Node<PayloadType>> _providers = new HashSet<Node<PayloadType>>();
+	private final String _name;
 
-    private PayloadType _payload;
+	private final JavaType _kind;
 
-    public String name() {
-        return _name;
-    }
+	private final Set<Node<PayloadType>> _providers = new HashSet<Node<PayloadType>>();
 
-    public JavaType kind2() {
-        return _kind;
-    }
+	private PayloadType _payload;
 
-    @Deprecated
-    public String kind() {
-        return _kind.toString().toLowerCase();
-    }
 
-    public Iterable<Node<PayloadType>> providers() {
-        return _providers;
-    }
+	public String name() {
+		return _name;
+	}
 
-    public void addProvider(Node<PayloadType> provider) {
-        if (provider == this)
-            return;
-        _providers.add(provider);
-    }
+	public JavaType kind2() {
+		return _kind;
+	}
 
-    public boolean dependsDirectlyOn(Node other) {
-        return _providers.contains(other);
-    }
+	@Deprecated
+	public String kind() {
+		return _kind.toString().toLowerCase();
+	}
 
-    public void payload(PayloadType payload) {
-        _payload = payload;
-    }
+	public Iterable<Node<PayloadType>> providers() {
+		return _providers;
+	}
 
-    public PayloadType payload() {
-        return _payload;
-    }
+	public void addProvider(Node<PayloadType> provider) {
+		if (provider == this)
+			return;
+		_providers.add(provider);
+	}
 
-    private boolean seekProvider(Node target, Set<Node> visited) {
-        if (this == target)
-            return true;
+	public boolean dependsDirectlyOn(Node other) {
+		return _providers.contains(other);
+	}
 
-        if (visited.contains(this))
-            return false;
-        visited.add(this);
+	public void payload(PayloadType payload) {
+		_payload = payload;
+	}
 
-        for (Node<?> neighbor : _providers)
-            if (neighbor.seekProvider(target, visited))
-                return true;
+	public PayloadType payload() {
+		return _payload;
+	}
 
-        return false;
-    }
+	private boolean seekProvider(Node target, Set<Node> visited) {
+		if (this == target)
+			return true;
 
-    public boolean dependsOn(Node node) {
-        if (this == node)
-            return false;
-        Set<Node> visited = new HashSet<Node>();
-        return this.seekProvider(node, visited);
-    }
+		if (visited.contains(this))
+			return false;
+		visited.add(this);
 
-    @Override
-    public int hashCode() {
-        return this._kind.hashCode() * 29 ^ this._name.hashCode();
-    }
+		for (Node<?> neighbor : _providers)
+			if (neighbor.seekProvider(target, visited))
+				return true;
 
-    @Override
-    public boolean equals(Object arg0) {
-        if (!(arg0 instanceof Node))
-            return false;
-        Node n = (Node) arg0;
-        return _kind.equals(n._kind) && _name.equals(n._kind);
-    }
+		return false;
+	}
+
+	public boolean dependsOn(Node node) {
+		if (this == node)
+			return false;
+		Set<Node> visited = new HashSet<Node>();
+		return this.seekProvider(node, visited);
+	}
+
+	@Override
+	public int hashCode() {
+		return this._kind.hashCode() * 29 ^ this._name.hashCode();
+	}
+
+	@Override
+	public boolean equals(Object arg0) {
+		if (!(arg0 instanceof Node))
+			return false;
+		Node n = (Node)arg0;
+		return _kind.equals(n._kind) && _name.equals(n._kind);
+	}
 
 }

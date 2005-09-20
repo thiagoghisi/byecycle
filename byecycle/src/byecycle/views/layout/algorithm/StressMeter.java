@@ -3,17 +3,17 @@
 
 package byecycle.views.layout.algorithm;
 
-
 class StressMeter {
 
 	float _reading;
 
+
 	void addStress(float stress) {
 		_reading += stress;
 	}
-	
+
 	void reset() {
 		_reading = 0;
 	}
-	
+
 }

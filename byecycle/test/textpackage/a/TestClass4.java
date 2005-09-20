@@ -6,5 +6,4 @@ package textpackage.a;
 
 @TestAnnotation1
 @Deprecated
-public class TestClass4 extends TestClass1 implements TestInterface1 {
-}
+public class TestClass4 extends TestClass1 implements TestInterface1 {}

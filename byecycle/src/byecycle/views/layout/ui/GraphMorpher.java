@@ -8,9 +8,11 @@ import org.eclipse.draw2d.geometry.Point;
 import byecycle.views.layout.CartesianLayout;
 import byecycle.views.layout.Coordinates;
 
+
 public class GraphMorpher {
 
 	private final List<NodeMorpher> _nodeMorphers = new LinkedList<NodeMorpher>();
+
 
 	public <T> GraphMorpher(Collection<NodeFigure<T>> nodes, CartesianLayout targets) {
 		for (NodeFigure<T> node : nodes)
@@ -27,7 +29,8 @@ public class GraphMorpher {
 		while (it.hasNext()) {
 			NodeMorpher morpher = it.next();
 			morpher.morphingStep();
-	 		if (morpher.onTarget()) it.remove();
+			if (morpher.onTarget())
+				it.remove();
 		}
 	}
 
@@ -35,13 +38,14 @@ public class GraphMorpher {
 		return _nodeMorphers.isEmpty();
 	}
 
-	
+
 	private static class NodeMorpher {
 
 		private static final int MAX_ANIMATION_STEP_PIXELS = 3000;
 		private final NodeFigure<?> _figure;
 		private final int _targetX;
 		private final int _targetY;
+
 
 		NodeMorpher(NodeFigure<?> figure, Coordinates target) {
 			_figure = figure;
@@ -52,24 +56,28 @@ public class GraphMorpher {
 		void morphingStep() {
 			int newX = currentX();
 			int newY = currentY();
-			
+
 			int step = MAX_ANIMATION_STEP_PIXELS;
 			int dX = Math.max(Math.min(_targetX - newX, step), -step);
 			int dY = Math.max(Math.min(_targetY - newY, step), -step);
-			
+
 			newX += dX;
 			newY += dY;
-			
+
 			_figure.position(new Point(newX, newY));
 		}
 
-		private int currentX() { return _figure.position().x; }
-		private int currentY() { return _figure.position().y; }
+		private int currentX() {
+			return _figure.position().x;
+		}
+
+		private int currentY() {
+			return _figure.position().y;
+		}
 
 		public boolean onTarget() {
 			return currentX() == _targetX && currentY() == _targetY;
 		}
 	}
 
-	
 }

@@ -10,6 +10,7 @@ import org.eclipse.jface.preference.ListEditor;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.widgets.Composite;
 
+
 public class PatternExcludeListEditor extends ListEditor {
 	protected PatternExcludeListEditor(String name, String labelText, Composite parent) {
 		init(name, labelText);
@@ -27,17 +28,16 @@ public class PatternExcludeListEditor extends ListEditor {
 
 	@Override
 	protected String getNewInputObject() {
-		InputDialog dialog = new InputDialog(getShell(), "Input full qualified class name pattern", "Enter a regex pattern to be excluded:", "",
-				new IInputValidator() {
-					public String isValid(String newText) {
-						try {
-							Pattern.compile(newText);
-							return null;
-						} catch (PatternSyntaxException e) {
-							return e.getLocalizedMessage();
-						}
-					}
-				});
+		InputDialog dialog = new InputDialog(getShell(), "Input full qualified class name pattern", "Enter a regex pattern to be excluded:", "", new IInputValidator() {
+			public String isValid(String newText) {
+				try {
+					Pattern.compile(newText);
+					return null;
+				} catch (PatternSyntaxException e) {
+					return e.getLocalizedMessage();
+				}
+			}
+		});
 		if (dialog.open() == Window.OK) {
 			return dialog.getValue();
 		}

@@ -4,6 +4,6 @@
  */
 package textpackage.a.a;
 
-public class TestClass3 extends TestClass2 implements TestInterface2{
+public class TestClass3 extends TestClass2 implements TestInterface2 {
 
 }

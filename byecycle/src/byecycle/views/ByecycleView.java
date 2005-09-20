@@ -27,6 +27,7 @@ import byecycle.views.layout.CartesianLayout;
 import byecycle.views.layout.algorithm.LayoutAlgorithm;
 import byecycle.views.layout.ui.GraphCanvas;
 
+
 public class ByecycleView extends ViewPart implements IByecycleView {
 
 	private static final int ONE_MILLISECOND = 1000000;
@@ -43,14 +44,13 @@ public class ByecycleView extends ViewPart implements IByecycleView {
 	private Collection<Node<IBinding>> _selectedPackageGraph;
 
 	private final Object _graphChangeMonitor = new Object();
-	
+
 	private UIJob _layoutJob;
 	private long _timeLastLayoutJobStarted;
 	private final PackageLayoutMap _layoutCache = new PackageLayoutMap();
 
 	private boolean _paused;
 	private IJavaElement _deferredSelection;
-	
 
 
 	public void init(IViewSite site) throws PartInitException {
@@ -62,16 +62,19 @@ public class ByecycleView extends ViewPart implements IByecycleView {
 
 			private IPackageFragment _packageBeingDisplayed;
 
+
 			@Override
 			public IStatus runInUIThread(IProgressMonitor monitor) {
 				if (monitor.isCanceled())
 					return Status.OK_STATUS;
 
-				if (_paused) return Status.OK_STATUS;
+				if (_paused)
+					return Status.OK_STATUS;
 
 				checkForNewGraph();
-				if (_canvas == null || _canvas.isDisposed()) return Status.OK_STATUS;
-				
+				if (_canvas == null || _canvas.isDisposed())
+					return Status.OK_STATUS;
+
 				_timeLastLayoutJobStarted = System.nanoTime();
 				_canvas.animationStep();
 				boolean improved = _algorithm.improveLayoutForAWhile();
@@ -82,12 +85,13 @@ public class ByecycleView extends ViewPart implements IByecycleView {
 					_canvas.useLayout(bestSoFar);
 					_layoutCache.keep(_packageBeingDisplayed, bestSoFar);
 				}
-				
+
 				return Status.OK_STATUS;
 			}
 
 			private void checkForNewGraph() {
-				if (_selectedPackageGraph == null) return;
+				if (_selectedPackageGraph == null)
+					return;
 
 				Collection<Node<IBinding>> myGraph;
 				synchronized (_graphChangeMonitor) {
@@ -105,12 +109,13 @@ public class ByecycleView extends ViewPart implements IByecycleView {
 
 		};
 		_layoutJob.setSystem(true);
-		_layoutJob.setPriority(Job.DECORATE); //Low priority;
+		_layoutJob.setPriority(Job.DECORATE); // Low priority;
 	}
 
 	private void newCanvas(Collection<Node<IBinding>> graph, CartesianLayout initialLayout) {
-		if (_canvas != null) _canvas.dispose();
-		
+		if (_canvas != null)
+			_canvas.dispose();
+
 		_canvas = new GraphCanvas<IBinding>(_parent, graph, initialLayout, new GraphCanvas.Listener<IBinding>() {
 			public void nodeSelected(Node<IBinding> node) {
 				selectNode(node);
@@ -133,10 +138,10 @@ public class ByecycleView extends ViewPart implements IByecycleView {
 		_parent = parent;
 	}
 
-	public void selectionChanged(IWorkbenchPart ignored, ISelection selectionCandidate) { //FIXME: After the "Show Dependencies" popup menu action, this method is no longer called (Byecycle is no longer notified of selections changes and no longer changes the graph display). If focus is changed to another View and back, for example, everything comes back to normal. Is this an Eclipse bug?
+	public void selectionChanged(IWorkbenchPart ignored, ISelection selectionCandidate) { // FIXME: After the "Show Dependencies" popup menu action, this method is no longer called (Byecycle is no longer notified of selections changes and no longer changes the graph display). If focus is changed to another View and back, for example, everything comes back to normal. Is this an Eclipse bug?
 		IJavaElement newSelection = validadeSelection(selectionCandidate);
 		if (_paused) {
-			_deferredSelection = newSelection; 
+			_deferredSelection = newSelection;
 			return;
 		}
 		showJavaDependencies(newSelection);
@@ -145,18 +150,20 @@ public class ByecycleView extends ViewPart implements IByecycleView {
 	public void showDependencies(ISelection selectionCandidate) {
 		showJavaDependencies(validadeSelection(selectionCandidate));
 	}
-	
+
 	private void showJavaDependencies(IJavaElement javaElement) {
-		
+
 		IPackageFragment newPackage = getPackage(javaElement);
-		
-		if (newPackage == null) return;
-		if (newPackage == _selectedPackage) return;
+
+		if (newPackage == null)
+			return;
+		if (newPackage == _selectedPackage)
+			return;
 		synchronized (_graphChangeMonitor) {
 			_selectedPackage = newPackage;
 			_selectedPackageGraph = null;
 		}
-		
+
 		generateGraph(newPackage);
 	}
 
@@ -173,10 +180,11 @@ public class ByecycleView extends ViewPart implements IByecycleView {
 			protected IStatus run(IProgressMonitor monitor) {
 				try {
 					Collection<Node<IBinding>> nextGraph = new PackageDependencyAnalysis(compilationUnits, monitor).dependencyGraph();
-					
+
 					synchronized (_graphChangeMonitor) {
-						if (packageBeingGenerated != _selectedPackage) return Status.OK_STATUS;
- 						_selectedPackageGraph = nextGraph;
+						if (packageBeingGenerated != _selectedPackage)
+							return Status.OK_STATUS;
+						_selectedPackageGraph = nextGraph;
 					}
 					_layoutJob.schedule();
 				} catch (Exception x) {
@@ -189,8 +197,10 @@ public class ByecycleView extends ViewPart implements IByecycleView {
 	}
 
 	private IPackageFragment getPackage(IJavaElement element) {
-		if (element == null) return null;
-		if (element instanceof IPackageFragment) return (IPackageFragment) element;
+		if (element == null)
+			return null;
+		if (element instanceof IPackageFragment)
+			return (IPackageFragment)element;
 		return getPackage(element.getParent());
 	}
 
@@ -210,26 +220,29 @@ public class ByecycleView extends ViewPart implements IByecycleView {
 		}
 	}
 
-	private void drillUp() { //FIXME: drillUp is apparently not being called.
+	private void drillUp() { // FIXME: drillUp is apparently not being called.
 		showJavaDependencies(_selectedPackage.getParent());
 	}
 
 	public void togglePaused(boolean pause) {
 		assert pause != _paused;
 		_paused = pause;
-		if (!_paused) showJavaDependencies(_deferredSelection);
+		if (!_paused)
+			showJavaDependencies(_deferredSelection);
 		_layoutJob.schedule();
 	}
 
 	private IJavaElement validadeSelection(ISelection candidate) {
-		if (!(candidate instanceof IStructuredSelection)) return null;
+		if (!(candidate instanceof IStructuredSelection))
+			return null;
 
 		Object firstElement = ((IStructuredSelection)candidate).getFirstElement();
-		if (!(firstElement instanceof IJavaElement)) return null;
-		
+		if (!(firstElement instanceof IJavaElement))
+			return null;
+
 		return (IJavaElement)firstElement;
 	}
-	
+
 	private long nanosecondsToSleep() {
 		long currentTime = System.nanoTime();
 		long timeLastLayoutJobTook = currentTime - _timeLastLayoutJobStarted;
@@ -247,5 +260,4 @@ public class ByecycleView extends ViewPart implements IByecycleView {
 
 	public void setFocus() {}
 
-	
 }

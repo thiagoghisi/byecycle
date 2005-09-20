@@ -11,16 +11,19 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import byecycle.views.IByecycleView;
 
+
 public class ShowDependenciesAction implements IViewActionDelegate {
 
 	private ISelection _selection;
 
+
 	public void init(IViewPart view) {
-		//Apparently never called.
+	// Apparently never called.
 	}
 
 	public void run(IAction ignored) {
-		if (_selection == null) return;
+		if (_selection == null)
+			return;
 		byecycleView().showDependencies(_selection);
 	}
 
@@ -29,12 +32,12 @@ public class ShowDependenciesAction implements IViewActionDelegate {
 
 		IByecycleView result = null;
 		try {
-			result = (IByecycleView) activePage.showView(IByecycleView.PERSPECTIVE_ID);
+			result = (IByecycleView)activePage.showView(IByecycleView.PERSPECTIVE_ID);
 		} catch (PartInitException e) {
 			e.printStackTrace();
 			return null;
 		}
-		
+
 		activePage.activate(result);
 		return result;
 	}

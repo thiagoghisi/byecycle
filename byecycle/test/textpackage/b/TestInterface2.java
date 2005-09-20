@@ -4,6 +4,6 @@
  */
 package textpackage.b;
 
-public interface TestInterface2 extends TestInterface1{
+public interface TestInterface2 extends TestInterface1 {
 
 }

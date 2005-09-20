@@ -9,12 +9,14 @@ import org.eclipse.ui.IViewPart;
 import byecycle.views.ByecycleView;
 import byecycle.views.IByecycleView;
 
+
 public class ToggleActiveAction implements IViewActionDelegate {
 
 	private IByecycleView _view;
 
+
 	public void init(IViewPart view) {
-		_view = (ByecycleView) view;
+		_view = (ByecycleView)view;
 	}
 
 	public void run(IAction action) {

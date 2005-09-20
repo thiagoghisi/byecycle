@@ -11,13 +11,14 @@ class DependencyElement extends GraphElement {
 	private final NodeElement _dependent;
 	private final NodeElement _provider;
 
+
 	DependencyElement(NodeElement dependent, NodeElement provider) {
 		_dependent = dependent;
 		_provider = provider;
-	
+
 	}
 
-    public Coordinates position() {
+	public Coordinates position() {
 		Coordinates p1 = _dependent.position();
 		Coordinates p2 = _provider.position();
 		float centerX = (p1._x + p2._x) / 2;
@@ -26,10 +27,10 @@ class DependencyElement extends GraphElement {
 	}
 
 	protected void addForceComponents(float x, float y) {
-        float halfX = x / 2;
+		float halfX = x / 2;
 		float halfY = y / 2;
 		_dependent.addForceComponents(halfX, halfY);
-        _provider.addForceComponents(halfX, halfY);
-    }
+		_provider.addForceComponents(halfX, halfY);
+	}
 
 }

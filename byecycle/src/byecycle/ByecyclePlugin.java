@@ -7,15 +7,17 @@ import org.eclipse.ui.plugin.*;
 import org.osgi.framework.BundleContext;
 import java.util.*;
 
-/** 
+
+/**
  * The main plugin class to be used in the desktop.
  */
 public class ByecyclePlugin extends AbstractUIPlugin {
-	//The shared instance.
+	// The shared instance.
 	private static ByecyclePlugin plugin;
-	//Resource bundle.
+	// Resource bundle.
 	private ResourceBundle resourceBundle;
-	
+
+
 	/**
 	 * The constructor.
 	 */
@@ -51,8 +53,7 @@ public class ByecyclePlugin extends AbstractUIPlugin {
 	}
 
 	/**
-	 * Returns the string from the plugin's resource bundle,
-	 * or 'key' if not found.
+	 * Returns the string from the plugin's resource bundle, or 'key' if not found.
 	 */
 	public static String getResourceString(String key) {
 		ResourceBundle bundle = ByecyclePlugin.getDefault().getResourceBundle();

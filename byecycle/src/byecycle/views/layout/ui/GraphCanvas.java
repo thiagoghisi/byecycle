@@ -24,13 +24,16 @@ import byecycle.views.layout.Coordinates;
 import byecycle.views.layout.FloatRectangle;
 import byecycle.views.layout.NodeSizeProvider;
 
+
 public class GraphCanvas<T> extends FigureCanvas implements NodeSizeProvider {
 
 	private static final float MARGIN_PIXELS = 3;
 
+
 	public interface Listener<LT> {
 		void nodeSelected(Node<LT> node);
 	}
+
 
 	public GraphCanvas(Composite parent, Collection<Node<T>> graph, CartesianLayout initialLayout, Listener<T> listener) {
 		super(parent);
@@ -38,23 +41,25 @@ public class GraphCanvas<T> extends FigureCanvas implements NodeSizeProvider {
 		this.setContents(_graphFigure);
 		_graphFigure.setLayoutManager(new XYLayout());
 
-		if (listener == null) throw new IllegalArgumentException("listener");
+		if (listener == null)
+			throw new IllegalArgumentException("listener");
 		_listener = listener;
 		_graphFigure.addMouseListener(backgroundDoubleClickListener());
-		
+
 		initGraphElements(graph);
 		initGraphFigure();
 
 		useLayout(initialLayout);
 	}
 
+
 	private final MouseListener _nodeDoubleClickListener = nodeDoubleClickListener();
-	
+
 	private final IFigure _graphFigure = new Figure();
 
 	private DependencyFigure[] _dependencyFigures;
 	private final Map<Node, NodeFigure<T>> _nodeFiguresByNode = new HashMap<Node, NodeFigure<T>>();
-	
+
 	private final Listener<T> _listener;
 
 	private GraphMorpher _morpher;
@@ -79,30 +84,32 @@ public class GraphCanvas<T> extends FigureCanvas implements NodeSizeProvider {
 			}
 		};
 	}
-	
+
 	public void animationStep() {
-		if (_morpher == null) return;
+		if (_morpher == null)
+			return;
 		_morpher.morphingStep();
-		if (_morpher.done()) _morpher = null;
-		
+		if (_morpher.done())
+			_morpher = null;
+
 		refreshDependencies();
-		
+
 		_graphFigure.revalidate();
 		_graphFigure.repaint();
 	}
-	
+
 	private void refreshDependencies() {
 		for (int i = 0; i < _dependencyFigures.length; i++)
 			_dependencyFigures[i].refresh();
 	}
-	
+
 	private void initGraphFigure() {
 		for (NodeFigure<?> nodeFigure : nodeFigures()) {
 			IFigure figure = nodeFigure.figure();
 			_graphFigure.add(figure);
 			figure.setSize(figure.getPreferredSize());
 		}
-		
+
 		for (DependencyFigure dependencyFigure : _dependencyFigures)
 			_graphFigure.add(dependencyFigure.figure());
 	}
@@ -112,9 +119,9 @@ public class GraphCanvas<T> extends FigureCanvas implements NodeSizeProvider {
 	}
 
 	private void initGraphElements(Iterable<Node<T>> nodeGraph) {
-		
+
 		List<DependencyFigure> dependencyFigures = new ArrayList<DependencyFigure>();
-		
+
 		for (Node<T> node : nodeGraph) {
 			NodeFigure dependentFigure = produceNodeFigureFor(node);
 			for (Node<T> provider : node.providers()) {
@@ -129,11 +136,12 @@ public class GraphCanvas<T> extends FigureCanvas implements NodeSizeProvider {
 
 	private NodeFigure produceNodeFigureFor(Node<T> node) {
 		NodeFigure<T> result = _nodeFiguresByNode.get(node);
-		if (result != null)	return result;
+		if (result != null)
+			return result;
 
 		result = new NodeFigure<T>(node);
 		_nodeFiguresByNode.put(node, result);
-		if(node.kind2() == JavaType.PACKAGE)
+		if (node.kind2() == JavaType.PACKAGE)
 			result.figure().addMouseListener(_nodeDoubleClickListener);
 		return result;
 	}
@@ -155,11 +163,13 @@ public class GraphCanvas<T> extends FigureCanvas implements NodeSizeProvider {
 	private static CartesianLayout translateToOrigin(CartesianLayout layout) {
 		float smallestX = Float.MAX_VALUE;
 		float smallestY = Float.MAX_VALUE;
-		
+
 		for (String nodeName : layout.nodeNames()) {
 			Coordinates coordinates = layout.coordinatesFor(nodeName);
-			if (coordinates._x < smallestX) smallestX = coordinates._x;
-			if (coordinates._y < smallestY) smallestY = coordinates._y;
+			if (coordinates._x < smallestX)
+				smallestX = coordinates._x;
+			if (coordinates._y < smallestY)
+				smallestY = coordinates._y;
 		}
 
 		float dx = -smallestX + MARGIN_PIXELS;
@@ -172,5 +182,5 @@ public class GraphCanvas<T> extends FigureCanvas implements NodeSizeProvider {
 		}
 		return result;
 	}
-	
+
 }

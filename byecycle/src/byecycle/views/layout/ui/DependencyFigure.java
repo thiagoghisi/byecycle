@@ -21,12 +21,13 @@ class DependencyFigure extends GraphFigure {
 	private ChopboxAnchor _sourceAnchor;
 	private ChopboxAnchor _targetAnchor;
 
+
 	DependencyFigure(NodeFigure dependent, NodeFigure provider) {
 		_dependent = dependent;
 		_provider = provider;
-	
+
 	}
-	
+
 	IFigure produceFigure() {
 		_arrow = new PolylineConnection();
 
@@ -43,12 +44,10 @@ class DependencyFigure extends GraphFigure {
 		decorationPointList.addPoint(-1, -1);
 		arrowHead.setTemplate(decorationPointList);
 		_arrow.setTargetDecoration(arrowHead);
-		
-		Color redOrBlack = _provider.node().dependsOn(_dependent.node())
-			? ColorConstants.red
-			: ColorConstants.black;
+
+		Color redOrBlack = _provider.node().dependsOn(_dependent.node()) ? ColorConstants.red : ColorConstants.black;
 		_arrow.setForegroundColor(redOrBlack);
-		
+
 		return _arrow;
 	}
 
@@ -57,7 +56,7 @@ class DependencyFigure extends GraphFigure {
 	}
 
 	private void correctOverlapInversion() {
-		//Draw2D correctly inverts arrows when the boxes overlap. We will "uninvert" them for a more intuitive result.
+		// Draw2D correctly inverts arrows when the boxes overlap. We will "uninvert" them for a more intuitive result.
 		IFigure source = _dependent.figure();
 		IFigure target = _provider.figure();
 		if (source.intersects(target.getBounds())) {

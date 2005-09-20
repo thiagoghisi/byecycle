@@ -2,12 +2,14 @@ package byecycle.views.layout;
 
 import java.io.Serializable;
 
+
 public class Coordinates implements Serializable {
-	
+
 	private static final long serialVersionUID = 1L;
 
 	public final float _x;
 	public final float _y;
+
 
 	public Coordinates(float x, float y) {
 		_x = x;

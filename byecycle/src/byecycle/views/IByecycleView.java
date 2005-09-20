@@ -8,9 +8,11 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.IWorkbenchPart;
 
-public interface IByecycleView extends ISelectionListener, IWorkbenchPart{
+
+public interface IByecycleView extends ISelectionListener, IWorkbenchPart {
 
 	public static final String PERSPECTIVE_ID = "byecycle.views.ByecycleView";
+
 
 	public void showDependencies(ISelection _selection);
 
