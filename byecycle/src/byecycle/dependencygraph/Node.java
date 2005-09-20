@@ -127,7 +127,7 @@ public class Node<PayloadType> {
 	public boolean equals(Object arg0) {
 		if (!(arg0 instanceof Node)) return false;
 		Node n = (Node)arg0;
-		return _kind.equals(n._kind) && _name.equals(n._kind);
+		return _kind.equals(n._kind) && _name.equals(n._name);
 	}
 
 }
