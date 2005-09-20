@@ -37,8 +37,7 @@ public class PackageLayoutMap {
 
 	public CartesianLayout getLayoutFor(IPackageFragment aPackage) {
 		CartesianLayout newest = mementoToBeWrittenFor(aPackage);
-		if (newest != null)
-			return newest;
+		if (newest != null) return newest;
 
 		return read(aPackage);
 		// TODO: Optimize: Use an LRU cache. This is not so urgent because Eclipse apparently does a lot of caching of the workspace files.
@@ -46,8 +45,7 @@ public class PackageLayoutMap {
 
 	private CartesianLayout mementoToBeWrittenFor(IPackageFragment aPackage) {
 		synchronized (_scheduledSavesMonitor) {
-			if (_scheduledSaves == null)
-				return null;
+			if (_scheduledSaves == null) return null;
 			return _scheduledSaves.get(aPackage);
 		}
 	}
@@ -55,8 +53,7 @@ public class PackageLayoutMap {
 	private CartesianLayout read(IPackageFragment aPackage) {
 		try {
 			IFile file = fileForReading(aPackage);
-			if (file == null)
-				return null;
+			if (file == null) return null;
 
 			InputStream contents = file.getContents();
 			try {
@@ -115,8 +112,7 @@ public class PackageLayoutMap {
 
 	private static IFile matchingFile(IFolder cacheFolder, String baseName) throws CoreException {
 		for (IResource candidate : cacheFolder.members())
-			if (candidate.getName().startsWith(baseName))
-				return (IFile)candidate;
+			if (candidate.getName().startsWith(baseName)) return (IFile)candidate;
 		return null;
 	}
 
@@ -133,16 +129,14 @@ public class PackageLayoutMap {
 	private static void deleteOldFiles(IFolder cacheFolder, String baseName) throws CoreException {
 		while (true) {
 			IFile oldFile = matchingFile(cacheFolder, baseName);
-			if (oldFile == null)
-				return;
+			if (oldFile == null) return;
 			oldFile.delete(false, false, null);
 		}
 	}
 
 	static private String baseNameFor(IPackageFragment aPackage) throws JavaModelException {
 		IPackageFragmentRoot root = getPackageFragmentRoot(aPackage);
-		if (root == null)
-			return "";
+		if (root == null) return "";
 
 		IResource correspondingResource;
 		try {
@@ -150,8 +144,7 @@ public class PackageLayoutMap {
 		} catch (JavaModelException ignored) {
 			return "";
 		}
-		if (correspondingResource == null)
-			return "";
+		if (correspondingResource == null) return "";
 
 		String rootNameIncludingSlashes = correspondingResource.getProjectRelativePath().toString();
 		String validRootName = rootNameIncludingSlashes.replaceAll("/", "__");
@@ -165,12 +158,10 @@ public class PackageLayoutMap {
 		IProject project = aPackage.getJavaProject().getProject();
 
 		IFolder byecycleFolder = project.getFolder(".byecycle");
-		if (!byecycleFolder.exists())
-			byecycleFolder.create(false, false, null);
+		if (!byecycleFolder.exists()) byecycleFolder.create(false, false, null);
 
 		IFolder result = byecycleFolder.getFolder("layoutcache");
-		if (!result.exists())
-			result.create(false, false, null);
+		if (!result.exists()) result.create(false, false, null);
 
 		return result;
 	}
@@ -179,8 +170,7 @@ public class PackageLayoutMap {
 	 * @return a IPackageFragmentRoot representing a source folder, jar file, zip file or null if the package is directly in the root of an Eclipse project.
 	 */
 	static private IPackageFragmentRoot getPackageFragmentRoot(IJavaElement element) {
-		if (element == null)
-			return null;
+		if (element == null) return null;
 		return element instanceof IPackageFragmentRoot ? (IPackageFragmentRoot)element : getPackageFragmentRoot(element.getParent());
 	}
 
@@ -198,8 +188,7 @@ public class PackageLayoutMap {
 
 	private Map<IPackageFragment, CartesianLayout> scheduledSaves() {
 		synchronized (_scheduledSavesMonitor) {
-			if (_scheduledSaves == null)
-				_scheduledSaves = new HashMap<IPackageFragment, CartesianLayout>();
+			if (_scheduledSaves == null) _scheduledSaves = new HashMap<IPackageFragment, CartesianLayout>();
 			return _scheduledSaves;
 		}
 	}

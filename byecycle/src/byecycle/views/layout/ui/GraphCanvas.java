@@ -41,8 +41,7 @@ public class GraphCanvas<T> extends FigureCanvas implements NodeSizeProvider {
 		this.setContents(_graphFigure);
 		_graphFigure.setLayoutManager(new XYLayout());
 
-		if (listener == null)
-			throw new IllegalArgumentException("listener");
+		if (listener == null) throw new IllegalArgumentException("listener");
 		_listener = listener;
 		_graphFigure.addMouseListener(backgroundDoubleClickListener());
 
@@ -86,11 +85,9 @@ public class GraphCanvas<T> extends FigureCanvas implements NodeSizeProvider {
 	}
 
 	public void animationStep() {
-		if (_morpher == null)
-			return;
+		if (_morpher == null) return;
 		_morpher.morphingStep();
-		if (_morpher.done())
-			_morpher = null;
+		if (_morpher.done()) _morpher = null;
 
 		refreshDependencies();
 
@@ -136,13 +133,11 @@ public class GraphCanvas<T> extends FigureCanvas implements NodeSizeProvider {
 
 	private NodeFigure produceNodeFigureFor(Node<T> node) {
 		NodeFigure<T> result = _nodeFiguresByNode.get(node);
-		if (result != null)
-			return result;
+		if (result != null) return result;
 
 		result = new NodeFigure<T>(node);
 		_nodeFiguresByNode.put(node, result);
-		if (node.kind2() == JavaType.PACKAGE)
-			result.figure().addMouseListener(_nodeDoubleClickListener);
+		if (node.kind2() == JavaType.PACKAGE) result.figure().addMouseListener(_nodeDoubleClickListener);
 		return result;
 	}
 
@@ -166,10 +161,8 @@ public class GraphCanvas<T> extends FigureCanvas implements NodeSizeProvider {
 
 		for (String nodeName : layout.nodeNames()) {
 			Coordinates coordinates = layout.coordinatesFor(nodeName);
-			if (coordinates._x < smallestX)
-				smallestX = coordinates._x;
-			if (coordinates._y < smallestY)
-				smallestY = coordinates._y;
+			if (coordinates._x < smallestX) smallestX = coordinates._x;
+			if (coordinates._y < smallestY) smallestY = coordinates._y;
 		}
 
 		float dx = -smallestX + MARGIN_PIXELS;

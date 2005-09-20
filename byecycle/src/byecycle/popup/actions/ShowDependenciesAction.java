@@ -22,8 +22,7 @@ public class ShowDependenciesAction implements IViewActionDelegate {
 	}
 
 	public void run(IAction ignored) {
-		if (_selection == null)
-			return;
+		if (_selection == null) return;
 		byecycleView().showDependencies(_selection);
 	}
 

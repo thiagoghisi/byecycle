@@ -55,8 +55,7 @@ public class StandAlone {
 				// }
 
 				boolean improved = algorithm.improveLayoutForAWhile();
-				if (improved)
-					canvas.useLayout(algorithm.layoutMemento());
+				if (improved) canvas.useLayout(algorithm.layoutMemento());
 
 				canvas.animationStep();
 

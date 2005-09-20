@@ -7,10 +7,8 @@ import byecycle.views.layout.algorithm.NodeElement;
 public class MutualExclusion extends DistanceBasedForce {
 
 	public void applyTo(GraphElement element1, GraphElement element2) {
-		if (!(element1 instanceof NodeElement))
-			return;
-		if (!(element2 instanceof NodeElement))
-			return;
+		if (!(element1 instanceof NodeElement)) return;
+		if (!(element2 instanceof NodeElement)) return;
 		super.applyTo(element1, element2);
 	}
 

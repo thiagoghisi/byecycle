@@ -29,8 +29,7 @@ public class GraphMorpher {
 		while (it.hasNext()) {
 			NodeMorpher morpher = it.next();
 			morpher.morphingStep();
-			if (morpher.onTarget())
-				it.remove();
+			if (morpher.onTarget()) it.remove();
 		}
 	}
 

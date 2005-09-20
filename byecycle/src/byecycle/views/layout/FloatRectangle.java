@@ -14,8 +14,7 @@ public class FloatRectangle {
 		float top = Math.max(this.top(), other.top());
 		float bottom = Math.min(this.bottom(), other.bottom());
 
-		if (left >= right || top >= bottom)
-			return 0;
+		if (left >= right || top >= bottom) return 0;
 
 		return (right - left) * (bottom - top);
 	}

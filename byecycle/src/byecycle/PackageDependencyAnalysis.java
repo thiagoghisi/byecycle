@@ -129,8 +129,7 @@ public class PackageDependencyAnalysis {
 			Node<IBinding> saved = _currentNode;
 			String savedPackage = _currentPackageName;
 			ITypeBinding binding = node.resolveBinding();
-			if (ignoreClass(binding.getQualifiedName()))
-				return false;
+			if (ignoreClass(binding.getQualifiedName())) return false;
 			_currentNode = getNode2(binding);
 			_currentPackageName = binding.getPackage().getName();
 			addProvider(binding.getSuperclass());
@@ -205,39 +204,31 @@ public class PackageDependencyAnalysis {
 		}
 
 		private void addProvider(ITypeBinding type) {
-			if (null == type)
-				return;
-			if (type.isArray())
-				type = type.getElementType();
-			if (type.isPrimitive() || type.isWildcardType())
-				return;
+			if (null == type) return;
+			if (type.isArray()) type = type.getElementType();
+			if (type.isPrimitive() || type.isWildcardType()) return;
 			if (type.isTypeVariable()) {
 				for (ITypeBinding subType : type.getTypeBounds()) {
 					addProvider(subType);
 				}
 				return;
 			}
-			if (type.getQualifiedName().equals(""))
-				return; // TODO: Check why this happens.
+			if (type.getQualifiedName().equals("")) return; // TODO: Check why this happens.
 
 			String packageName = type.getPackage().getName();
-			if (ignorePackage(packageName))
-				return;
+			if (ignorePackage(packageName)) return;
 
 			if (isSelectedPackage(packageName)) {
 				if (type.isParameterizedType()) { // if Map<K,V>
 					for (ITypeBinding subtype : type.getTypeArguments()) { // <K,V>
-						if (ignoreClass(subtype.getQualifiedName()))
-							continue;
+						if (ignoreClass(subtype.getQualifiedName())) continue;
 						addProvider(subtype);
 					}
 					final ITypeBinding erasure = type.getErasure();
-					if (ignoreClass(erasure.getQualifiedName()))
-						return;
+					if (ignoreClass(erasure.getQualifiedName())) return;
 					_currentNode.addProvider(getNode2(erasure));
 				} else {
-					if (ignoreClass(type.getQualifiedName()))
-						return;
+					if (ignoreClass(type.getQualifiedName())) return;
 					_currentNode.addProvider(getNode2(type));
 				}
 				return;

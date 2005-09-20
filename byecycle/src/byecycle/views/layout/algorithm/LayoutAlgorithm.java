@@ -58,8 +58,7 @@ public class LayoutAlgorithm<T> {
 
 	private NodeElement produceElementFor(Node node, Map<Node, NodeElement> nodeElementsByNode) {
 		NodeElement result = nodeElementsByNode.get(node);
-		if (result != null)
-			return result;
+		if (result != null) return result;
 
 		result = new NodeElement(node, _stressMeter);
 		nodeElementsByNode.put(node, result);
@@ -72,8 +71,7 @@ public class LayoutAlgorithm<T> {
 	}
 
 	private Relaxer relaxer() {
-		if (_relaxer == null)
-			_relaxer = newRelaxer();
+		if (_relaxer == null) _relaxer = newRelaxer();
 		if (_relaxer.hasConverged()) {
 			prepareToSeekNonLocalMinimum();
 			_relaxer = newRelaxer();
@@ -125,14 +123,12 @@ public class LayoutAlgorithm<T> {
 	}
 
 	public boolean improveLayoutForAWhile() {
-		if (_nodeElements.size() <= 1)
-			return false;
+		if (_nodeElements.size() <= 1) return false;
 
 		long start = System.nanoTime();
 		do {
 
-			if (improveLayoutStep())
-				return true;
+			if (improveLayoutStep()) return true;
 
 		} while (System.nanoTime() - start < 1000000); // One millisecond at least.
 		return false;
@@ -141,8 +137,7 @@ public class LayoutAlgorithm<T> {
 	public boolean improveLayoutStep() {
 		relaxer().step();
 
-		if (_relaxer.hasConverged())
-			return true; // FIXME Use StressMeter
+		if (_relaxer.hasConverged()) return true; // FIXME Use StressMeter
 
 		if (_stressMeter._reading < _lowestStressEver) {
 			_lowestStressEver = _stressMeter._reading;

@@ -44,10 +44,9 @@ class Relaxer {
 	void step() {
 		boolean moved = false;
 		for (NodeElement candidate : _nodeElements)
-			if (tryToMove(candidate))
-				moved = true;
-		if (!moved)
-			_impetus *= 0.5;
+			if (tryToMove(candidate)) moved = true;
+
+		if (!moved) _impetus *= 0.5;
 	}
 
 	private boolean tryToMove(NodeElement candidate) {
@@ -79,8 +78,7 @@ class Relaxer {
 	private void giveToForces() {
 		float greatestForce = 0;
 		for (NodeElement node : _nodeElements)
-			if (node.pendingForceMagnitude() > greatestForce)
-				greatestForce = node.pendingForceMagnitude();
+			if (node.pendingForceMagnitude() > greatestForce) greatestForce = node.pendingForceMagnitude();
 
 		float timeFrame = 3f / greatestForce;
 		timeFrame = (float)Math.sqrt(timeFrame);

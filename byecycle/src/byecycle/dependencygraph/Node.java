@@ -37,8 +37,7 @@ public class Node<PayloadType> {
 		while (dependenciesToCreate-- > 0) {
 			Node<PayloadType> node1 = drawOneFrom(graph);
 			Node<PayloadType> node2 = drawOneFrom(graph);
-			if (node1 == node2)
-				continue;
+			if (node1 == node2) continue;
 
 			node1.addProvider(node2);
 		}
@@ -85,8 +84,7 @@ public class Node<PayloadType> {
 	}
 
 	public void addProvider(Node<PayloadType> provider) {
-		if (provider == this)
-			return;
+		if (provider == this) return;
 		_providers.add(provider);
 	}
 
@@ -103,23 +101,19 @@ public class Node<PayloadType> {
 	}
 
 	private boolean seekProvider(Node target, Set<Node> visited) {
-		if (this == target)
-			return true;
+		if (this == target) return true;
 
-		if (visited.contains(this))
-			return false;
+		if (visited.contains(this)) return false;
 		visited.add(this);
 
 		for (Node<?> neighbor : _providers)
-			if (neighbor.seekProvider(target, visited))
-				return true;
+			if (neighbor.seekProvider(target, visited)) return true;
 
 		return false;
 	}
 
 	public boolean dependsOn(Node node) {
-		if (this == node)
-			return false;
+		if (this == node) return false;
 		Set<Node> visited = new HashSet<Node>();
 		return this.seekProvider(node, visited);
 	}
@@ -131,8 +125,7 @@ public class Node<PayloadType> {
 
 	@Override
 	public boolean equals(Object arg0) {
-		if (!(arg0 instanceof Node))
-			return false;
+		if (!(arg0 instanceof Node)) return false;
 		Node n = (Node)arg0;
 		return _kind.equals(n._kind) && _name.equals(n._kind);
 	}
