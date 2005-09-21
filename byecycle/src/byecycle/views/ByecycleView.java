@@ -3,6 +3,7 @@
 package byecycle.views;
 
 import java.util.Collection;
+
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -21,6 +22,7 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.progress.UIJob;
+
 import byecycle.PackageDependencyAnalysis;
 import byecycle.dependencygraph.Node;
 import byecycle.views.layout.CartesianLayout;
@@ -57,7 +59,6 @@ public class ByecycleView extends ViewPart implements IByecycleView {
 		super.init(site);
 		_site = site;
 		_site.getPage().addSelectionListener(this);
-
 		_layoutJob = new UIJob("Package dependency layout") {
 
 			private IPackageFragment _packageBeingDisplayed;
@@ -69,6 +70,7 @@ public class ByecycleView extends ViewPart implements IByecycleView {
 
 				if (_paused) return Status.OK_STATUS;
 
+				if (_parent == null || _parent.isDisposed()) return Status.OK_STATUS;
 				checkForNewGraph();
 				if (_canvas == null || _canvas.isDisposed()) return Status.OK_STATUS;
 
@@ -241,6 +243,8 @@ public class ByecycleView extends ViewPart implements IByecycleView {
 		return timeToSleep;
 	}
 
-	public void setFocus() {}
+	public void setFocus() {
+		_parent.setFocus();
+	}
 
 }
