@@ -1,10 +1,14 @@
+import java.util.ArrayList;
 import java.util.Collection;
+
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
+
 import byecycle.dependencygraph.Node;
 import byecycle.views.layout.CartesianLayout;
 import byecycle.views.layout.algorithm.LayoutAlgorithm;
+import byecycle.views.layout.algorithm.random.RandomAverage;
 import byecycle.views.layout.ui.GraphCanvas;
 
 
@@ -30,7 +34,7 @@ public class StandAlone {
 	private StandAlone() {
 		Shell shell = new Shell(_display);
 		shell.setText("Byecycle");
-		shell.setSize(500, 500);
+		shell.setSize(1000, 1000);
 
 		FillLayout layout = new FillLayout();
 		shell.setLayout(layout);
@@ -40,22 +44,25 @@ public class StandAlone {
 				System.out.println("Node:" + node);
 			}
 		});
-		LayoutAlgorithm<String> algorithm = new LayoutAlgorithm<String>(_graph, CartesianLayout.random(), canvas);
+		LayoutAlgorithm<String> algorithm = new RandomAverage<String>(_graph, CartesianLayout.random(), canvas);
+//		LayoutAlgorithm<String> algorithm = new NudgeNudge<String>(_graph, CartesianLayout.random(), canvas);
 
 		shell.open();
 		shell.layout();
 
 		while (!shell.isDisposed()) {
 			while (!_display.readAndDispatch()) {
-				// try {
-				// Thread.sleep(50);
-				// } catch (InterruptedException e) {
-				// // TODO Auto-generated catch block
-				// e.printStackTrace();
-				// }
+				 //try {
+				 //Thread.sleep(50);
+				 //} catch (InterruptedException e) {
+				 // TODO Auto-generated catch block
+				 //e.printStackTrace();
+				 //}
 
-				boolean improved = algorithm.improveLayoutForAWhile();
-				if (improved) canvas.useLayout(algorithm.layoutMemento());
+				algorithm.improveLayoutStep();
+				//boolean improved = algorithm.improveLayoutForAWhile();
+				//if (improved)
+					canvas.useLayout(algorithm.layoutMemento());
 
 				canvas.animationStep();
 
@@ -64,13 +71,26 @@ public class StandAlone {
 		}
 	}
 
-	private Collection<Node<String>> graph() {
-		String[] names = new String[36];
-		for (int i = 0; i < names.length; i++) {
-			// names[i] = "Node skdjfhskdfh.sdkfskdlf.sdfksdfj" + i;
-			names[i] = "Node " + i;
-		}
-		return Node.createGraph(names);
+private Collection<Node<String>> graph() {
+	String[] names = new String[36];
+	for (int i = 0; i < names.length; i++) {
+		names[i] = "Node " + i;
 	}
+	return Node.createGraph(names);
+}
+
+//private Collection<Node<String>> graph() {
+//	Collection<Node<String>> result = new ArrayList<Node<String>>();
+//	Node<String> nodeA = new Node<String>("A");
+//	Node<String> nodeB = new Node<String>("B");
+//	Node<String> nodeC = new Node<String>("C");
+//	nodeA.addProvider(nodeB);
+//	nodeB.addProvider(nodeA);
+//	nodeB.addProvider(nodeC);
+//	result.add(nodeA);
+//	result.add(nodeB);
+//	result.add(nodeC);
+//	return result;
+//}
 
 }

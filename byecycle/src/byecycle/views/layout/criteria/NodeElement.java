@@ -1,6 +1,6 @@
 //Copyright (C) 2004 Klaus Wuestefeld and Rodrigo B de Oliveira.
 //This is free software. See the license distributed along with this file.
-package byecycle.views.layout.algorithm;
+package byecycle.views.layout.criteria;
 
 import byecycle.dependencygraph.Node;
 import byecycle.views.layout.Coordinates;
@@ -9,7 +9,7 @@ import byecycle.views.layout.FloatRectangle;
 
 public class NodeElement extends GraphElement {
 
-	NodeElement(Node node, StressMeter stressMeter) {
+	public NodeElement(Node node, StressMeter stressMeter) {
 		_node = node;
 		_stressMeter = stressMeter;
 
@@ -22,27 +22,24 @@ public class NodeElement extends GraphElement {
 
 	public float _x;
 	public float _y;
-
-	private float _pendingForceX;
-	private float _pendingForceY;
-
-	private final FloatRectangle _aura;
-
+	
+	protected float _pendingForceX;
+	protected float _pendingForceY;
+	
 	private final StressMeter _stressMeter;
 
 	private int _width;
-
 	private int _height;
 
-	private float _velocityX;
-	private float _velocityY;
+	private final FloatRectangle _aura;
 
 
-	Node node() {
+
+	public Node node() {
 		return _node;
 	}
 
-	String name() {
+	public String name() {
 		return _node.name();
 	}
 
@@ -56,43 +53,19 @@ public class NodeElement extends GraphElement {
 		_stressMeter.addStress((float)Math.hypot(x, y));
 	}
 
-	float pendingForceMagnitude() {
-		return (float)Math.hypot(_pendingForceX, _pendingForceY);
-	}
-
-	/** "Give: To yield to physical force." Dictionary.com */
-	void give(float timeFrame) {
-		if (detectPotentialQuivering(_velocityX, _pendingForceX)) {
-			_pendingForceX *= 0.5;
-		}
-		if (detectPotentialQuivering(_velocityY, _pendingForceY)) {
-			_pendingForceY *= 0.5;
-		}
-
-		_velocityX = (_velocityX + (_pendingForceX * timeFrame)) * 0.8f;
-		_velocityY = (_velocityY + (_pendingForceY * timeFrame)) * 0.8f;
-
-		_pendingForceX = 0;
-		_pendingForceY = 0;
-
-		float newX = _x + (_velocityX * timeFrame);
-		float newY = _y + (_velocityY * timeFrame);
-		position(newX, newY);
-	}
-
-	private boolean detectPotentialQuivering(float velocity, float pendingForce) {
-		boolean changingDirection = (velocity < 0) == (velocity + pendingForce < 0);
-		return changingDirection;
-	}
-
-	void position(Coordinates coordinates) {
+	public void position(Coordinates coordinates) {
 		position(coordinates._x, coordinates._y);
 	}
 
-	private void position(float x, float y) {
+	public void position(float x, float y) {
 		_x = x;
 		_y = y;
+
 		positionAura();
+	}
+
+	public void translateBy(float dx, float dy) {
+		position(_x + dx, _y + dy);
 	}
 
 	public boolean dependsDirectlyOn(NodeElement other) {
@@ -114,5 +87,11 @@ public class NodeElement extends GraphElement {
 		_aura._x = _x - Constants.AURA_THICKNESS;
 		_aura._y = _y - Constants.AURA_THICKNESS;
 	}
+
+	public void clearPendingForces() {
+		_pendingForceX = 0;
+		_pendingForceY = 0;
+	}
+
 
 }

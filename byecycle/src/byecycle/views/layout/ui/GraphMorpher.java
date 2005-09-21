@@ -17,6 +17,7 @@ public class GraphMorpher {
 	public <T> GraphMorpher(Collection<NodeFigure<T>> nodes, CartesianLayout targets) {
 		for (NodeFigure<T> node : nodes)
 			addNodeMorpherFor(node, targets);
+		morphingStep(); //FIXME This is doing everything in a single step because this is running in parallel with live nofe figures. Make a copy of them, remove this line and reduce ANIMATION STEP to 3,
 	}
 
 	private void addNodeMorpherFor(NodeFigure<?> node, CartesianLayout targets) {

@@ -1,18 +1,18 @@
 // Copyright (C) 2004 Klaus Wuestefeld and Rodrigo B de Oliveira.
 // This is free software. See the license distributed along with this file.
 
-package byecycle.views.layout.algorithm;
+package byecycle.views.layout.criteria;
 
 import byecycle.views.layout.Coordinates;
 
 
-class DependencyElement extends GraphElement {
+public class DependencyElement extends GraphElement {
 
 	private final NodeElement _dependent;
 	private final NodeElement _provider;
 
 
-	DependencyElement(NodeElement dependent, NodeElement provider) {
+	public DependencyElement(NodeElement dependent, NodeElement provider) {
 		_dependent = dependent;
 		_provider = provider;
 

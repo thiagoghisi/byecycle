@@ -1,14 +1,18 @@
-package byecycle.views.layout.algorithm.forces;
+package byecycle.views.layout.criteria.forces;
 
-import byecycle.views.layout.algorithm.GraphElement;
-import byecycle.views.layout.algorithm.NodeElement;
+import byecycle.views.layout.criteria.Constants;
+import byecycle.views.layout.criteria.GraphElement;
+import byecycle.views.layout.criteria.NodeElement;
 
 
 public class DependencySpring extends DistanceBasedForce {
 
+	private static final float SPRING_FORCE = Constants.DEPENDENCY_SPRING_FORCE;
+	private static final int IDEAL_SIZE = Constants.DEPENDENCY_SPRING_PREFERRED_SIZE;
+
 	@Override
 	public float intensityGiven(float distance) {
-		return (distance - 25) * 0.000005f; // TODO Play with this formula. Zero it to see REPULSION acting alone.
+		return (distance - IDEAL_SIZE) * SPRING_FORCE; // TODO Play with this formula. Zero it to see REPULSION acting alone.
 	}
 
 	@Override

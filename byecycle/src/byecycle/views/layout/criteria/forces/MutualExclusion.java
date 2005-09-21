@@ -1,7 +1,7 @@
-package byecycle.views.layout.algorithm.forces;
+package byecycle.views.layout.criteria.forces;
 
-import byecycle.views.layout.algorithm.GraphElement;
-import byecycle.views.layout.algorithm.NodeElement;
+import byecycle.views.layout.criteria.GraphElement;
+import byecycle.views.layout.criteria.NodeElement;
 
 
 public class MutualExclusion extends DistanceBasedForce {

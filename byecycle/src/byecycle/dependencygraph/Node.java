@@ -15,7 +15,7 @@ import byecycle.JavaType;
 
 public class Node<PayloadType> {
 
-	private final static Random RANDOM = new Random();
+	private final static Random RANDOM = new Random(0);
 
 
 	public static Collection<Node<String>> createGraph(String[] names) {
