@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.FigureCanvas;
 import org.eclipse.draw2d.IFigure;
@@ -15,8 +16,10 @@ import org.eclipse.draw2d.MouseEvent;
 import org.eclipse.draw2d.MouseListener;
 import org.eclipse.draw2d.XYLayout;
 import org.eclipse.draw2d.MouseListener.Stub;
+import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.swt.widgets.Composite;
+
 import byecycle.JavaType;
 import byecycle.dependencygraph.Node;
 import byecycle.views.layout.CartesianLayout;
@@ -45,10 +48,10 @@ public class GraphCanvas<T> extends FigureCanvas implements NodeSizeProvider {
 		_listener = listener;
 		_graphFigure.addMouseListener(backgroundDoubleClickListener());
 
-		initGraphElements(graph);
-		initGraphFigure();
+		initGraphFigures(graph);
+		initRootGraphFigure();
 
-		useLayout(initialLayout);
+		initialLayout(translateToOrigin(initialLayout));
 	}
 
 
@@ -100,7 +103,7 @@ public class GraphCanvas<T> extends FigureCanvas implements NodeSizeProvider {
 			_dependencyFigures[i].refresh();
 	}
 
-	private void initGraphFigure() {
+	private void initRootGraphFigure() {
 		for (NodeFigure<?> nodeFigure : nodeFigures()) {
 			IFigure figure = nodeFigure.figure();
 			_graphFigure.add(figure);
@@ -115,7 +118,7 @@ public class GraphCanvas<T> extends FigureCanvas implements NodeSizeProvider {
 		return _nodeFiguresByNode.values();
 	}
 
-	private void initGraphElements(Iterable<Node<T>> nodeGraph) {
+	private void initGraphFigures(Iterable<Node<T>> nodeGraph) {
 
 		List<DependencyFigure> dependencyFigures = new ArrayList<DependencyFigure>();
 
@@ -139,6 +142,14 @@ public class GraphCanvas<T> extends FigureCanvas implements NodeSizeProvider {
 		_nodeFiguresByNode.put(node, result);
 		if (node.kind2() == JavaType.PACKAGE) result.figure().addMouseListener(_nodeDoubleClickListener);
 		return result;
+	}
+
+	private void initialLayout(CartesianLayout initialLayout) {
+		for (NodeFigure<?> figure : nodeFigures()) {
+			float x = initialLayout.coordinatesFor(figure.name())._x;
+			float y = initialLayout.coordinatesFor(figure.name())._y;
+			figure.position(new Point(x, y));
+		}
 	}
 
 	public void useLayout(CartesianLayout newLayout) {

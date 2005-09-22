@@ -14,17 +14,24 @@ import byecycle.views.layout.criteria.NodeElement;
 public class RandomAverage<T> extends LayoutAlgorithm<T> {
 
 	private static final Random RANDOM = new Random();
-	private static final float AVERAGE_RANDOM_AMPLITUDE = 300; //TODO Consider varying the random amplitude based on stress. More stress= more amplitude (go for global minimum) Less stress=less amplitude (go for local minimum).
 
 	private final List<AveragingNode> _averagingNodes;
 
-	private float _randomAmplitude;
+	private float _randomAmplitude = 0;
+
 
 	public RandomAverage(Iterable<Node<T>> graph, CartesianLayout initialLayout, NodeSizeProvider sizeProvider) {
 		super(graph, initialLayout, sizeProvider);
-		_averagingNodes = new ArrayList<AveragingNode>(_nodeElements.size());
+		_averagingNodes = new ArrayList<AveragingNode>(_nodeElements.size()); // Necessary only to avoid casting all the time.
 		for (NodeElement element : _nodeElements)
 			_averagingNodes.add((AveragingNode)element);
+
+		giveInitialLayoutSomeCredit();
+	}
+
+	private void giveInitialLayoutSomeCredit() {
+		for (AveragingNode node : _averagingNodes)
+			node.giveInitialLayoutSomeCredit(); // FIXME Make this work. :) Consider saving AveragingNode state in the memento.
 	}
 
 	@Override
@@ -35,7 +42,23 @@ public class RandomAverage<T> extends LayoutAlgorithm<T> {
 		float smallestTimeFrame = minimumTimeToMoveOnePixel();
 		takeAveragePosition(smallestTimeFrame);
 
+		float stress = _stressMeter.applyForcesTo(_averagingNodes, _graphElements);
+		adjustRandomAmplitudeGiven(stress);
+
 		return false;
+	}
+
+	private void adjustRandomAmplitudeGiven(float stress) {
+		// _randomAmplitude = ((float)RANDOM.nextGaussian()) * AVERAGE_RANDOM_AMPLITUDE; // This favours short-ranged and long-ranged forces equally;
+
+		// if (stress < _lowestStressEver) _randomAmplitude /= 1.001;
+
+		_randomAmplitude *= 0.99;
+
+		if (_randomAmplitude <= 0.1) {
+			_randomAmplitude = 1000;
+		}
+
 	}
 
 	private float minimumTimeToMoveOnePixel() {
@@ -51,14 +74,12 @@ public class RandomAverage<T> extends LayoutAlgorithm<T> {
 	}
 
 	private void randomize() {
-		_randomAmplitude = ((float)RANDOM.nextGaussian()) * AVERAGE_RANDOM_AMPLITUDE; //This favours short-ranged and long-ranged forces equally;
 		for (AveragingNode node : _averagingNodes)
-			node.position((node._x) + random(), (node._y) + random());
+			node.position(node._x + random(), node._y + random());
 	}
 
-
 	private float random() {
-		return ((float)RANDOM.nextGaussian()) * _randomAmplitude;
+		return RANDOM.nextFloat() * _randomAmplitude;
 	}
 
 	protected NodeElement createNodeElement(Node<?> node) {

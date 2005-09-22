@@ -22,17 +22,16 @@ public class NodeElement extends GraphElement {
 
 	public float _x;
 	public float _y;
-	
+
 	protected float _pendingForceX;
 	protected float _pendingForceY;
-	
+
 	private final StressMeter _stressMeter;
 
 	private int _width;
 	private int _height;
 
 	private final FloatRectangle _aura;
-
 
 
 	public Node node() {
@@ -92,6 +91,5 @@ public class NodeElement extends GraphElement {
 		_pendingForceX = 0;
 		_pendingForceY = 0;
 	}
-
 
 }

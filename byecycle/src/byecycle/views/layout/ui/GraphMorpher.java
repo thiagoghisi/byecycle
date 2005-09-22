@@ -17,7 +17,6 @@ public class GraphMorpher {
 	public <T> GraphMorpher(Collection<NodeFigure<T>> nodes, CartesianLayout targets) {
 		for (NodeFigure<T> node : nodes)
 			addNodeMorpherFor(node, targets);
-		morphingStep(); //FIXME This is doing everything in a single step because this is running in parallel with live nofe figures. Make a copy of them, remove this line and reduce ANIMATION STEP to 3,
 	}
 
 	private void addNodeMorpherFor(NodeFigure<?> node, CartesianLayout targets) {
@@ -41,42 +40,40 @@ public class GraphMorpher {
 
 	private static class NodeMorpher {
 
-		private static final int MAX_ANIMATION_STEP_PIXELS = 3000;
+		private static final int MAX_ANIMATION_STEP_PIXELS = 3;
+
 		private final NodeFigure<?> _figure;
+
 		private final int _targetX;
 		private final int _targetY;
+
+		private int _currentX;
+		private int _currentY;
 
 
 		NodeMorpher(NodeFigure<?> figure, Coordinates target) {
 			_figure = figure;
+
+			_currentX = _figure.position().x;
+			_currentY = _figure.position().y;
+
 			_targetX = Math.round(target._x);
 			_targetY = Math.round(target._y);
 		}
 
 		void morphingStep() {
-			int newX = currentX();
-			int newY = currentY();
-
 			int step = MAX_ANIMATION_STEP_PIXELS;
-			int dX = Math.max(Math.min(_targetX - newX, step), -step);
-			int dY = Math.max(Math.min(_targetY - newY, step), -step);
+			int dX = Math.max(Math.min(_targetX - _currentX, step), -step);
+			int dY = Math.max(Math.min(_targetY - _currentY, step), -step);
 
-			newX += dX;
-			newY += dY;
+			_currentX += dX;
+			_currentY += dY;
 
-			_figure.position(new Point(newX, newY));
-		}
-
-		private int currentX() {
-			return _figure.position().x;
-		}
-
-		private int currentY() {
-			return _figure.position().y;
+			_figure.position(new Point(_currentX, _currentY));
 		}
 
 		public boolean onTarget() {
-			return currentX() == _targetX && currentY() == _targetY;
+			return _currentX == _targetX && _currentY == _targetY;
 		}
 	}
 

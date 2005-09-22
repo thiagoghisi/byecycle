@@ -10,6 +10,7 @@ public class DependencySpring extends DistanceBasedForce {
 	private static final float SPRING_FORCE = Constants.DEPENDENCY_SPRING_FORCE;
 	private static final int IDEAL_SIZE = Constants.DEPENDENCY_SPRING_PREFERRED_SIZE;
 
+
 	@Override
 	public float intensityGiven(float distance) {
 		return (distance - IDEAL_SIZE) * SPRING_FORCE; // TODO Play with this formula. Zero it to see REPULSION acting alone.

@@ -23,36 +23,35 @@ public abstract class LayoutAlgorithm<T> {
 	protected final StressMeter _stressMeter = new StressMeter();
 	protected float _lowestStressEver;
 
+
 	protected LayoutAlgorithm(Iterable<Node<T>> graph, CartesianLayout initialLayout, NodeSizeProvider sizeProvider) {
 		_dependencyElements = new ArrayList<DependencyElement>();
 		_nodeElements = new ArrayList<NodeElement>();
 		initGraphElements(graph);
-		
-	
+
 		_graphElements = new ArrayList<GraphElement>();
 		_graphElements.addAll(_nodeElements);
 		_graphElements.addAll(_dependencyElements);
-		
+
 		layout(initialLayout);
-	
-//		_lowestStressEver = measureStress();
-		_lowestStressEver = Float.MAX_VALUE;
+
+		// _lowestStressEver = Float.MAX_VALUE;
+		_lowestStressEver = measureStress();
 	}
 
 	public abstract boolean improveLayoutStep();
-	
+
 	public boolean improveLayoutForAWhile() {
 		if (_nodeElements.size() <= 1) return false;
-	
+
 		long start = System.nanoTime();
 		do {
 
 			improveLayoutStep();
-	
+
 		} while (System.nanoTime() - start < 1000000); // One millisecond at least.
 
 		float stress = measureStress();
-		System.out.println(stress);
 		if (stress < _lowestStressEver) {
 			_lowestStressEver = stress;
 			return true;
@@ -79,16 +78,16 @@ public abstract class LayoutAlgorithm<T> {
 	protected void initGraphElements(Iterable<Node<T>> graph) {
 		Map<Node, NodeElement> nodeElementsByNode = new HashMap<Node, NodeElement>();
 		List<DependencyElement> dependencyElements = new ArrayList<DependencyElement>();
-	
+
 		for (Node<T> node : graph) {
 			NodeElement dependentElement = produceElementFor(node, nodeElementsByNode);
-	
+
 			for (Node<T> provider : node.providers()) {
 				NodeElement providerElement = produceElementFor(provider, nodeElementsByNode);
 				dependencyElements.add(new DependencyElement(dependentElement, providerElement));
 			}
 		}
-	
+
 		_nodeElements.addAll(nodeElementsByNode.values());
 		_dependencyElements.addAll(dependencyElements);
 	}
@@ -96,7 +95,7 @@ public abstract class LayoutAlgorithm<T> {
 	private NodeElement produceElementFor(Node node, Map<Node, NodeElement> nodeElementsByNode) {
 		NodeElement result = nodeElementsByNode.get(node);
 		if (result != null) return result;
-	
+
 		result = createNodeElement(node);
 		nodeElementsByNode.put(node, result);
 		return result;

@@ -36,24 +36,22 @@ public class Relaxer {
 	}
 
 	public void step() {
-		_impetus = tryToMove()
-			? (float)(_impetus * 1.1)
-			: (float)(_impetus / 2);
-			
-			System.out.println(_impetus);
+		_impetus = tryToMove() ? (float)(_impetus * 1.1) : (float)(_impetus / 2);
+
+		System.out.println(_impetus);
 	}
 
 	private boolean tryToMove() {
 		checkpoint();
 
 		give();
-		
+
 		float stress = applyForces();
 		if (stress > _previousStress) {
 			rollback();
 			return false;
 		}
-		
+
 		_previousStress = stress;
 		return true;
 	}

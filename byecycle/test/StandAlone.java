@@ -45,24 +45,24 @@ public class StandAlone {
 			}
 		});
 		LayoutAlgorithm<String> algorithm = new RandomAverage<String>(_graph, CartesianLayout.random(), canvas);
-//		LayoutAlgorithm<String> algorithm = new NudgeNudge<String>(_graph, CartesianLayout.random(), canvas);
+		// LayoutAlgorithm<String> algorithm = new NudgeNudge<String>(_graph, CartesianLayout.random(), canvas);
 
 		shell.open();
 		shell.layout();
 
 		while (!shell.isDisposed()) {
 			while (!_display.readAndDispatch()) {
-				 //try {
-				 //Thread.sleep(50);
-				 //} catch (InterruptedException e) {
-				 // TODO Auto-generated catch block
-				 //e.printStackTrace();
-				 //}
+				// try {
+				// Thread.sleep(50);
+				// } catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				// e.printStackTrace();
+				// }
 
-				algorithm.improveLayoutStep();
-				//boolean improved = algorithm.improveLayoutForAWhile();
-				//if (improved)
-					canvas.useLayout(algorithm.layoutMemento());
+				// algorithm.improveLayoutStep();
+				boolean improved = algorithm.improveLayoutForAWhile();
+				// if (improved)
+				canvas.useLayout(algorithm.layoutMemento());
 
 				canvas.animationStep();
 
@@ -71,26 +71,26 @@ public class StandAlone {
 		}
 	}
 
-private Collection<Node<String>> graph() {
-	String[] names = new String[36];
-	for (int i = 0; i < names.length; i++) {
-		names[i] = "Node " + i;
+	private Collection<Node<String>> graph() {
+		String[] names = new String[16];
+		for (int i = 0; i < names.length; i++) {
+			names[i] = "Node " + i;
+		}
+		return Node.createGraph(names);
 	}
-	return Node.createGraph(names);
-}
 
-//private Collection<Node<String>> graph() {
-//	Collection<Node<String>> result = new ArrayList<Node<String>>();
-//	Node<String> nodeA = new Node<String>("A");
-//	Node<String> nodeB = new Node<String>("B");
-//	Node<String> nodeC = new Node<String>("C");
-//	nodeA.addProvider(nodeB);
-//	nodeB.addProvider(nodeA);
-//	nodeB.addProvider(nodeC);
-//	result.add(nodeA);
-//	result.add(nodeB);
-//	result.add(nodeC);
-//	return result;
-//}
+	// private Collection<Node<String>> graph() {
+	// Collection<Node<String>> result = new ArrayList<Node<String>>();
+	// Node<String> nodeA = new Node<String>("A");
+	// Node<String> nodeB = new Node<String>("B");
+	// Node<String> nodeC = new Node<String>("C");
+	// nodeA.addProvider(nodeB);
+	// nodeB.addProvider(nodeA);
+	// nodeB.addProvider(nodeC);
+	// result.add(nodeA);
+	// result.add(nodeB);
+	// result.add(nodeC);
+	// return result;
+	// }
 
 }

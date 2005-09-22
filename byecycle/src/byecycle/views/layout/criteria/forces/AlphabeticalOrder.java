@@ -4,6 +4,7 @@ import byecycle.views.layout.criteria.Constants;
 import byecycle.views.layout.criteria.GraphElement;
 import byecycle.views.layout.criteria.NodeElement;
 
+
 public class AlphabeticalOrder implements Force {
 
 	public void applyTo(GraphElement element1, GraphElement element2) {
@@ -24,9 +25,9 @@ public class AlphabeticalOrder implements Force {
 	private void actUponFirstAndSecond(NodeElement first, NodeElement second) {
 		float dx = Math.max(Math.abs(first._x - second._x), 1);
 		float dy = Math.max(Math.abs(first._y - second._y), 1);
-		
-		first.addForceComponents(- Constants.ALPHABETICAL_ORDER_THRUST / dx, 0, second);
-		first.addForceComponents(0, - Constants.ALPHABETICAL_ORDER_THRUST / dy, second);
+
+		first.addForceComponents(-Constants.ALPHABETICAL_ORDER_THRUST / dx, 0, second);
+		first.addForceComponents(0, -Constants.ALPHABETICAL_ORDER_THRUST / dy, second);
 	}
-	
+
 }

@@ -33,7 +33,7 @@ public class NodeFigure<T> extends GraphFigure {
 	IFigure produceFigure() {
 		IFigure result;
 
-		String name = name();
+		String name = simplifiedName();
 		if (name.length() < 20) {
 			result = label(name, imageForNode(_node));
 		} else {
@@ -50,7 +50,7 @@ public class NodeFigure<T> extends GraphFigure {
 		return result;
 	}
 
-	String name() {
+	private String simplifiedName() {
 		String result = _node.name();
 		if (_node.kind2() == JavaType.PACKAGE) return result;
 		return result.substring(result.lastIndexOf('.') + 1);
@@ -94,6 +94,10 @@ public class NodeFigure<T> extends GraphFigure {
 
 	public Point position() {
 		return this.figure().getBounds().getLocation();
+	}
+
+	String name() {
+		return _node.name();
 	}
 
 }

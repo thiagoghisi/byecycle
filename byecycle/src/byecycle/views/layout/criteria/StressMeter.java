@@ -13,6 +13,7 @@ import byecycle.views.layout.criteria.forces.MutualExclusion;
 import byecycle.views.layout.criteria.forces.StaticElectricity;
 import byecycle.views.layout.criteria.forces.SuperiorityComplex;
 
+
 public class StressMeter {
 
 	private static final Force SUPERIORITY_COMPLEX = new SuperiorityComplex();
@@ -23,6 +24,7 @@ public class StressMeter {
 	private static final Force MUTUAL_EXCLUSION = new MutualExclusion();
 
 	private float _reading;
+
 
 	void addStress(float stress) {
 		_reading += stress;
@@ -38,32 +40,31 @@ public class StressMeter {
 		for (NodeElement node : nodes)
 			node.clearPendingForces();
 
-		
 		for (int i = 0; i < graphElements.size(); i++) {
 			GraphElement element1 = graphElements.get(i);
 
 			for (int j = i + 1; j < graphElements.size(); j++) {
 				GraphElement element2 = graphElements.get(j);
 
-				//Symmetry breakers: (important for RandomAverage algorithm)
+				// Symmetry breakers: (important for RandomAverage algorithm)
 				SUPERIORITY_COMPLEX.applyTo(element1, element2);
 				ALPHABETICAL_ORDER.applyTo(element1, element2);
-				
-				//Converging:
+
+				// Converging:
 				DEPENDENCY_SPRING.applyTo(element1, element2);
 				GRAVITY.applyTo(element1, element2);
 
-				//Diverging:
+				// Diverging:
 				STATIC_ELECTRICITY.applyTo(element1, element2);
 				MUTUAL_EXCLUSION.applyTo(element1, element2);
 			}
 		}
-		
+
 		return _reading;
 	}
 
 	public float reading() {
 		return _reading;
 	}
-	
+
 }
