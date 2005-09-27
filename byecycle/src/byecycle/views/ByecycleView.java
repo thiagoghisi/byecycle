@@ -26,8 +26,8 @@ import org.eclipse.ui.progress.UIJob;
 import byecycle.PackageDependencyAnalysis;
 import byecycle.dependencygraph.Node;
 import byecycle.views.layout.CartesianLayout;
+import byecycle.views.layout.algorithm.AlgorithmCombination;
 import byecycle.views.layout.algorithm.LayoutAlgorithm;
-import byecycle.views.layout.algorithm.random.RandomAverage;
 import byecycle.views.layout.ui.GraphCanvas;
 
 
@@ -122,7 +122,7 @@ public class ByecycleView extends ViewPart implements IByecycleView {
 	}
 
 	private void newAlgorithm(Collection<Node<IBinding>> graph, CartesianLayout initialLayout) {
-		_algorithm = new RandomAverage<IBinding>(graph, initialLayout, _canvas);
+		_algorithm = new AlgorithmCombination<IBinding>(graph, initialLayout, _canvas);
 	}
 
 	@Override
@@ -234,13 +234,16 @@ public class ByecycleView extends ViewPart implements IByecycleView {
 
 	private long nanosecondsToSleep() {
 		long currentTime = System.nanoTime();
+
 		long timeLastLayoutJobTook = currentTime - _timeLastLayoutJobStarted;
 		if (timeLastLayoutJobTook < 0) timeLastLayoutJobTook = 0; // This can happen due to rounding from nanos to millis.
-		long timeToSleep = timeLastLayoutJobTook * 4; // The more things run in parallel with byecycle, the less greedy byecycle
-		// will be. Byecycle is proud to be a very good citizen. :)
+
+		long timeToSleep = timeLastLayoutJobTook * 4; // The more things run in parallel with byecycle, the less greedy byecycle will be. Byecycle is proud to be a very good citizen. :)
 		if (timeToSleep > TEN_SECONDS) timeToSleep = TEN_SECONDS;
 		if (timeToSleep < ONE_MILLISECOND) timeToSleep = ONE_MILLISECOND;
+
 		_timeLastLayoutJobStarted = currentTime + timeToSleep;
+
 		return timeToSleep;
 	}
 

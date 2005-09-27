@@ -7,6 +7,7 @@ import org.eclipse.swt.widgets.Shell;
 
 import byecycle.dependencygraph.Node;
 import byecycle.views.layout.CartesianLayout;
+import byecycle.views.layout.algorithm.AlgorithmCombination;
 import byecycle.views.layout.algorithm.LayoutAlgorithm;
 import byecycle.views.layout.algorithm.random.RandomAverage;
 import byecycle.views.layout.ui.GraphCanvas;
@@ -44,8 +45,9 @@ public class StandAlone {
 				System.out.println("Node:" + node);
 			}
 		});
-		LayoutAlgorithm<String> algorithm = new RandomAverage<String>(_graph, CartesianLayout.random(), canvas);
+		// LayoutAlgorithm<String> algorithm = new RandomAverage<String>(_graph, CartesianLayout.random(), canvas);
 		// LayoutAlgorithm<String> algorithm = new NudgeNudge<String>(_graph, CartesianLayout.random(), canvas);
+		LayoutAlgorithm<String> algorithm = new AlgorithmCombination<String>(_graph, CartesianLayout.random(), canvas);
 
 		shell.open();
 		shell.layout();
@@ -59,9 +61,9 @@ public class StandAlone {
 				// e.printStackTrace();
 				// }
 
-				// algorithm.improveLayoutStep();
+				//algorithm.improveLayoutStep();
 				boolean improved = algorithm.improveLayoutForAWhile();
-				// if (improved)
+				if (improved)
 				canvas.useLayout(algorithm.layoutMemento());
 
 				canvas.animationStep();

@@ -23,12 +23,8 @@ public class AveragingNode extends NodeElement {
 	// _totalY = _y * _time;
 	}
 
-	float timeNeededToMoveOnePixel() {
-		return 1 / Math.max(Math.abs(_pendingForceX), Math.abs(_pendingForceY));
-	}
-
 	void takeAveragePosition(float timeFrame) {
-		_totalX = _totalX + (_pendingForceX * timeFrame * 300); // TODO Normalize this impetus with the results produces by the NudgeNudge algorithm.
+		_totalX = _totalX + (_pendingForceX * timeFrame * 300); // TODO Normalize this impetus with the results produces by the Relaxer algorithm.
 		_totalY = _totalY + (_pendingForceY * timeFrame * 300);
 
 		_time += timeFrame; // TODO Optimize: keep a single clock instead of once in every node.

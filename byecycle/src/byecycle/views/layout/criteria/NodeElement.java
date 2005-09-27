@@ -63,10 +63,6 @@ public class NodeElement extends GraphElement {
 		positionAura();
 	}
 
-	public void translateBy(float dx, float dy) {
-		position(_x + dx, _y + dy);
-	}
-
 	public boolean dependsDirectlyOn(NodeElement other) {
 		return _node.dependsDirectlyOn(other.node());
 	}
@@ -90,6 +86,28 @@ public class NodeElement extends GraphElement {
 	public void clearPendingForces() {
 		_pendingForceX = 0;
 		_pendingForceY = 0;
+	}
+
+	public float timeNeededToMoveOnePixel() {
+		return 1 / Math.max(Math.abs(velocityX()), Math.abs(velocityY()));
+	}
+
+	protected float velocityX() {
+		return _pendingForceX;
+	}
+
+	protected float velocityY() {
+		return _pendingForceX;
+	}
+
+	/** "Give: To yield to physical force." Dictionary.com */
+	public void give(float timeFrame) {
+		float dX = velocityX() * timeFrame;
+		float dY = velocityY() * timeFrame;
+	
+		float newX = _x + dX;
+		float newY = _y + dY;
+		position(newX, newY);
 	}
 
 }

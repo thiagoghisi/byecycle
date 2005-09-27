@@ -39,7 +39,7 @@ public abstract class LayoutAlgorithm<T> {
 		_lowestStressEver = measureStress();
 	}
 
-	public abstract boolean improveLayoutStep();
+	public abstract void improveLayoutStep();
 
 	public boolean improveLayoutForAWhile() {
 		if (_nodeElements.size() <= 1) return false;
@@ -59,7 +59,7 @@ public abstract class LayoutAlgorithm<T> {
 		return false;
 	}
 
-	private float measureStress() {
+	protected float measureStress() {
 		return _stressMeter.applyForcesTo(_nodeElements, _graphElements);
 	}
 
@@ -99,6 +99,20 @@ public abstract class LayoutAlgorithm<T> {
 		result = createNodeElement(node);
 		nodeElementsByNode.put(node, result);
 		return result;
+	}
+
+	protected float minimumTimeNeededToMoveOnePixel() {
+		float result = Float.MAX_VALUE;
+		for (NodeElement node : _nodeElements) {
+			if (node.timeNeededToMoveOnePixel() < result)
+				result = node.timeNeededToMoveOnePixel();
+		}
+		return result;
+	}
+	
+	protected void give(float timeFrame) {
+		for (NodeElement node : _nodeElements)
+			node.give(timeFrame);
 	}
 
 	protected abstract NodeElement createNodeElement(Node<?> node);

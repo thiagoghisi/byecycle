@@ -35,7 +35,7 @@ public class RandomAverage<T> extends LayoutAlgorithm<T> {
 	}
 
 	@Override
-	public boolean improveLayoutStep() {
+	public void improveLayoutStep() {
 		randomize();
 		_stressMeter.applyForcesTo(_averagingNodes, _graphElements);
 
@@ -44,8 +44,6 @@ public class RandomAverage<T> extends LayoutAlgorithm<T> {
 
 		float stress = _stressMeter.applyForcesTo(_averagingNodes, _graphElements);
 		adjustRandomAmplitudeGiven(stress);
-
-		return false;
 	}
 
 	private void adjustRandomAmplitudeGiven(float stress) {
