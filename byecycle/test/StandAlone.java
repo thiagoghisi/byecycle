@@ -61,9 +61,9 @@ public class StandAlone {
 				// e.printStackTrace();
 				// }
 
-				//algorithm.improveLayoutStep();
-				boolean improved = algorithm.improveLayoutForAWhile();
-				if (improved)
+				algorithm.improveLayoutStep();
+				//boolean improved = algorithm.improveLayoutForAWhile();
+				//if (improved)
 				canvas.useLayout(algorithm.layoutMemento());
 
 				canvas.animationStep();

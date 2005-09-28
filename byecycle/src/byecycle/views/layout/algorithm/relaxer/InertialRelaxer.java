@@ -27,7 +27,7 @@ System.out.println(timeFrame);
 			_hasConverged = true;
 			return;
 		}
-		give(Math.min(timeFrame/2, 20));
+		give(Math.min(timeFrame, 1));
 	}
 
 	protected NodeElement createNodeElement(Node node) {
