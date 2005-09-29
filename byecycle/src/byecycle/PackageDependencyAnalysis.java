@@ -159,6 +159,10 @@ public class PackageDependencyAnalysis {
 		}
 
 		private Node<IBinding> getNode2(ITypeBinding binding) {
+			
+			ITypeBinding declaringClass = binding.getDeclaringClass();
+			if (null != declaringClass) return getNode2(declaringClass);
+			
 			JavaType type = JavaType.valueOf(binding);
 			return getNode(binding, binding.getQualifiedName(), type);
 		}
