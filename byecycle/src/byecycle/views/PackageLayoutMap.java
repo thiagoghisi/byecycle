@@ -158,10 +158,10 @@ public class PackageLayoutMap {
 		IProject project = aPackage.getJavaProject().getProject();
 
 		IFolder byecycleFolder = project.getFolder(".byecycle");
-		if (!byecycleFolder.exists()) byecycleFolder.create(false, false, null);
+		if (!byecycleFolder.exists()) byecycleFolder.create(false, true, null);
 
 		IFolder result = byecycleFolder.getFolder("layoutcache");
-		if (!result.exists()) result.create(false, false, null);
+		if (!result.exists()) result.create(false, true, null);
 
 		return result;
 	}
