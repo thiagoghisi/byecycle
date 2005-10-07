@@ -4,9 +4,9 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -24,6 +24,7 @@ import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaModelException;
 
 import byecycle.views.layout.CartesianLayout;
+import byecycle.views.layout.Coordinates;
 
 
 public class PackageLayoutMap {
@@ -56,13 +57,42 @@ public class PackageLayoutMap {
 			if (file == null) return null;
 
 			InputStream contents = file.getContents();
-			try {
-				return (CartesianLayout)new ObjectInputStream(contents).readObject();
-			} catch (ClassNotFoundException expectedForOldCacheFiles) {
+			if (FILE_EXTENSION.substring(1).equals(file.getFileExtension())) {
+				try {
+					return (CartesianLayout)new ObjectInputStream(contents).readObject();
+				} catch (ClassNotFoundException expectedForOldCacheFiles) {
+					return null;
+				} finally {
+					contents.close();
+				}
+			} else if ("properties".equals(file.getFileExtension())) {
+				try {
+					Properties prop = new Properties();
+					prop.load(contents);
+					CartesianLayout _cartesianLayout = new CartesianLayout();
+					for (Map.Entry<Object, Object> e : prop.entrySet()) {
+						String name = (String)e.getKey();
+						String[] valueStr = ((String)e.getValue()).split(",", 2);
+						Coordinates coordinates = new Coordinates(Float.parseFloat(valueStr[0]), Float.parseFloat(valueStr[1]));
+						_cartesianLayout.keep(name, coordinates);
+					}
+					return _cartesianLayout;
+				} finally {
+					contents.close();
+				}
+			} else {
+				// unknown file type
 				return null;
-			} finally {
-				contents.close();
 			}
+		} catch (CoreException e) {
+			// Normally cause by folder out of sync
+			try {
+				aPackage.getJavaProject().getProject().getFolder(".byecycle").refreshLocal(IResource.DEPTH_INFINITE, null);
+			} catch (CoreException e1) {
+				e = e1;
+			}
+			e.printStackTrace();
+			return null;
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;
@@ -85,7 +115,13 @@ public class PackageLayoutMap {
 			IFile file = createTimestampedFileToAvoidScmMergeConflicts(aPackage);
 
 			ByteArrayOutputStream serialization = new ByteArrayOutputStream();
-			new ObjectOutputStream(serialization).writeObject(memento); // TODO: Use readable format (properties file) instead of serialization.
+			// new ObjectOutputStream(serialization).writeObject(memento); // TODO: Use readable format (properties file) instead of serialization.
+			Properties prop = new Properties();
+			for (String name : memento.nodeNames()) {
+				Coordinates coordinates = memento.coordinatesFor(name);
+				prop.setProperty(name, Float.toString(coordinates._x) + ',' + Float.toString(coordinates._y));
+			}
+			prop.store(serialization, "");
 			file.create(new ByteArrayInputStream(serialization.toByteArray()), false, null);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -99,8 +135,8 @@ public class PackageLayoutMap {
 			_scheduledSaves = null;
 		}
 
-		for (IPackageFragment aPackage : mySaves.keySet())
-			save(aPackage, mySaves.get(aPackage));
+		for (Map.Entry<IPackageFragment, CartesianLayout> entry : mySaves.entrySet())
+			save(entry.getKey(), entry.getValue());
 	}
 
 	static private IFile fileForReading(IPackageFragment aPackage) throws CoreException, JavaModelException {
@@ -122,7 +158,8 @@ public class PackageLayoutMap {
 
 		deleteOldFiles(cacheFolder, baseName);
 
-		String newName = baseName + System.currentTimeMillis() + FILE_EXTENSION;
+		// String newName = baseName + System.currentTimeMillis() + FILE_EXTENSION;
+		String newName = baseName + System.currentTimeMillis() + ".properties";
 		return cacheFolder.getFile(newName);
 	}
 
