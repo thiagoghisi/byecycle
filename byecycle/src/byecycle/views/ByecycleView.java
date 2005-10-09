@@ -11,6 +11,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IPackageFragment;
+import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.IBinding;
 import org.eclipse.jface.viewers.ISelection;
@@ -154,6 +155,13 @@ public class ByecycleView extends ViewPart implements IByecycleView {
 
 		if (newPackage == null) return;
 		if (newPackage == _selectedPackage) return;
+		try {
+			// No empty view if select package without source 
+			if (newPackage.getKind() == IPackageFragmentRoot.K_BINARY) return;
+		} catch (JavaModelException e) {
+			// FIXME Auto-generated catch block
+			e.printStackTrace();
+		} 
 		synchronized (_graphChangeMonitor) {
 			_selectedPackage = newPackage;
 			_selectedPackageGraph = null;

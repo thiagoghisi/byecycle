@@ -61,6 +61,7 @@ public class GraphCanvas<T> extends FigureCanvas implements NodeSizeProvider {
 
 	private DependencyFigure[] _dependencyFigures;
 	private final Map<Node, NodeFigure<T>> _nodeFiguresByNode = new HashMap<Node, NodeFigure<T>>();
+	private final Map<IFigure, Node<T>> _nodeByFigure = new HashMap<IFigure, Node<T>>();
 
 	private final Listener<T> _listener;
 
@@ -78,9 +79,8 @@ public class GraphCanvas<T> extends FigureCanvas implements NodeSizeProvider {
 
 	private Stub nodeDoubleClickListener() {
 		return new MouseListener.Stub() {
-			@SuppressWarnings("unchecked")
 			public void mouseDoubleClicked(MouseEvent e) {
-				Node<T> node = ((NodeFigure<T>)e.getSource()).node();
+				Node<T> node = _nodeByFigure.get((IFigure)e.getSource());
 				_listener.nodeSelected(node);
 				e.consume();
 			}
@@ -94,13 +94,14 @@ public class GraphCanvas<T> extends FigureCanvas implements NodeSizeProvider {
 
 		refreshDependencies();
 
-		_graphFigure.revalidate();
-		_graphFigure.repaint();
+		// Draw2d do not need we do these ourself?
+		// _graphFigure.invalidate();
+		// _graphFigure.repaint();
 	}
 
 	private void refreshDependencies() {
-		for (int i = 0; i < _dependencyFigures.length; i++)
-			_dependencyFigures[i].refresh();
+		for (DependencyFigure dependencyFigure : _dependencyFigures)
+			dependencyFigure.refresh();
 	}
 
 	private void initRootGraphFigure() {
@@ -131,7 +132,7 @@ public class GraphCanvas<T> extends FigureCanvas implements NodeSizeProvider {
 		}
 
 		_dependencyFigures = new DependencyFigure[dependencyFigures.size()];
-		System.arraycopy(dependencyFigures.toArray(), 0, _dependencyFigures, 0, _dependencyFigures.length);
+		_dependencyFigures = dependencyFigures.toArray(_dependencyFigures);
 	}
 
 	private NodeFigure produceNodeFigureFor(Node<T> node) {
@@ -140,14 +141,19 @@ public class GraphCanvas<T> extends FigureCanvas implements NodeSizeProvider {
 
 		result = new NodeFigure<T>(node);
 		_nodeFiguresByNode.put(node, result);
-		if (node.kind2() == JavaType.PACKAGE) result.figure().addMouseListener(_nodeDoubleClickListener);
+		if (node.kind2() == JavaType.PACKAGE) {
+			final IFigure figure = result.figure();
+			figure.addMouseListener(_nodeDoubleClickListener);
+			_nodeByFigure.put(figure, node);
+		}
 		return result;
 	}
 
 	private void initialLayout(CartesianLayout initialLayout) {
 		for (NodeFigure<?> figure : nodeFigures()) {
-			float x = initialLayout.coordinatesFor(figure.name())._x;
-			float y = initialLayout.coordinatesFor(figure.name())._y;
+			final Coordinates coordinates = initialLayout.coordinatesFor(figure.name());
+			float x = coordinates._x;
+			float y = coordinates._y;
 			figure.position(new Point(x, y));
 		}
 	}
