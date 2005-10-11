@@ -3,7 +3,6 @@ package byecycle.views;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
-import java.io.ObjectInputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -29,7 +28,7 @@ import byecycle.views.layout.Coordinates;
 
 public class PackageLayoutMap {
 
-	private static final String FILE_EXTENSION = ".serialized";
+	private static final String FILE_EXTENSION = "properties";
 
 	private final WorkspaceJob _saveJob = createSaveJob();
 	private Map<IPackageFragment, CartesianLayout> _scheduledSaves;
@@ -57,37 +56,16 @@ public class PackageLayoutMap {
 			if (file == null) return null;
 
 			InputStream contents = file.getContents();
-			if (FILE_EXTENSION.substring(1).equals(file.getFileExtension())) {
-				try {
-					return (CartesianLayout)new ObjectInputStream(contents).readObject();
-				} catch (ClassNotFoundException expectedForOldCacheFiles) {
-					return null;
-				} finally {
-					contents.close();
-				}
-			} else if ("properties".equals(file.getFileExtension())) {
-				try {
-					Properties prop = new Properties();
-					prop.load(contents);
-					CartesianLayout _cartesianLayout = new CartesianLayout();
-					for (Map.Entry<Object, Object> e : prop.entrySet()) {
-						String name = (String)e.getKey();
-						String[] valueStr = ((String)e.getValue()).split(",", 2);
-						Coordinates coordinates = new Coordinates(Float.parseFloat(valueStr[0]), Float.parseFloat(valueStr[1]));
-						_cartesianLayout.keep(name, coordinates);
-					}
-					return _cartesianLayout;
-				} finally {
-					contents.close();
-				}
-			} else {
-				// unknown file type
-				return null;
-			}
-		} catch (CoreException e) {
-			// Normally cause by folder out of sync
 			try {
-				aPackage.getJavaProject().getProject().getFolder(".byecycle").refreshLocal(IResource.DEPTH_INFINITE, null);
+				Properties properties = new Properties();
+				properties.load(contents);
+				return produceCartesianLayoutGiven(properties);
+			} finally {
+				contents.close();
+			}
+		} catch (CoreException e) {  // Normally caused by folder out of sync
+			try {
+				byecycleFolderFor(aPackage).refreshLocal(IResource.DEPTH_INFINITE, null);
 			} catch (CoreException e1) {
 				e = e1;
 			}
@@ -97,6 +75,17 @@ public class PackageLayoutMap {
 			e.printStackTrace();
 			return null;
 		}
+	}
+
+	private CartesianLayout produceCartesianLayoutGiven(Properties properties) {
+		CartesianLayout _cartesianLayout = new CartesianLayout();
+		for (Map.Entry<Object, Object> e : properties.entrySet()) {
+			String name = (String)e.getKey();
+			String[] valueStr = ((String)e.getValue()).split(",", 2);
+			Coordinates coordinates = new Coordinates(Float.parseFloat(valueStr[0]), Float.parseFloat(valueStr[1]));
+			_cartesianLayout.keep(name, coordinates);
+		}
+		return _cartesianLayout;
 	}
 
 	public void keep(IPackageFragment aPackage, CartesianLayout memento) {
@@ -135,8 +124,8 @@ public class PackageLayoutMap {
 			_scheduledSaves = null;
 		}
 
-		for (Map.Entry<IPackageFragment, CartesianLayout> entry : mySaves.entrySet())
-			save(entry.getKey(), entry.getValue());
+		for (IPackageFragment aPackage : mySaves.keySet())
+			save(aPackage, mySaves.get(aPackage));
 	}
 
 	static private IFile fileForReading(IPackageFragment aPackage) throws CoreException, JavaModelException {
@@ -147,8 +136,12 @@ public class PackageLayoutMap {
 	}
 
 	private static IFile matchingFile(IFolder cacheFolder, String baseName) throws CoreException {
-		for (IResource candidate : cacheFolder.members())
-			if (candidate.getName().startsWith(baseName)) return (IFile)candidate;
+		for (IResource candidate : cacheFolder.members()) {
+			if (!candidate.getName().startsWith(baseName)) continue;
+			if (!FILE_EXTENSION.equals(candidate.getFileExtension())) continue;
+			return (IFile)candidate;
+		}
+
 		return null;
 	}
 
@@ -158,8 +151,7 @@ public class PackageLayoutMap {
 
 		deleteOldFiles(cacheFolder, baseName);
 
-		// String newName = baseName + System.currentTimeMillis() + FILE_EXTENSION;
-		String newName = baseName + System.currentTimeMillis() + ".properties";
+		String newName = baseName + System.currentTimeMillis() + "." + FILE_EXTENSION;
 		return cacheFolder.getFile(newName);
 	}
 
@@ -192,15 +184,18 @@ public class PackageLayoutMap {
 	}
 
 	static private IFolder produceCacheFolder(IPackageFragment aPackage) throws CoreException {
-		IProject project = aPackage.getJavaProject().getProject();
-
-		IFolder byecycleFolder = project.getFolder(".byecycle");
+		IFolder byecycleFolder = byecycleFolderFor(aPackage);
 		if (!byecycleFolder.exists()) byecycleFolder.create(false, true, null);
 
 		IFolder result = byecycleFolder.getFolder("layoutcache");
 		if (!result.exists()) result.create(false, true, null);
 
 		return result;
+	}
+
+	private static IFolder byecycleFolderFor(IPackageFragment aPackage) {
+		IProject project = aPackage.getJavaProject().getProject();
+		return project.getFolder(".byecycle");
 	}
 
 	/**

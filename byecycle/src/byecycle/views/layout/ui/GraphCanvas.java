@@ -151,10 +151,8 @@ public class GraphCanvas<T> extends FigureCanvas implements NodeSizeProvider {
 
 	private void initialLayout(CartesianLayout initialLayout) {
 		for (NodeFigure<?> figure : nodeFigures()) {
-			final Coordinates coordinates = initialLayout.coordinatesFor(figure.name());
-			float x = coordinates._x;
-			float y = coordinates._y;
-			figure.position(new Point(x, y));
+			Coordinates coordinates = initialLayout.coordinatesFor(figure.name());
+			figure.position(new Point(coordinates._x, coordinates._y));
 		}
 	}
 
