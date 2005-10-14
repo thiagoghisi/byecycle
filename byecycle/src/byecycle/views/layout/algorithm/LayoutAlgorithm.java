@@ -35,7 +35,6 @@ public abstract class LayoutAlgorithm<T> {
 
 		layout(initialLayout);
 
-		// _lowestStressEver = Float.MAX_VALUE;
 		_lowestStressEver = measureStress();
 	}
 
@@ -46,18 +45,21 @@ public abstract class LayoutAlgorithm<T> {
 
 		long start = System.nanoTime();
 		do {
-
 			improveLayoutStep();
-
+			float stress = measureStress();
+			if (stress < _lowestStressEver) {
+				adaptToSuccess();
+				_lowestStressEver = stress;
+				return true;
+			}
 		} while (System.nanoTime() - start < 1000000); // One millisecond at least.
 
-		float stress = measureStress();
-		if (stress < _lowestStressEver) {
-			_lowestStressEver = stress;
-			return true;
-		}
+		adaptToFailure();
 		return false;
 	}
+
+	protected void adaptToFailure() {}
+	protected void adaptToSuccess() {}
 
 	protected float measureStress() {
 		return _stressMeter.applyForcesTo(_nodeElements, _graphElements);

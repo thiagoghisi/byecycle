@@ -2,6 +2,6 @@ package byecycle.views.layout.algorithm.relaxer;
 
 class Constants {
 
-	static final float MAXIMUM_TIME_FRAME = 1000;
+	static final float MINIMUM_TIME_FRAME = 0.01f;
 
 }

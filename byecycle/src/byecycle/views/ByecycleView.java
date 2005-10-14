@@ -27,8 +27,8 @@ import org.eclipse.ui.progress.UIJob;
 import byecycle.PackageDependencyAnalysis;
 import byecycle.dependencygraph.Node;
 import byecycle.views.layout.CartesianLayout;
-import byecycle.views.layout.algorithm.AlgorithmCombination;
 import byecycle.views.layout.algorithm.LayoutAlgorithm;
+import byecycle.views.layout.algorithm.random.RandomAverage;
 import byecycle.views.layout.ui.GraphCanvas;
 
 
@@ -123,7 +123,7 @@ public class ByecycleView extends ViewPart implements IByecycleView {
 	}
 
 	private void newAlgorithm(Collection<Node<IBinding>> graph, CartesianLayout initialLayout) {
-		_algorithm = new AlgorithmCombination<IBinding>(graph, initialLayout, _canvas);
+		_algorithm = new RandomAverage<IBinding>(graph, initialLayout, _canvas);
 	}
 
 	@Override

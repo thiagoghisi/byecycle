@@ -17,7 +17,7 @@ public class RandomAverage<T> extends LayoutAlgorithm<T> {
 
 	private final List<AveragingNode> _averagingNodes;
 
-	private float _randomAmplitude = 0;
+	private float _randomAmplitude = 300;
 
 
 	public RandomAverage(Iterable<Node<T>> graph, CartesianLayout initialLayout, NodeSizeProvider sizeProvider) {
@@ -42,8 +42,8 @@ public class RandomAverage<T> extends LayoutAlgorithm<T> {
 		float smallestTimeFrame = minimumTimeToMoveOnePixel();
 		takeAveragePosition(smallestTimeFrame);
 
-		float stress = _stressMeter.applyForcesTo(_averagingNodes, _graphElements);
-		adjustRandomAmplitudeGiven(stress);
+		//float stress = _stressMeter.applyForcesTo(_averagingNodes, _graphElements);
+		//adjustRandomAmplitudeGiven(stress);
 	}
 
 	private void adjustRandomAmplitudeGiven(float stress) {
@@ -51,12 +51,7 @@ public class RandomAverage<T> extends LayoutAlgorithm<T> {
 
 		// if (stress < _lowestStressEver) _randomAmplitude /= 1.001;
 
-		_randomAmplitude *= 0.99;
-
-		if (_randomAmplitude <= 0.1) {
-			_randomAmplitude = 1000;
-		}
-
+		_randomAmplitude = 1000;
 	}
 
 	private float minimumTimeToMoveOnePixel() {
@@ -73,7 +68,8 @@ public class RandomAverage<T> extends LayoutAlgorithm<T> {
 
 	private void randomize() {
 		for (AveragingNode node : _averagingNodes)
-			node.position(node._x + random(), node._y + random());
+			node.position(node._x + random(), node._y + random()); //Feedback.
+			//node.position(random(), random());
 	}
 
 	private float random() {

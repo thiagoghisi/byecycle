@@ -1,4 +1,3 @@
-import java.util.ArrayList;
 import java.util.Collection;
 
 import org.eclipse.swt.layout.FillLayout;
@@ -7,7 +6,6 @@ import org.eclipse.swt.widgets.Shell;
 
 import byecycle.dependencygraph.Node;
 import byecycle.views.layout.CartesianLayout;
-import byecycle.views.layout.algorithm.AlgorithmCombination;
 import byecycle.views.layout.algorithm.LayoutAlgorithm;
 import byecycle.views.layout.algorithm.random.RandomAverage;
 import byecycle.views.layout.ui.GraphCanvas;
@@ -22,15 +20,7 @@ public class StandAlone {
 
 	private final Collection<Node<String>> _graph = graph();
 
-	private final Display _display = new Display(); // Has to be initialized
-
-
-	// before the _graphFigure
-	// although there is no
-	// explicit dependency, or
-	// else ColorConstants will
-	// throw a
-	// NullPointerException. :(
+	private final Display _display = new Display(); // Has to be initialized before the _graphFigure although there is no explicit dependency, or else ColorConstants will throw a NullPointerException. :(
 
 	private StandAlone() {
 		Shell shell = new Shell(_display);
@@ -45,9 +35,9 @@ public class StandAlone {
 				System.out.println("Node:" + node);
 			}
 		});
-		// LayoutAlgorithm<String> algorithm = new RandomAverage<String>(_graph, CartesianLayout.random(), canvas);
-		// LayoutAlgorithm<String> algorithm = new NudgeNudge<String>(_graph, CartesianLayout.random(), canvas);
-		LayoutAlgorithm<String> algorithm = new AlgorithmCombination<String>(_graph, CartesianLayout.random(), canvas);
+		 LayoutAlgorithm<String> algorithm = new RandomAverage<String>(_graph, CartesianLayout.random(), canvas);
+		//LayoutAlgorithm<String> algorithm = new InertialRelaxer<String>(_graph, CartesianLayout.random(), canvas);
+		//LayoutAlgorithm<String> algorithm = new AlgorithmCombination<String>(_graph, CartesianLayout.random(), canvas);
 
 		shell.open();
 		shell.layout();
@@ -61,14 +51,14 @@ public class StandAlone {
 				// e.printStackTrace();
 				// }
 
-				algorithm.improveLayoutStep();
-				//boolean improved = algorithm.improveLayoutForAWhile();
+				//algorithm.improveLayoutStep();
+				boolean improved = algorithm.improveLayoutForAWhile();
 				//if (improved)
 				canvas.useLayout(algorithm.layoutMemento());
 
 				canvas.animationStep();
 
-				_display.sleep();
+			//	_display.sleep();
 			}
 		}
 	}

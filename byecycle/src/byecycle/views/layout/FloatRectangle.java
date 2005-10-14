@@ -8,15 +8,26 @@ public class FloatRectangle {
 	public float _height;
 
 
-	public float areaOfIntersection(FloatRectangle other) {
+	public FloatRectangle intersection(FloatRectangle other) {
+		FloatRectangle result = new FloatRectangle();
+
 		float left = Math.max(this.left(), other.left());
 		float right = Math.min(this.right(), other.right());
 		float top = Math.max(this.top(), other.top());
 		float bottom = Math.min(this.bottom(), other.bottom());
 
-		if (left >= right || top >= bottom) return 0;
+		if (left > right || top > bottom) return result;
 
-		return (right - left) * (bottom - top);
+		result._x = left;
+		result._y = top;
+		result._width = (right - left);
+		result._height = (bottom - top);
+		
+		return result;
+	}
+
+	public float area() {
+		return _width * _height;
 	}
 
 	private float left() {
@@ -34,4 +45,5 @@ public class FloatRectangle {
 	private float bottom() {
 		return _y + _height;
 	}
+
 }
