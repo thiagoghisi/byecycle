@@ -3,6 +3,7 @@
 package byecycle.views.layout.ui;
 
 import java.util.Random;
+
 import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.Label;
@@ -12,6 +13,7 @@ import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
+
 import byecycle.JavaType;
 import byecycle.dependencygraph.Node;
 
@@ -34,19 +36,23 @@ public class NodeFigure<T> extends GraphFigure {
 		IFigure result;
 
 		String name = simplifiedName();
+		final Image imageForNode = imageForNode(_node);
 		if (name.length() < 20) {
-			result = label(name, imageForNode(_node));
+			result = label(name, imageForNode);
 		} else {
 			result = new CompartmentFigure();
 			int cut = (name.length() / 2) - 1;
-			result.add(label(name.substring(0, cut), imageForNode(_node)));
+			result.add(label(name.substring(0, cut), imageForNode));
 			result.add(label(name.substring(cut), null));
 		}
-
 		result.setBorder(new LineBorder());
 		result.setBackgroundColor(pastelColorDeterminedBy(name));
 		result.setOpaque(true);
-
+		IFigure tooltip = label(_node.name(), imageForNode);
+		tooltip.setBorder(new LineBorder());
+		tooltip.setBackgroundColor(pastelColorDeterminedBy(name));
+		tooltip.setOpaque(true);
+		result.setToolTip(tooltip);
 		return result;
 	}
 
@@ -66,8 +72,9 @@ public class NodeFigure<T> extends GraphFigure {
 		}
 	}
 
-
-	private static Image imageForNode(Node<?> node) {
+     // TODO: Change to somekind of ImageProvider pattern.
+     // Difference provider for different type of <T>
+	private static <T> Image imageForNode(Node<T> node) {
 		String resourcename = node.kind2().getResourceName();
 		try {
 			return JavaUI.getSharedImages().getImage(resourcename);
