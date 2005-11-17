@@ -18,9 +18,6 @@ import org.eclipse.draw2d.XYLayout;
 import org.eclipse.draw2d.MouseListener.Stub;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
-import org.eclipse.jdt.core.dom.IBinding;
-import org.eclipse.swt.events.ControlEvent;
-import org.eclipse.swt.events.ControlListener;
 import org.eclipse.swt.widgets.Composite;
 
 import byecycle.JavaType;
@@ -41,11 +38,9 @@ public class GraphCanvas<T> extends FigureCanvas implements NodeSizeProvider {
 	}
 
 
-	org.eclipse.swt.graphics.Point _size;
-
-
 	public GraphCanvas(Composite parent, Collection<Node<T>> graph, CartesianLayout initialLayout, Listener<T> listener) {
 		super(parent);
+
 		this.setContents(_graphFigure);
 		_graphFigure.setLayoutManager(new XYLayout());
 
@@ -56,21 +51,7 @@ public class GraphCanvas<T> extends FigureCanvas implements NodeSizeProvider {
 		initGraphFigures(graph);
 		initRootGraphFigure();
 
-		_size = this.getSize();
-		_lastLayout = initialLayout;
-		// moved to controlResized
-		// initialLayout(_lastLayout = translateToOrigin(initialLayout));
-		this.addControlListener(new ControlListener() {
-			public void controlMoved(ControlEvent e) {}
-
-			public void controlResized(ControlEvent e) {
-				_size = GraphCanvas.this.getSize();
-				CartesianLayout translatedLayout = translateToOrigin(_lastLayout);
-				_morpher = new GraphMorpher(nodeFigures(), translatedLayout);
-				_lastLayout = translatedLayout;
-				initialLayout(translatedLayout);
-			}
-		});
+		initialLayout(translateToOrigin(initialLayout));
 	}
 
 
@@ -168,12 +149,7 @@ public class GraphCanvas<T> extends FigureCanvas implements NodeSizeProvider {
 		return result;
 	}
 
-
-	CartesianLayout _lastLayout;
-
-
 	private void initialLayout(CartesianLayout initialLayout) {
-
 		for (NodeFigure<?> figure : nodeFigures()) {
 			Coordinates coordinates = initialLayout.coordinatesFor(figure.name());
 			figure.position(new Point(coordinates._x, coordinates._y));
@@ -183,7 +159,6 @@ public class GraphCanvas<T> extends FigureCanvas implements NodeSizeProvider {
 	public void useLayout(CartesianLayout newLayout) {
 		CartesianLayout translatedLayout = translateToOrigin(newLayout);
 		_morpher = new GraphMorpher(nodeFigures(), translatedLayout);
-		_lastLayout = translatedLayout;
 	}
 
 	public FloatRectangle sizeGiven(Node node) {
@@ -195,9 +170,7 @@ public class GraphCanvas<T> extends FigureCanvas implements NodeSizeProvider {
 		return result;
 	}
 
-	private CartesianLayout translateToOrigin(CartesianLayout layout) {
-		float largestX = Float.MIN_VALUE;
-		float largestY = Float.MIN_VALUE;
+	private static CartesianLayout translateToOrigin(CartesianLayout layout) {
 		float smallestX = Float.MAX_VALUE;
 		float smallestY = Float.MAX_VALUE;
 
@@ -205,14 +178,10 @@ public class GraphCanvas<T> extends FigureCanvas implements NodeSizeProvider {
 			Coordinates coordinates = layout.coordinatesFor(nodeName);
 			if (coordinates._x < smallestX) smallestX = coordinates._x;
 			if (coordinates._y < smallestY) smallestY = coordinates._y;
-			if (coordinates._x > largestX) largestX = coordinates._x;
-			if (coordinates._y > largestY) largestY = coordinates._y;
 		}
-		float dx = -smallestX + (_size.x - largestX + smallestX) / 2 - 40;
-		float dy = -smallestY + (_size.y - largestY + smallestY) / 2 - 40;
 
-		// float dx = -smallestX + MARGIN_PIXELS;
-		// float dy = -smallestY + MARGIN_PIXELS;
+		float dx = -smallestX + MARGIN_PIXELS;
+		float dy = -smallestY + MARGIN_PIXELS;
 
 		CartesianLayout result = new CartesianLayout();
 		for (String nodeName : layout.nodeNames()) {
