@@ -2,6 +2,8 @@
 //This is free software. See the license distributed along with this file.
 package byecycle.views.layout.ui;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 import org.eclipse.draw2d.Figure;
@@ -24,9 +26,10 @@ public class NodeFigure<T> extends GraphFigure {
 		_node = node;
 	}
 
-
 	private final Node<T> _node;
-
+	//FIXME - tjennings - rather inefficient, some nodes have no dependencies and most
+	//have far fewer than ArrayList's default capacity of ten.
+	private final List<DependencyFigure> _dependencies = new ArrayList<DependencyFigure>();
 
 	private Label label(String text, Image icon) {
 		return icon == null ? new Label(" " + text, icon) : new Label(text, icon);
@@ -34,7 +37,7 @@ public class NodeFigure<T> extends GraphFigure {
 
 	IFigure produceFigure() {
 		IFigure result;
-
+		
 		String name = simplifiedName();
 		final Image imageForNode = imageForNode(_node);
 		if (name.length() < 20) {
@@ -93,6 +96,22 @@ public class NodeFigure<T> extends GraphFigure {
 
 	Node node() {
 		return _node;
+	}
+	
+	void add(DependencyFigure dependency) {
+		_dependencies.add(dependency);
+	}
+	
+	void highLightDependencies() {
+		for (DependencyFigure dependant : _dependencies) {
+			dependant.highlight();
+		}
+	}
+	
+	void unHighlightDependencies() {
+		for (DependencyFigure dependant : _dependencies) {
+			dependant.clearHighlight();
+		}
 	}
 
 	void position(Point point) {

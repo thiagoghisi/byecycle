@@ -40,7 +40,6 @@ public class GraphCanvas<T> extends FigureCanvas implements NodeSizeProvider {
 
 	public GraphCanvas(Composite parent, Collection<Node<T>> graph, CartesianLayout initialLayout, Listener<T> listener) {
 		super(parent);
-
 		this.setContents(_graphFigure);
 		_graphFigure.setLayoutManager(new XYLayout());
 
@@ -56,15 +55,19 @@ public class GraphCanvas<T> extends FigureCanvas implements NodeSizeProvider {
 
 
 	private final MouseListener _nodeDoubleClickListener = nodeDoubleClickListener();
+	
+	//tjennings - handle for the single click listener
+	private final MouseListener _nodeSingleClickListener = nodeSingleClickListener();
 
 	private final IFigure _graphFigure = new Figure();
+	private NodeFigure<T> _highLightedNodeFigure;
 
 	private DependencyFigure[] _dependencyFigures;
 	private final Map<Node, NodeFigure<T>> _nodeFiguresByNode = new HashMap<Node, NodeFigure<T>>();
 	private final Map<IFigure, Node<T>> _nodeByFigure = new HashMap<IFigure, Node<T>>();
-
+	
 	private final Listener<T> _listener;
-
+		
 	private GraphMorpher _morpher;
 
 
@@ -85,6 +88,38 @@ public class GraphCanvas<T> extends FigureCanvas implements NodeSizeProvider {
 				e.consume();
 			}
 		};
+	}
+	
+	/**
+	 * tjennings -
+	 * Single click on a node to highlight its dependencies
+	 */
+	private Stub nodeSingleClickListener() {
+		return new MouseListener.Stub() {
+			public void mousePressed(MouseEvent e) {				
+				highlightNodeDependencies((IFigure) e.getSource());				
+				e.consume();
+			}
+		};
+	}	
+	
+	/**
+	 * tjennings
+	 * clear the existing highlighting, if necessary.
+	 * find the selected Nnecessary.
+	 * find the NodeFigure for our IFigure selection, and highlight it.odeFigure and highlight it.
+	 */
+	private void highlightNodeDependencies(IFigure figure) {
+		if(null == figure) return;  //FIXME playing it safe, this probably never happens				
+
+		if(null != _highLightedNodeFigure)
+			_highLightedNodeFigure.unHighlightDependencies();
+		
+		//FIXME this sucks and I'm not sure I want to create another map.
+		Node node = this._nodeByFigure.get(figure);
+		NodeFigure<T> nodeFigure = _nodeFiguresByNode.get(node);
+		nodeFigure.highLightDependencies();				
+		_highLightedNodeFigure = nodeFigure;
 	}
 
 	public void animationStep() {
@@ -125,9 +160,12 @@ public class GraphCanvas<T> extends FigureCanvas implements NodeSizeProvider {
 
 		for (Node<T> node : nodeGraph) {
 			NodeFigure dependentFigure = produceNodeFigureFor(node);
+						
 			for (Node<T> provider : node.providers()) {
 				NodeFigure providerFigure = produceNodeFigureFor(provider);
-				dependencyFigures.add(new DependencyFigure(dependentFigure, providerFigure));
+				DependencyFigure nodeDependency = new DependencyFigure(dependentFigure, providerFigure);
+				dependentFigure.add(nodeDependency);  //tjennings - append the dependency figures to the depenent node
+				dependencyFigures.add(nodeDependency);				
 			}
 		}
 
@@ -144,12 +182,14 @@ public class GraphCanvas<T> extends FigureCanvas implements NodeSizeProvider {
 		if (node.kind2() == JavaType.PACKAGE) {
 			final IFigure figure = result.figure();
 			figure.addMouseListener(_nodeDoubleClickListener);
+			figure.addMouseListener(_nodeSingleClickListener); //tjennings - add a single click (mouse down) listener
 			_nodeByFigure.put(figure, node);
 		}
 		return result;
 	}
 
 	private void initialLayout(CartesianLayout initialLayout) {
+
 		for (NodeFigure<?> figure : nodeFigures()) {
 			Coordinates coordinates = initialLayout.coordinatesFor(figure.name());
 			figure.position(new Point(coordinates._x, coordinates._y));

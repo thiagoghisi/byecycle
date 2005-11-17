@@ -44,15 +44,32 @@ class DependencyFigure extends GraphFigure {
 		decorationPointList.addPoint(-1, -1);
 		arrowHead.setTemplate(decorationPointList);
 		_arrow.setTargetDecoration(arrowHead);
-
-		Color redOrBlack = _provider.node().dependsOn(_dependent.node()) ? ColorConstants.red : ColorConstants.black;
-		_arrow.setForegroundColor(redOrBlack);
-
+		
+		setArrowForegroundRedOrBlack();
+		
 		return _arrow;
+	}
+	
+	void clearHighlight() {
+		setArrowForegroundRedOrBlack();
+	}
+	
+	void highlight() {
+		Color yellowOrBlue = doNodesHaveCyclicDependency() ? ColorConstants.yellow : ColorConstants.blue;
+		_arrow.setForegroundColor(yellowOrBlue);
 	}
 
 	void refresh() {
 		correctOverlapInversion();
+	}
+	
+	private boolean doNodesHaveCyclicDependency() {
+		return _provider.node().dependsOn(_dependent.node());
+	}
+	
+	private void setArrowForegroundRedOrBlack() {
+		Color redOrBlack =  doNodesHaveCyclicDependency() ? ColorConstants.red : ColorConstants.black;
+		_arrow.setForegroundColor(redOrBlack);
 	}
 
 	private void correctOverlapInversion() {
