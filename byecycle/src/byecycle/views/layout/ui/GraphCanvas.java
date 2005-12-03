@@ -60,7 +60,7 @@ public class GraphCanvas<T> extends FigureCanvas implements NodeSizeProvider {
 	private final MouseListener _nodeSingleClickListener = nodeSingleClickListener();
 
 	private final IFigure _graphFigure = new Figure();
-	private NodeFigure<T> _highLightedNodeFigure;
+	private NodeFigure<T> _selectedNodeFigure;
 
 	private DependencyFigure[] _dependencyFigures;
 	private final Map<Node, NodeFigure<T>> _nodeFiguresByNode = new HashMap<Node, NodeFigure<T>>();
@@ -97,7 +97,7 @@ public class GraphCanvas<T> extends FigureCanvas implements NodeSizeProvider {
 	private Stub nodeSingleClickListener() {
 		return new MouseListener.Stub() {
 			public void mousePressed(MouseEvent e) {				
-				highlightNodeDependencies((IFigure) e.getSource());				
+				selectNode((IFigure) e.getSource());				
 				e.consume();
 			}
 		};
@@ -109,17 +109,17 @@ public class GraphCanvas<T> extends FigureCanvas implements NodeSizeProvider {
 	 * find the selected Nnecessary.
 	 * find the NodeFigure for our IFigure selection, and highlight it.odeFigure and highlight it.
 	 */
-	private void highlightNodeDependencies(IFigure figure) {
+	private void selectNode(IFigure figure) {
 		if(null == figure) return;  //FIXME playing it safe, this probably never happens				
 
-		if(null != _highLightedNodeFigure)
-			_highLightedNodeFigure.unHighlightDependencies();
+		if(null != _selectedNodeFigure)
+			_selectedNodeFigure.notifyNodeDeselected();
 		
 		//FIXME this sucks and I'm not sure I want to create another map.
 		Node node = this._nodeByFigure.get(figure);
 		NodeFigure<T> nodeFigure = _nodeFiguresByNode.get(node);
-		nodeFigure.highLightDependencies();				
-		_highLightedNodeFigure = nodeFigure;
+		nodeFigure.notifyNodeSelected();				
+		_selectedNodeFigure = nodeFigure;
 	}
 
 	public void animationStep() {
@@ -163,8 +163,7 @@ public class GraphCanvas<T> extends FigureCanvas implements NodeSizeProvider {
 						
 			for (Node<T> provider : node.providers()) {
 				NodeFigure providerFigure = produceNodeFigureFor(provider);
-				DependencyFigure nodeDependency = new DependencyFigure(dependentFigure, providerFigure);
-				dependentFigure.add(nodeDependency);  //tjennings - append the dependency figures to the depenent node
+				DependencyFigure nodeDependency = new DependencyFigure(dependentFigure, providerFigure);			
 				dependencyFigures.add(nodeDependency);				
 			}
 		}
@@ -176,15 +175,17 @@ public class GraphCanvas<T> extends FigureCanvas implements NodeSizeProvider {
 	private NodeFigure produceNodeFigureFor(Node<T> node) {
 		NodeFigure<T> result = _nodeFiguresByNode.get(node);
 		if (result != null) return result;
-
+		
 		result = new NodeFigure<T>(node);
 		_nodeFiguresByNode.put(node, result);
-		if (node.kind2() == JavaType.PACKAGE) {
-			final IFigure figure = result.figure();
-			figure.addMouseListener(_nodeDoubleClickListener);
-			figure.addMouseListener(_nodeSingleClickListener); //tjennings - add a single click (mouse down) listener
-			_nodeByFigure.put(figure, node);
+		final IFigure figure = result.figure();
+		
+		if (node.kind2() == JavaType.PACKAGE) {		
+			figure.addMouseListener(_nodeDoubleClickListener);			
 		}
+		
+		figure.addMouseListener(_nodeSingleClickListener); //tjennings - add a single click (mouse down) listener
+		_nodeByFigure.put(figure, node);
 		return result;
 	}
 
