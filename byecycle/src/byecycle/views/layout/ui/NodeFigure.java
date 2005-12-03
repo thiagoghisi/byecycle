@@ -25,11 +25,9 @@ public class NodeFigure<T> extends GraphFigure {
 	public NodeFigure(Node<T> node) {
 		_node = node;
 	}
-
-	private final Node<T> _node;
-	//FIXME - tjennings - rather inefficient, some nodes have no dependencies and most
-	//have far fewer than ArrayList's default capacity of ten.
-	private final List<DependencyFigure> _dependencies = new ArrayList<DependencyFigure>();
+	
+	private final Node<T> _node;	
+	private final List<NodeFigureListener> _nodeListeners = new ArrayList<NodeFigureListener>(8);
 
 	private Label label(String text, Image icon) {
 		return icon == null ? new Label(" " + text, icon) : new Label(text, icon);
@@ -96,21 +94,21 @@ public class NodeFigure<T> extends GraphFigure {
 
 	Node node() {
 		return _node;
+	}	
+	
+	void addListener(NodeFigureListener listener) {
+		_nodeListeners.add(listener);
 	}
 	
-	void add(DependencyFigure dependency) {
-		_dependencies.add(dependency);
-	}
-	
-	void highLightDependencies() {
-		for (DependencyFigure dependant : _dependencies) {
-			dependant.highlight();
+	void notifyNodeSelected() {
+		for (NodeFigureListener listener : _nodeListeners) {
+			listener.selected();
 		}
 	}
 	
-	void unHighlightDependencies() {
-		for (DependencyFigure dependant : _dependencies) {
-			dependant.clearHighlight();
+	void notifyNodeDeselected() {
+		for (NodeFigureListener listener : _nodeListeners) {
+			listener.deselected();
 		}
 	}
 
