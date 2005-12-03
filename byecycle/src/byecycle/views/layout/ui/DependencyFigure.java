@@ -20,11 +20,15 @@ class DependencyFigure extends GraphFigure {
 	private PolylineConnection _arrow;
 	private ChopboxAnchor _sourceAnchor;
 	private ChopboxAnchor _targetAnchor;
+	
+	private final int HIGHLIGHT_WIDTH = 2;
+	private final int NORMAL_WIDTH = 1;
 
 
 	DependencyFigure(NodeFigure dependent, NodeFigure provider) {
 		_dependent = dependent;
 		_provider = provider;
+		_dependent.addListener(nodeFigureListener());
 
 	}
 
@@ -51,12 +55,14 @@ class DependencyFigure extends GraphFigure {
 	}
 	
 	void clearHighlight() {
+		_arrow.setLineWidth(NORMAL_WIDTH);
 		setArrowForegroundRedOrBlack();
 	}
 	
 	void highlight() {
 		Color yellowOrBlue = doNodesHaveCyclicDependency() ? ColorConstants.yellow : ColorConstants.blue;
 		_arrow.setForegroundColor(yellowOrBlue);
+		_arrow.setLineWidth(HIGHLIGHT_WIDTH);
 	}
 
 	void refresh() {
@@ -83,6 +89,18 @@ class DependencyFigure extends GraphFigure {
 		}
 		_sourceAnchor.setOwner(source);
 		_targetAnchor.setOwner(target);
+	}
+	
+	private NodeFigureListener nodeFigureListener() {
+		return new NodeFigureListener() {
+			public void selected() {
+				highlight();
+			}
+			
+			public void deselected() {
+				clearHighlight();
+			}
+		};
 	}
 
 }
