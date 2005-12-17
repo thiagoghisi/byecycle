@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
-      id="byecycle-feature"
+      id="byecycle_feature"
       label="Byecycle - Aesthetic Programming for Eclipse"
       version="0.1.0"
       provider-name="Klaus Wuestefeld and Rodrigo B. de Oliveira">
