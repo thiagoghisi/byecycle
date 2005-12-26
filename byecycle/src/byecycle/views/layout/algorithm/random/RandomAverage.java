@@ -14,7 +14,7 @@ import byecycle.views.layout.criteria.NodeElement;
 public class RandomAverage<T> extends LayoutAlgorithm<T> {
 
 	private static final Random RANDOM = new Random();
-	private float _randomAmplitude = 0;
+	private float _randomAmplitude = 3;
 
 	private final List<AveragingNode> _averagingNodes;
 
@@ -33,33 +33,46 @@ public class RandomAverage<T> extends LayoutAlgorithm<T> {
 
 	@Override
 	public void improveLayoutStep() {
-		//layout(_lastStableLayout);
+		layout(_lastStableLayout);
 		randomize();
 		_stressMeter.applyForcesTo(_averagingNodes, _graphElements);
 
 		float smallestTimeFrame = minimumTimeToMoveOnePixel();
 		takeAveragePosition(smallestTimeFrame);
+		System.out.print(".");
 	}
-	
-//	@Override
-//	protected void adaptToFailure() {
-//		_randomAmplitude += 0.001;
-//		System.out.println("Random amplitude: " + _randomAmplitude);
-//	}
-//
+
+	@Override
+	protected void adaptToFailure() {
+		if (!hasStabilizedAtLocalMininum()) return;
+
+		_lastStableLayout = layoutMemento();
+		for (AveragingNode node : _averagingNodes)
+			node.startFresh();
+
+		_randomAmplitude = 100f;
+		System.out.println();
+		System.out.println("> > > > > > > > FAILURE!!!! Random: " + _randomAmplitude);
+		
+	}
+
 	@Override
 	protected void adaptToSuccess() {
+		System.out.println();
 		System.out.println("> > > > > > > > SUCCESS!!!!! " + _stressMeter.reading());
-//		_lastStableLayout = layoutMemento();
-//		for (AveragingNode node : _averagingNodes)
-//			node.startFresh();
-//		_randomAmplitude = 3;
+
+		_lastStableLayout = layoutMemento();
+		for (AveragingNode node : _averagingNodes)
+			node.startFresh();
+
+		_randomAmplitude = 3;
 	}
 
 	private float minimumTimeToMoveOnePixel() {
-		float smallestTimeFrame = 100000;
+		float smallestTimeFrame = 0.01f;
 		for (AveragingNode node : _averagingNodes)
 			if (node.timeNeededToMoveOnePixel() < smallestTimeFrame) smallestTimeFrame = node.timeNeededToMoveOnePixel();
+		System.out.println("Time: " + smallestTimeFrame);
 		return smallestTimeFrame;
 	}
 
@@ -73,8 +86,23 @@ public class RandomAverage<T> extends LayoutAlgorithm<T> {
 			node.position(node._x + random(), node._y + random());
 	}
 
+	private int _stepsWithoutMoving = 0;
+	
+	private boolean hasStabilizedAtLocalMininum() {
+		_stepsWithoutMoving++;
+		if (hasMovedThisTime()) _stepsWithoutMoving = 0;
+		return _stepsWithoutMoving == 10;
+	}
+
+	private boolean hasMovedThisTime() {
+		for (AveragingNode node : _averagingNodes)
+			if (node.hasMoved()) return true;
+		return false;
+	}
+
 	private float random() {
-		return RANDOM.nextFloat() * _randomAmplitude;
+		float randomAmplitude = RANDOM.nextFloat() * _randomAmplitude; //Favor long-ranged and short-ranged forces equally???
+		return RANDOM.nextFloat() * randomAmplitude; //Note this is same as random * random * amplitude.
 	}
 
 	protected NodeElement createNodeElement(Node<?> node) {
