@@ -2,7 +2,7 @@ package byecycle.views.layout.criteria;
 
 public class Constants {
 
-	public static float ALPHABETICAL_ORDER_THRUST = 0.001f;
+	public static float ALPHABETICAL_ORDER_THRUST = 0.0001f;
 
 	public static final float AURA_THICKNESS = 20;
 

@@ -27,6 +27,7 @@ public class StressMeter {
 
 
 	void addStress(float stress) {
+		if (Float.isNaN(stress)) throw new IllegalArgumentException("Stress cannot be NaN.");
 		_reading += stress;
 	}
 

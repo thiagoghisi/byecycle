@@ -14,48 +14,50 @@ import byecycle.views.layout.criteria.NodeElement;
 public class RandomAverage<T> extends LayoutAlgorithm<T> {
 
 	private static final Random RANDOM = new Random();
+	private float _randomAmplitude = 0;
 
 	private final List<AveragingNode> _averagingNodes;
 
-	private float _randomAmplitude = 300;
+	private CartesianLayout _lastStableLayout;
 
 
 	public RandomAverage(Iterable<Node<T>> graph, CartesianLayout initialLayout, NodeSizeProvider sizeProvider) {
 		super(graph, initialLayout, sizeProvider);
+
 		_averagingNodes = new ArrayList<AveragingNode>(_nodeElements.size()); // Necessary only to avoid casting all the time.
 		for (NodeElement element : _nodeElements)
 			_averagingNodes.add((AveragingNode)element);
 
-		giveInitialLayoutSomeCredit();
-	}
-
-	private void giveInitialLayoutSomeCredit() {
-		for (AveragingNode node : _averagingNodes)
-			node.giveInitialLayoutSomeCredit(); // FIXME Make this work. :) Consider saving AveragingNode state in the memento.
+		_lastStableLayout = initialLayout;
 	}
 
 	@Override
 	public void improveLayoutStep() {
+		//layout(_lastStableLayout);
 		randomize();
 		_stressMeter.applyForcesTo(_averagingNodes, _graphElements);
 
 		float smallestTimeFrame = minimumTimeToMoveOnePixel();
 		takeAveragePosition(smallestTimeFrame);
-
-		//float stress = _stressMeter.applyForcesTo(_averagingNodes, _graphElements);
-		//adjustRandomAmplitudeGiven(stress);
 	}
-
-	private void adjustRandomAmplitudeGiven(float stress) {
-		// _randomAmplitude = ((float)RANDOM.nextGaussian()) * AVERAGE_RANDOM_AMPLITUDE; // This favours short-ranged and long-ranged forces equally;
-
-		// if (stress < _lowestStressEver) _randomAmplitude /= 1.001;
-
-		_randomAmplitude = 1000;
+	
+//	@Override
+//	protected void adaptToFailure() {
+//		_randomAmplitude += 0.001;
+//		System.out.println("Random amplitude: " + _randomAmplitude);
+//	}
+//
+	@Override
+	protected void adaptToSuccess() {
+		System.out.println("> > > > > > > > SUCCESS!!!!! " + _stressMeter.reading());
+//		_lastStableLayout = layoutMemento();
+//		for (AveragingNode node : _averagingNodes)
+//			node.startFresh();
+//		_randomAmplitude = 3;
 	}
 
 	private float minimumTimeToMoveOnePixel() {
-		float smallestTimeFrame = Float.MAX_VALUE;
+		float smallestTimeFrame = 100000;
 		for (AveragingNode node : _averagingNodes)
 			if (node.timeNeededToMoveOnePixel() < smallestTimeFrame) smallestTimeFrame = node.timeNeededToMoveOnePixel();
 		return smallestTimeFrame;
@@ -68,8 +70,7 @@ public class RandomAverage<T> extends LayoutAlgorithm<T> {
 
 	private void randomize() {
 		for (AveragingNode node : _averagingNodes)
-			node.position(node._x + random(), node._y + random()); //Feedback.
-			//node.position(random(), random());
+			node.position(node._x + random(), node._y + random());
 	}
 
 	private float random() {

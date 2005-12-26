@@ -57,10 +57,17 @@ public class NodeElement extends GraphElement {
 	}
 
 	public void position(float x, float y) {
+		assertValidNumber(x);
+		assertValidNumber(y);
+
 		_x = x;
 		_y = y;
 
 		positionAura();
+	}
+
+	private void assertValidNumber(float n) {
+		if (Float.isNaN(n)) throw new IllegalArgumentException("NaN received instead of a valid number.");
 	}
 
 	public boolean dependsDirectlyOn(NodeElement other) {

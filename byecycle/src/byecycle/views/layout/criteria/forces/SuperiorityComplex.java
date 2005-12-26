@@ -6,7 +6,7 @@ import byecycle.views.layout.criteria.NodeElement;
 
 public class SuperiorityComplex implements Force {
 
-	private static final float DEPENDENCY_THRUST = 0.0006f;
+	private static final float DEPENDENCY_THRUST = 0.005f;
 
 
 	public void applyTo(GraphElement element1, GraphElement element2) {
@@ -17,13 +17,11 @@ public class SuperiorityComplex implements Force {
 		NodeElement node1 = (NodeElement)element1;
 		NodeElement node2 = (NodeElement)element2;
 
-		if (node1.dependsDirectlyOn(node2)) {
+		if (node1.dependsDirectlyOn(node2))
 			actUponDependentAndProvider(node1, node2);
-		}
 
-		if (node2.dependsDirectlyOn(node1)) {
+		if (node2.dependsDirectlyOn(node1))
 			actUponDependentAndProvider(node2, node1);
-		}
 	}
 
 	private void actUponDependentAndProvider(NodeElement dependent, NodeElement provider) {

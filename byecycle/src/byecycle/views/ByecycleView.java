@@ -100,7 +100,7 @@ public class ByecycleView extends ViewPart implements IByecycleView {
 					_selectedPackageGraph = null;
 				}
 				CartesianLayout bestSoFar = _layoutCache.getLayoutFor(_packageBeingDisplayed);
-				if (bestSoFar == null) bestSoFar = CartesianLayout.random();
+				if (bestSoFar == null) bestSoFar = new CartesianLayout();
 
 				newCanvas((Collection<Node<IBinding>>)myGraph, bestSoFar);
 				newAlgorithm((Collection<Node<IBinding>>)myGraph, bestSoFar);

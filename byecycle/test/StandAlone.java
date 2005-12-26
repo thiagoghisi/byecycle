@@ -30,12 +30,12 @@ public class StandAlone {
 		FillLayout layout = new FillLayout();
 		shell.setLayout(layout);
 
-		GraphCanvas<String> canvas = new GraphCanvas<String>(shell, _graph, CartesianLayout.random(), new GraphCanvas.Listener<String>() {
+		GraphCanvas<String> canvas = new GraphCanvas<String>(shell, _graph, new CartesianLayout(), new GraphCanvas.Listener<String>() {
 			public void nodeSelected(Node<String> node) {
 				System.out.println("Node:" + node);
 			}
 		});
-		 LayoutAlgorithm<String> algorithm = new RandomAverage<String>(_graph, CartesianLayout.random(), canvas);
+		 LayoutAlgorithm<String> algorithm = new RandomAverage<String>(_graph, new CartesianLayout(), canvas);
 		//LayoutAlgorithm<String> algorithm = new InertialRelaxer<String>(_graph, CartesianLayout.random(), canvas);
 		//LayoutAlgorithm<String> algorithm = new AlgorithmCombination<String>(_graph, CartesianLayout.random(), canvas);
 
@@ -54,7 +54,7 @@ public class StandAlone {
 				//algorithm.improveLayoutStep();
 				boolean improved = algorithm.improveLayoutForAWhile();
 				//if (improved)
-				canvas.useLayout(algorithm.layoutMemento());
+					canvas.useLayout(algorithm.layoutMemento());
 
 				canvas.animationStep();
 

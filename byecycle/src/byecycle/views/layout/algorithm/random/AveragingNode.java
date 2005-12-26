@@ -7,29 +7,33 @@ import byecycle.views.layout.criteria.StressMeter;
 
 public class AveragingNode extends NodeElement {
 
-	private float _time = 1; // Doesn't matter in the long run. Avoids divide by zero in the beginning.
+	private static final float IMPETUS = 1f;
 
-	private float _totalX;
-	private float _totalY;
+	private float _time = 0;
+
+	private float _totalX = 0;
+	private float _totalY = 0;
 
 
 	AveragingNode(Node<?> node, StressMeter stressMeter) {
 		super(node, stressMeter);
 	}
 
-	void giveInitialLayoutSomeCredit() {
-	// _time = 100; //100 iterations approx.
-	// _totalX = _x * _time;
-	// _totalY = _y * _time;
-	}
-
 	void takeAveragePosition(float timeFrame) {
-		_totalX = _totalX + (_pendingForceX * timeFrame * 300); // TODO Normalize this impetus with the results produces by the Relaxer algorithm.
-		_totalY = _totalY + (_pendingForceY * timeFrame * 300);
+		timeFrame = timeFrame * IMPETUS;
+		_totalX = _totalX + (_pendingForceX * timeFrame);
+		_totalY = _totalY + (_pendingForceY * timeFrame);
 
 		_time += timeFrame; // TODO Optimize: keep a single clock instead of once in every node.
-		float sqrt = (float)Math.sqrt(_time);
-		position(_totalX / sqrt, _totalY / sqrt); // Divided by sqrt of time to avoid dispersion due to brownian motion.
+		
+		position(_x + (_totalX / _time), _y + (_totalY / _time));
+	}
+
+	void startFresh() {
+		_totalX = 0;
+		_totalY = 0;
+		
+		_time = 0;
 	}
 
 }
