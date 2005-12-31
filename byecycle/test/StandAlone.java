@@ -42,6 +42,10 @@ public class StandAlone {
 		shell.open();
 		shell.layout();
 
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {}
+		
 		while (!shell.isDisposed()) {
 			while (!_display.readAndDispatch()) {
 				// try {
@@ -64,7 +68,7 @@ public class StandAlone {
 	}
 
 	private Collection<Node<String>> graph() {
-		String[] names = new String[4];
+		String[] names = new String[16];
 		for (int i = 0; i < names.length; i++) {
 			names[i] = "Node " + i;
 		}

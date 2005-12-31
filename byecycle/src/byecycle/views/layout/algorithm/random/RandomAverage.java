@@ -14,9 +14,11 @@ import byecycle.views.layout.criteria.NodeElement;
 public class RandomAverage<T> extends LayoutAlgorithm<T> {
 
 	private static final Random RANDOM = new Random();
-	private float _randomAmplitude = 0;
+	private static final float INITIAL_RANDOM_AMPLITUDE = 1000;
+	private float _randomAmplitude = INITIAL_RANDOM_AMPLITUDE;
 
 	private final List<AveragingNode> _averagingNodes;
+	private CartesianLayout _baseLayout;
 
 
 	public RandomAverage(Iterable<Node<T>> graph, CartesianLayout initialLayout, NodeSizeProvider sizeProvider) {
@@ -25,17 +27,48 @@ public class RandomAverage<T> extends LayoutAlgorithm<T> {
 		_averagingNodes = new ArrayList<AveragingNode>(_nodeElements.size()); // Necessary only to avoid casting all the time.
 		for (NodeElement element : _nodeElements)
 			_averagingNodes.add((AveragingNode)element);
+		
+		stabilize(initialLayout);
+	}
+
+
+	private void stabilize(CartesianLayout layout) {
+		_baseLayout = layout;
+		for (AveragingNode node : _averagingNodes)
+			node.startFresh();
 	}
 
 	
 	@Override
 	public void improveLayoutStep() {
+		CartesianLayout currentLayout = layoutMemento();
+
 		randomize();
 		_stressMeter.applyForcesTo(_averagingNodes, _graphElements);
 
+		layout(currentLayout);
 		float smallestTimeFrame = minimumTimeToMoveOnePixel();
 		takeAveragePosition(smallestTimeFrame);
+
+		checkForNextStableState();
 	}
+	
+	
+	private int _counter;
+	private void checkForNextStableState() {
+		_counter++;
+		if (_counter > 100) {
+			//stabilize(layoutMemento());
+			_counter = 0;
+			_randomAmplitude *= 0.93;
+			System.out.println(_randomAmplitude);
+			if (_randomAmplitude < 1) {
+				_randomAmplitude = INITIAL_RANDOM_AMPLITUDE;
+				//stabilize(new CartesianLayout());
+			}
+		}
+	}
+
 
 	
 	private float minimumTimeToMoveOnePixel() {
@@ -51,23 +84,10 @@ public class RandomAverage<T> extends LayoutAlgorithm<T> {
 			node.takeAveragePosition(timeFrame);
 	}
 
-	float _dampener = 10;
+	
 	private void randomize() {
-		if (_randomAmplitude < 1) {
-			_randomAmplitude = 1000;
-			_dampener = _dampener *= 0.5;
-			System.out.println(_dampener);
-			startFresh();
-		}
-		_randomAmplitude -= _dampener;
 		for (AveragingNode node : _averagingNodes)
 			node.position(node._x + random(), node._y + random());
-	}
-
-
-	private void startFresh() {
-		for (AveragingNode node : _averagingNodes)
-			node.startFresh();
 	}
 
 

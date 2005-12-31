@@ -6,7 +6,7 @@ import byecycle.views.layout.criteria.NodeElement;
 
 public class SuperiorityComplex implements Force {
 
-	private static final float DEPENDENCY_THRUST = 0.005f;
+	private static final float DEPENDENCY_THRUST = 0.001f;
 
 
 	public void applyTo(GraphElement element1, GraphElement element2) {

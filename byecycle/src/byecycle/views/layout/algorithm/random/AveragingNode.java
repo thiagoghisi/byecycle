@@ -7,7 +7,7 @@ import byecycle.views.layout.criteria.StressMeter;
 
 public class AveragingNode extends NodeElement {
 
-	private static final float IMPETUS = 5000f;
+	private static final float IMPETUS = 30000f;
 
 	private float _time = 0;
 
@@ -35,5 +35,12 @@ public class AveragingNode extends NodeElement {
 		
 		_time = 0;
 	}
+
+	@Override
+	public float timeNeededToMoveOnePixel() {
+		return super.timeNeededToMoveOnePixel() / IMPETUS;
+	}
+	
+	
 
 }
