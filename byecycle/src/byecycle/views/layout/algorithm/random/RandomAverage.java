@@ -13,13 +13,12 @@ import byecycle.views.layout.criteria.NodeElement;
 
 public class RandomAverage<T> extends LayoutAlgorithm<T> {
 
-	private static final Random RANDOM = new Random();
-	private static final float INITIAL_RANDOM_AMPLITUDE = 1000;
-	private float _randomAmplitude = INITIAL_RANDOM_AMPLITUDE;
-
 	private final List<AveragingNode> _averagingNodes;
-	private CartesianLayout _baseLayout;
 
+	private static final Random RANDOM = new Random();
+	private static final float INITIAL_RANDOM_AMPLITUDE = 10000;
+	private float _randomAmplitude = INITIAL_RANDOM_AMPLITUDE;
+	private float _impetus = 1f;
 
 	public RandomAverage(Iterable<Node<T>> graph, CartesianLayout initialLayout, NodeSizeProvider sizeProvider) {
 		super(graph, initialLayout, sizeProvider);
@@ -27,44 +26,49 @@ public class RandomAverage<T> extends LayoutAlgorithm<T> {
 		_averagingNodes = new ArrayList<AveragingNode>(_nodeElements.size()); // Necessary only to avoid casting all the time.
 		for (NodeElement element : _nodeElements)
 			_averagingNodes.add((AveragingNode)element);
-		
-		stabilize(initialLayout);
-	}
-
-
-	private void stabilize(CartesianLayout layout) {
-		_baseLayout = layout;
-		for (AveragingNode node : _averagingNodes)
-			node.startFresh();
 	}
 
 	
 	@Override
 	public void improveLayoutStep() {
 		CartesianLayout currentLayout = layoutMemento();
-
 		randomize();
 		_stressMeter.applyForcesTo(_averagingNodes, _graphElements);
-
 		layout(currentLayout);
-		float smallestTimeFrame = minimumTimeToMoveOnePixel();
-		takeAveragePosition(smallestTimeFrame);
 
+//		System.out.println(_impetus);
+		float smallestTimeFrame = minimumTimeToMoveOnePixel();
+		takeAveragePosition(smallestTimeFrame * _impetus);
+		
 		checkForNextStableState();
 	}
 	
 	
+	@Override
+	protected void adaptToFailure() {
+//		_impetus = 5;
+		_impetus = 10;
+	}
+
+
+	@Override
+	protected void adaptToSuccess() {
+//		_impetus = 0.5f;
+		_impetus = 10;
+	}
+
+	
 	private int _counter;
+	private int _counterLimit = 1;
 	private void checkForNextStableState() {
 		_counter++;
-		if (_counter > 100) {
-			//stabilize(layoutMemento());
+		if (_counter > _counterLimit) {
 			_counter = 0;
-			_randomAmplitude *= 0.93;
-			System.out.println(_randomAmplitude);
-			if (_randomAmplitude < 1) {
+			_randomAmplitude *= 0.2;
+			System.out.println(" > > > > > > " + _randomAmplitude);
+			if (_randomAmplitude < 0.5) {
 				_randomAmplitude = INITIAL_RANDOM_AMPLITUDE;
-				//stabilize(new CartesianLayout());
+				_counterLimit *= 4;
 			}
 		}
 	}
@@ -92,7 +96,7 @@ public class RandomAverage<T> extends LayoutAlgorithm<T> {
 
 
 	private float random() {
-		return RANDOM.nextFloat() * _randomAmplitude;
+		return (RANDOM.nextFloat() - 0.5f) * _randomAmplitude;
 	}
 
 	

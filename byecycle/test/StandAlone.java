@@ -35,9 +35,9 @@ public class StandAlone {
 				System.out.println("Node:" + node);
 			}
 		});
-		 LayoutAlgorithm<String> algorithm = new RandomAverage<String>(_graph, new CartesianLayout(), canvas);
-		//LayoutAlgorithm<String> algorithm = new InertialRelaxer<String>(_graph, CartesianLayout.random(), canvas);
-		//LayoutAlgorithm<String> algorithm = new AlgorithmCombination<String>(_graph, CartesianLayout.random(), canvas);
+		 LayoutAlgorithm<String> algorithm = new RandomAverage<String>(_graph, null, canvas);
+		//LayoutAlgorithm<String> algorithm = new InertialRelaxer<String>(_graph, null, canvas);
+		//LayoutAlgorithm<String> algorithm = new AlgorithmCombination<String>(_graph, null, canvas);
 
 		shell.open();
 		shell.layout();
@@ -57,7 +57,7 @@ public class StandAlone {
 
 				//algorithm.improveLayoutStep();
 				boolean improved = algorithm.improveLayoutForAWhile();
-				//if (improved)
+				if (improved)
 					canvas.useLayout(algorithm.layoutMemento());
 
 				canvas.animationStep();
@@ -68,7 +68,7 @@ public class StandAlone {
 	}
 
 	private Collection<Node<String>> graph() {
-		String[] names = new String[16];
+		String[] names = new String[35]; //FIXME Start with "Node 9" and test layout with 2 nodes only. The line should be vertical but is not.
 		for (int i = 0; i < names.length; i++) {
 			names[i] = "Node " + i;
 		}

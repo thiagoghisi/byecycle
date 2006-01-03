@@ -6,7 +6,7 @@ import byecycle.views.layout.criteria.NodeElement;
 
 public class SuperiorityComplex implements Force {
 
-	private static final float DEPENDENCY_THRUST = 0.001f;
+	private static final float DEPENDENCY_TORQUE = 0.01f;
 
 
 	public void applyTo(GraphElement element1, GraphElement element2) {
@@ -25,12 +25,22 @@ public class SuperiorityComplex implements Force {
 	}
 
 	private void actUponDependentAndProvider(NodeElement dependent, NodeElement provider) {
+		float dY = dependent._y - provider._y;
+		float dX = dependent._x - provider._x;
+		double angle = Math.atan2(dY, dX);
 
-		float dY = Math.abs(provider._y - dependent._y);
-		boolean inverted = provider._y < dependent._y;
+		double torque = DEPENDENCY_TORQUE * (1 + Math.sin(angle)); //From zero when pointing down, through 1 when horizontal, to 2 when pointing up.
+		boolean clockwise = dependent._x < provider._x;
+		if (!clockwise) torque = - torque;
 
-		float thrust = (float)(DEPENDENCY_THRUST * (inverted ? 1 + (dY / 20) : 10 / (10 + dY)));
-		dependent.addForceComponents(0, -thrust, provider);
+		applyTorque(dependent, provider, torque, angle);
+	}
+
+	private void applyTorque(NodeElement dependent, NodeElement provider, double torque, double angle) {
+		float xComponent = -(float)(torque * Math.sin(angle));
+		float yComponent = (float)(torque * Math.cos(angle));
+
+		dependent.addForceComponents(xComponent, yComponent, provider);
 	}
 
 }

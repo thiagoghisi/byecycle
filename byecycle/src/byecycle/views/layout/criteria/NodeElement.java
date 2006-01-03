@@ -14,6 +14,8 @@ public class NodeElement extends GraphElement {
 		_stressMeter = stressMeter;
 
 		_aura = createAura();
+		_auraOffsetX = _aura._width / 2;
+		_auraOffsetY = _aura._height / 2;
 		positionAura();
 	}
 
@@ -32,6 +34,8 @@ public class NodeElement extends GraphElement {
 	private int _height;
 
 	private final FloatRectangle _aura;
+	private final float _auraOffsetX;
+	private final float _auraOffsetY;
 
 
 	public Node node() {
@@ -86,8 +90,8 @@ public class NodeElement extends GraphElement {
 	}
 
 	private void positionAura() {
-		_aura._x = _x - Constants.AURA_THICKNESS;
-		_aura._y = _y - Constants.AURA_THICKNESS;
+		_aura._x = _x - _auraOffsetX;
+		_aura._y = _y - _auraOffsetY;
 	}
 
 	public void clearPendingForces() {

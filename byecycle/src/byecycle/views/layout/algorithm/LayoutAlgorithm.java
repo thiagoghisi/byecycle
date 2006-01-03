@@ -33,10 +33,12 @@ public abstract class LayoutAlgorithm<T> {
 		_graphElements.addAll(_nodeElements);
 		_graphElements.addAll(_dependencyElements);
 
+		if (initialLayout == null) initialLayout = new CartesianLayout();
 		layout(initialLayout);
 
 		_lowestStressEver = measureStress();
 	}
+
 
 	public abstract void improveLayoutStep();
 
@@ -84,7 +86,7 @@ public abstract class LayoutAlgorithm<T> {
 		for (Node<T> node : graph) {
 			NodeElement dependentElement = produceElementFor(node, nodeElementsByNode);
 
-			for (Node<T> provider : node.providers()) {
+			for (Node<?> provider : node.providers()) {
 				NodeElement providerElement = produceElementFor(provider, nodeElementsByNode);
 				dependencyElements.add(new DependencyElement(dependentElement, providerElement));
 			}

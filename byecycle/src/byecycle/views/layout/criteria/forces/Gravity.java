@@ -8,7 +8,7 @@ public class Gravity extends DistanceBasedForce {
 
 	@Override
 	public float intensityGiven(float distance) {
-		return 0.8f / (float)(Math.pow(distance, 2)); // TODO Play with this formula.
+		return 1f / (float)(Math.pow(distance, 2)); // TODO Play with this formula.
 	}
 
 	@Override

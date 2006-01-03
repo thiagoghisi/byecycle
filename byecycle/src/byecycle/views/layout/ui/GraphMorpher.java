@@ -40,7 +40,7 @@ public class GraphMorpher {
 
 	private static class NodeMorpher {
 
-		private static final int MAX_ANIMATION_STEP_PIXELS = 3000;
+		private static final int MAX_ANIMATION_STEP_PIXELS = 3;
 		private int returnTheAboveBackTo3;
 
 		private final NodeFigure<?> _figure;

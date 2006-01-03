@@ -3,7 +3,6 @@ package byecycle.views.layout;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
 
 
 public class CartesianLayout implements Serializable {
