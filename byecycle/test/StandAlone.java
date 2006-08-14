@@ -68,7 +68,7 @@ public class StandAlone {
 	}
 
 	private Collection<Node<String>> graph() {
-		String[] names = new String[35]; //FIXME Start with "Node 9" and test layout with 2 nodes only. The line should be vertical but is not.
+		String[] names = new String[37]; //FIXME Start with "Node 9" and test layout with 2 nodes only. The line should be vertical but is not.
 		for (int i = 0; i < names.length; i++) {
 			names[i] = "Node " + i;
 		}

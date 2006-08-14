@@ -13,7 +13,7 @@ public class DependencySpring extends DistanceBasedForce {
 
 	@Override
 	public float intensityGiven(float distance) {
-		return (distance - IDEAL_SIZE) * SPRING_FORCE; // TODO Play with this formula. Zero it to see REPULSION acting alone.
+		return (distance - IDEAL_SIZE) * SPRING_FORCE; // TODO Play with this formula.
 	}
 
 	@Override
