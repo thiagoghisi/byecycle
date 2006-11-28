@@ -18,6 +18,7 @@ import org.eclipse.draw2d.XYLayout;
 import org.eclipse.draw2d.MouseListener.Stub;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 
 import byecycle.JavaType;
@@ -40,8 +41,10 @@ public class GraphCanvas<T> extends FigureCanvas implements NodeSizeProvider {
 
 	public GraphCanvas(Composite parent, Collection<Node<T>> graph, CartesianLayout initialLayout, Listener<T> listener) {
 		super(parent);
-		this.setContents(_graphFigure);
+		this.setScrollBarVisibility(FigureCanvas.ALWAYS);
+		
 		_graphFigure.setLayoutManager(new XYLayout());
+		this.setContents(_graphFigure);
 
 		if (listener == null) throw new IllegalArgumentException("listener");
 		_listener = listener;
@@ -51,6 +54,7 @@ public class GraphCanvas<T> extends FigureCanvas implements NodeSizeProvider {
 		initRootGraphFigure();
 
 		initialLayout(translateToOrigin(initialLayout));
+
 	}
 
 
@@ -110,9 +114,9 @@ public class GraphCanvas<T> extends FigureCanvas implements NodeSizeProvider {
 	 * find the NodeFigure for our IFigure selection, and highlight it.odeFigure and highlight it.
 	 */
 	private void selectNode(IFigure figure) {
-		if(null == figure) return;  //FIXME playing it safe, this probably never happens				
+		if (null == figure) return;  //FIXME playing it safe, this probably never happens				
 
-		if(null != _selectedNodeFigure)
+		if (null != _selectedNodeFigure)
 			_selectedNodeFigure.notifyNodeDeselected();
 		
 		//FIXME this sucks and I'm not sure I want to create another map.

@@ -11,7 +11,7 @@
       <library name="byecycle.jar">
          <export name="*"/>
       </library>
-      <library name="lib/draw2d/draw2d.jar">
+      <library name="lib/draw2d/org.eclipse.draw2d_3.2.1.v20060921.jar">
          <export name="*"/>
       </library>
    </runtime>

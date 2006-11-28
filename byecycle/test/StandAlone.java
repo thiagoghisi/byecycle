@@ -1,5 +1,9 @@
 import java.util.Collection;
 
+import org.eclipse.draw2d.Figure;
+import org.eclipse.draw2d.FigureCanvas;
+import org.eclipse.draw2d.LightweightSystem;
+import org.eclipse.draw2d.Viewport;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
@@ -25,16 +29,19 @@ public class StandAlone {
 	private StandAlone() {
 		Shell shell = new Shell(_display);
 		shell.setText("Byecycle");
-		shell.setSize(1000, 1000);
+		shell.setSize(300, 300);
 
 		FillLayout layout = new FillLayout();
 		shell.setLayout(layout);
 
+		
 		GraphCanvas<String> canvas = new GraphCanvas<String>(shell, _graph, new CartesianLayout(), new GraphCanvas.Listener<String>() {
 			public void nodeSelected(Node<String> node) {
 				System.out.println("Node:" + node);
 			}
 		});
+		
+		
 		 LayoutAlgorithm<String> algorithm = new RandomAverage<String>(_graph, null, canvas);
 		//LayoutAlgorithm<String> algorithm = new InertialRelaxer<String>(_graph, null, canvas);
 		//LayoutAlgorithm<String> algorithm = new AlgorithmCombination<String>(_graph, null, canvas);
