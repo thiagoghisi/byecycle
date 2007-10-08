@@ -18,7 +18,8 @@ public class RandomAverage<T> extends LayoutAlgorithm<T> {
 	private static final Random RANDOM = new Random();
 	private static final float INITIAL_RANDOM_AMPLITUDE = 10000;
 	private float _randomAmplitude = INITIAL_RANDOM_AMPLITUDE;
-	private float _impetus = 1f;
+	private final float _impetus = 1f;
+	private float _ellapsedTime = 0;
 
 	public RandomAverage(Iterable<Node<T>> graph, CartesianLayout initialLayout, NodeSizeProvider sizeProvider) {
 		super(graph, initialLayout, sizeProvider);
@@ -31,30 +32,29 @@ public class RandomAverage<T> extends LayoutAlgorithm<T> {
 	
 	@Override
 	public void improveLayoutStep() {
-		CartesianLayout currentLayout = layoutMemento();
+//		CartesianLayout currentLayout = layoutMemento();
 		randomize();
-		_stressMeter.applyForcesTo(_averagingNodes, _graphElements);
-		layout(currentLayout);
+		_stressMeter.applyForcesTo(_averagingNodes, _allElements);
 
-//		System.out.println(_impetus);
+//		layout(currentLayout);
 		float smallestTimeFrame = minimumTimeToMoveOnePixel();
 		takeAveragePosition(smallestTimeFrame * _impetus);
 		
-		checkForNextStableState();
+//		checkForNextStableState();
 	}
 	
 	
 	@Override
 	protected void adaptToFailure() {
 //		_impetus = 5;
-		_impetus = 10;
+//		_impetus = 10;
 	}
 
 
 	@Override
 	protected void adaptToSuccess() {
 //		_impetus = 0.5f;
-		_impetus = 10;
+//		_impetus = 10;
 	}
 
 	
@@ -83,15 +83,18 @@ public class RandomAverage<T> extends LayoutAlgorithm<T> {
 	}
 
 	
-	private void takeAveragePosition(float timeFrame) {
+	private void takeAveragePosition(float nextTimeFrame) {
+		_ellapsedTime += nextTimeFrame;
+		
 		for (AveragingNode node : _averagingNodes)
-			node.takeAveragePosition(timeFrame);
+			node.takeAveragePosition(_ellapsedTime, nextTimeFrame);
 	}
 
 	
 	private void randomize() {
 		for (AveragingNode node : _averagingNodes)
-			node.position(node._x + random(), node._y + random());
+//			node.position(node._x + random(), node._y + random());
+			node.position(random(), random());
 	}
 
 

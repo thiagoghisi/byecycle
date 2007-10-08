@@ -1,9 +1,5 @@
 import java.util.Collection;
 
-import org.eclipse.draw2d.Figure;
-import org.eclipse.draw2d.FigureCanvas;
-import org.eclipse.draw2d.LightweightSystem;
-import org.eclipse.draw2d.Viewport;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
@@ -42,7 +38,7 @@ public class StandAlone {
 		});
 		
 		
-		 LayoutAlgorithm<String> algorithm = new RandomAverage<String>(_graph, null, canvas);
+		LayoutAlgorithm<String> algorithm = new RandomAverage<String>(_graph, null, canvas);
 		//LayoutAlgorithm<String> algorithm = new InertialRelaxer<String>(_graph, null, canvas);
 		//LayoutAlgorithm<String> algorithm = new AlgorithmCombination<String>(_graph, null, canvas);
 
@@ -62,9 +58,9 @@ public class StandAlone {
 				// e.printStackTrace();
 				// }
 
-				//algorithm.improveLayoutStep();
+				algorithm.improveLayoutStep();
 				boolean improved = algorithm.improveLayoutForAWhile();
-				if (improved)
+				//if (improved)
 					canvas.useLayout(algorithm.layoutMemento());
 
 				canvas.animationStep();
@@ -75,7 +71,7 @@ public class StandAlone {
 	}
 
 	private Collection<Node<String>> graph() {
-		String[] names = new String[37]; //FIXME Start with "Node 9" and test layout with 2 nodes only. The line should be vertical but is not.
+		String[] names = new String[12]; //FIXME Start with "Node 9" and test layout with 2 nodes only. The line should be vertical but is not.
 		for (int i = 0; i < names.length; i++) {
 			names[i] = "Node " + i;
 		}

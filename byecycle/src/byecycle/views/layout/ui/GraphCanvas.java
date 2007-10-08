@@ -18,7 +18,6 @@ import org.eclipse.draw2d.XYLayout;
 import org.eclipse.draw2d.MouseListener.Stub;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 
 import byecycle.JavaType;

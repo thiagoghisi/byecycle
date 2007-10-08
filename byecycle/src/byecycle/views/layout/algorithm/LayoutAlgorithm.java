@@ -16,22 +16,16 @@ import byecycle.views.layout.criteria.StressMeter;
 
 public abstract class LayoutAlgorithm<T> {
 
-	protected final List<NodeElement> _nodeElements;
-	protected final List<DependencyElement> _dependencyElements;
-	protected final ArrayList<GraphElement> _graphElements;
+	protected final List<NodeElement> _nodeElements = new ArrayList<NodeElement>();
+	protected final List<DependencyElement> _dependencyElements = new ArrayList<DependencyElement>();
+	protected final ArrayList<GraphElement> _allElements = new ArrayList<GraphElement>();
 
 	protected final StressMeter _stressMeter = new StressMeter();
 	protected float _lowestStressEver;
 
 
 	protected LayoutAlgorithm(Iterable<Node<T>> graph, CartesianLayout initialLayout, NodeSizeProvider sizeProvider) {
-		_dependencyElements = new ArrayList<DependencyElement>();
-		_nodeElements = new ArrayList<NodeElement>();
 		initGraphElements(graph);
-
-		_graphElements = new ArrayList<GraphElement>();
-		_graphElements.addAll(_nodeElements);
-		_graphElements.addAll(_dependencyElements);
 
 		if (initialLayout == null) initialLayout = new CartesianLayout();
 		layout(initialLayout);
@@ -64,7 +58,7 @@ public abstract class LayoutAlgorithm<T> {
 	protected void adaptToSuccess() {}
 
 	protected float measureStress() {
-		return _stressMeter.applyForcesTo(_nodeElements, _graphElements);
+		return _stressMeter.applyForcesTo(_nodeElements, _allElements);
 	}
 
 	public CartesianLayout layoutMemento() {
@@ -94,6 +88,9 @@ public abstract class LayoutAlgorithm<T> {
 
 		_nodeElements.addAll(nodeElementsByNode.values());
 		_dependencyElements.addAll(dependencyElements);
+
+		_allElements.addAll(_nodeElements);
+		_allElements.addAll(_dependencyElements);
 	}
 
 	private NodeElement produceElementFor(Node node, Map<Node, NodeElement> nodeElementsByNode) {

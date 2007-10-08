@@ -7,19 +7,22 @@ import byecycle.views.layout.criteria.StressMeter;
 
 public class AveragingNode extends NodeElement {
 
-	private float _totalX = 0;
-	private float _totalY = 0;
-
+	private static final float AMPLITUDE = 10000;
 
 	AveragingNode(Node<?> node, StressMeter stressMeter) {
 		super(node, stressMeter);
 	}
-
-	void takeAveragePosition(float timeFrame) {
-		_totalX = _pendingForceX * timeFrame;
-		_totalY = _pendingForceY * timeFrame;
 	
-		position(_x + _totalX, _y + _totalY);
+	private float _totalX = 0;
+	private float _totalY = 0;
+
+	void takeAveragePosition(float ellapsedTime, float nextTimeFrame) {
+		_totalX += _pendingForceX * nextTimeFrame;
+		_totalY += _pendingForceY * nextTimeFrame;
+		
+		//position(_x + _totalX, _y + _totalY);
+		position(_totalX  * AMPLITUDE / ellapsedTime, _totalY  * AMPLITUDE / ellapsedTime);
+		//position(_totalX, _totalY);
 	}
 
 }
