@@ -10,71 +10,51 @@ import byecycle.views.layout.NodeSizeProvider;
 import byecycle.views.layout.algorithm.LayoutAlgorithm;
 import byecycle.views.layout.criteria.NodeElement;
 
-
 public class RandomAverage<T> extends LayoutAlgorithm<T> {
 
 	private final List<AveragingNode> _averagingNodes;
 
 	private static final Random RANDOM = new Random();
-	private static final float INITIAL_RANDOM_AMPLITUDE = 10000;
+	private static final float INITIAL_RANDOM_AMPLITUDE = 1000;
+//	private static final float INITIAL_RANDOM_AMPLITUDE = 100;
+//	private static final float INITIAL_RANDOM_AMPLITUDE = 10;
+//	private static final float INITIAL_RANDOM_AMPLITUDE = 1;
 	private float _randomAmplitude = INITIAL_RANDOM_AMPLITUDE;
-	private final float _impetus = 1f;
 	private float _ellapsedTime = 0;
 
+	private long t0 = System.currentTimeMillis();
+	
 	public RandomAverage(Iterable<Node<T>> graph, CartesianLayout initialLayout, NodeSizeProvider sizeProvider) {
 		super(graph, initialLayout, sizeProvider);
 
 		_averagingNodes = new ArrayList<AveragingNode>(_nodeElements.size()); // Necessary only to avoid casting all the time.
 		for (NodeElement element : _nodeElements)
 			_averagingNodes.add((AveragingNode)element);
+		
+		for (NodeElement element : _nodeElements)
+			System.out.println(element.aura()._width);
+		
 	}
 
 	
 	@Override
 	public void improveLayoutStep() {
-//		CartesianLayout currentLayout = layoutMemento();
+//		if (System.currentTimeMillis() - t0 > 10000) {
+//			t0 = System.currentTimeMillis();
+//			_randomAmplitude /= 10;
+//			System.out.println("_randomAmplitude = " + _randomAmplitude);
+//		}
+		
+		//CartesianLayout currentLayout = layoutMemento();
 		randomize();
 		_stressMeter.applyForcesTo(_averagingNodes, _allElements);
+		//layout(currentLayout);
 
-//		layout(currentLayout);
 		float smallestTimeFrame = minimumTimeToMoveOnePixel();
-		takeAveragePosition(smallestTimeFrame * _impetus);
-		
-//		checkForNextStableState();
+		takeAveragePosition(smallestTimeFrame);
 	}
 	
-	
-	@Override
-	protected void adaptToFailure() {
-//		_impetus = 5;
-//		_impetus = 10;
-	}
 
-
-	@Override
-	protected void adaptToSuccess() {
-//		_impetus = 0.5f;
-//		_impetus = 10;
-	}
-
-	
-	private int _counter;
-	private int _counterLimit = 1;
-	private void checkForNextStableState() {
-		_counter++;
-		if (_counter > _counterLimit) {
-			_counter = 0;
-			_randomAmplitude *= 0.2;
-			System.out.println(" > > > > > > " + _randomAmplitude);
-			if (_randomAmplitude < 0.5) {
-				_randomAmplitude = INITIAL_RANDOM_AMPLITUDE;
-				_counterLimit *= 4;
-			}
-		}
-	}
-
-
-	
 	private float minimumTimeToMoveOnePixel() {
 		float smallestTimeFrame = 100f;
 		for (AveragingNode node : _averagingNodes)
@@ -88,6 +68,8 @@ public class RandomAverage<T> extends LayoutAlgorithm<T> {
 		
 		for (AveragingNode node : _averagingNodes)
 			node.takeAveragePosition(_ellapsedTime, nextTimeFrame);
+		
+		System.out.println("time frame: " + nextTimeFrame);
 	}
 
 	
@@ -99,6 +81,8 @@ public class RandomAverage<T> extends LayoutAlgorithm<T> {
 
 
 	private float random() {
+//		int i = RANDOM.nextInt(4);
+//		while (i-- > 0) RANDOM.nextInt();
 		return (RANDOM.nextFloat() - 0.5f) * _randomAmplitude;
 	}
 

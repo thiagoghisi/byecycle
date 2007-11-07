@@ -1,10 +1,9 @@
 package byecycle.views.layout.criteria.forces;
 
-public class StaticElectricity extends DistanceBasedForce {
+public class StaticElectricity extends DistanceDefinedForce {
 
-	public float intensityGiven(float distance) {
-		return -3.2f / (float)(Math.pow(distance, 2.2)); // TODO Play with this formula.
-		// return 0;
+	public float intensityGiven(float safeDistance) {
+		return -3.2f / (float)(Math.pow(safeDistance, 2.2)); // TODO Play with this formula.
 	}
 
 }

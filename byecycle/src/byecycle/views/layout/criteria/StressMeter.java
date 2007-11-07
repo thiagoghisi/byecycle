@@ -4,6 +4,7 @@
 package byecycle.views.layout.criteria;
 
 import java.util.List;
+import java.util.Random;
 
 import byecycle.views.layout.criteria.forces.AlphabeticalOrder;
 import byecycle.views.layout.criteria.forces.DependencySpring;
@@ -22,6 +23,8 @@ public class StressMeter {
 	private static final Force GRAVITY = new Gravity();
 	private static final Force STATIC_ELECTRICITY = new StaticElectricity();
 	private static final Force MUTUAL_EXCLUSION = new MutualExclusion();
+	
+	private static final Random RANDOM = new Random();
 
 	private float _reading;
 
@@ -48,8 +51,12 @@ public class StressMeter {
 				GraphElement element2 = graphElements.get(j);
 
 				// Symmetry breakers: (important for RandomAverage algorithm)
-				SUPERIORITY_COMPLEX.applyTo(element1, element2);
-				ALPHABETICAL_ORDER.applyTo(element1, element2);
+				//if (RANDOM.nextBoolean()) {
+					SUPERIORITY_COMPLEX.applyTo(element1, element2);
+				//} else {
+				//	SUPERIORITY_COMPLEX.applyTo(element2, element1);
+				//}
+				//ALPHABETICAL_ORDER.applyTo(element1, element2);
 
 				// Converging:
 				DEPENDENCY_SPRING.applyTo(element1, element2);

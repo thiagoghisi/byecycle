@@ -5,7 +5,7 @@ import byecycle.views.layout.criteria.GraphElement;
 import byecycle.views.layout.criteria.NodeElement;
 
 
-public class DependencySpring extends DistanceBasedForce {
+public class DependencySpring extends DistanceDefinedForce {
 
 	private static final float SPRING_FORCE = Constants.DEPENDENCY_SPRING_FORCE;
 	private static final int IDEAL_SIZE = Constants.DEPENDENCY_SPRING_PREFERRED_SIZE;

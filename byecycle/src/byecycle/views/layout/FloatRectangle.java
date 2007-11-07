@@ -27,7 +27,7 @@ public class FloatRectangle {
 	}
 
 	public float area() {
-		return _width * _height;
+		return Math.abs(_width * _height);
 	}
 
 	private float left() {

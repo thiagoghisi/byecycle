@@ -5,6 +5,6 @@ import byecycle.dependencygraph.Node;
 
 public interface NodeSizeProvider {
 
-	public FloatRectangle sizeGiven(Node node);
+	public FloatRectangle sizeGiven(Node<?> node);
 
 }

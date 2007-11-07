@@ -16,7 +16,7 @@ public class NodeElement extends GraphElement {
 		_aura = createAura();
 		_auraOffsetX = _aura._width / 2;
 		_auraOffsetY = _aura._height / 2;
-		positionAura();
+		centerAura();
 	}
 
 
@@ -67,7 +67,7 @@ public class NodeElement extends GraphElement {
 		_x = x;
 		_y = y;
 
-		positionAura();
+		centerAura();
 	}
 
 	private void assertValidNumber(float n) {
@@ -89,7 +89,7 @@ public class NodeElement extends GraphElement {
 		return _aura;
 	}
 
-	private void positionAura() {
+	private void centerAura() {
 		_aura._x = _x - _auraOffsetX;
 		_aura._y = _y - _auraOffsetY;
 	}
@@ -108,7 +108,7 @@ public class NodeElement extends GraphElement {
 	}
 
 	protected float velocityY() {
-		return _pendingForceX;
+		return _pendingForceY;
 	}
 
 	/** "Give: To yield to physical force." Dictionary.com */

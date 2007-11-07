@@ -59,11 +59,11 @@ public class StandAlone {
 				// }
 
 				algorithm.improveLayoutStep();
-				boolean improved = algorithm.improveLayoutForAWhile();
+				//boolean improved = algorithm.improveLayoutForAWhile();
 				//if (improved)
 					canvas.useLayout(algorithm.layoutMemento());
 
-				canvas.animationStep();
+				canvas.animationStep(1000);
 
 			//	_display.sleep();
 			}
@@ -71,11 +71,13 @@ public class StandAlone {
 	}
 
 	private Collection<Node<String>> graph() {
-		String[] names = new String[12]; //FIXME Start with "Node 9" and test layout with 2 nodes only. The line should be vertical but is not.
-		for (int i = 0; i < names.length; i++) {
-			names[i] = "Node " + i;
-		}
-		return Node.createGraph(names);
+//		String[] names = new String[3]; //FIXME Start with "Node 9" and test layout with 2 nodes only. The line should be vertical but is not.
+//		for (int i = 0; i < names.length; i++) {
+//			names[i] = "Node " + i;
+//		}
+//		return Node.createGraph(names);
+		
+		return Node.createGraph(new String[]{"1 234", "12 34", "123 4"});
 	}
 
 	// private Collection<Node<String>> graph() {

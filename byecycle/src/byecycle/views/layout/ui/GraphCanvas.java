@@ -66,7 +66,7 @@ public class GraphCanvas<T> extends FigureCanvas implements NodeSizeProvider {
 	private NodeFigure<T> _selectedNodeFigure;
 
 	private DependencyFigure[] _dependencyFigures;
-	private final Map<Node, NodeFigure<T>> _nodeFiguresByNode = new HashMap<Node, NodeFigure<T>>();
+	private final Map<Node<T>, NodeFigure<T>> _nodeFiguresByNode = new HashMap<Node<T>, NodeFigure<T>>();
 	private final Map<IFigure, Node<T>> _nodeByFigure = new HashMap<IFigure, Node<T>>();
 	
 	private final Listener<T> _listener;
@@ -119,22 +119,14 @@ public class GraphCanvas<T> extends FigureCanvas implements NodeSizeProvider {
 			_selectedNodeFigure.notifyNodeDeselected();
 		
 		//FIXME this sucks and I'm not sure I want to create another map.
-		Node node = this._nodeByFigure.get(figure);
+		Node<T> node = this._nodeByFigure.get(figure);
 		NodeFigure<T> nodeFigure = _nodeFiguresByNode.get(node);
 		nodeFigure.notifyNodeSelected();				
 		_selectedNodeFigure = nodeFigure;
 	}
 
 	public void animationStep() {
-		if (_morpher == null) return;
-		_morpher.morphingStep();
-		if (_morpher.done()) _morpher = null;
-
-		refreshDependencies();
-
-		// Draw2d do not need we do these ourself?
-		// _graphFigure.invalidate();
-		// _graphFigure.repaint();
+		animationStep(3);
 	}
 
 	private void refreshDependencies() {
@@ -162,10 +154,10 @@ public class GraphCanvas<T> extends FigureCanvas implements NodeSizeProvider {
 		List<DependencyFigure> dependencyFigures = new ArrayList<DependencyFigure>();
 
 		for (Node<T> node : nodeGraph) {
-			NodeFigure dependentFigure = produceNodeFigureFor(node);
+			NodeFigure<T> dependentFigure = produceNodeFigureFor(node);
 						
 			for (Node<T> provider : node.providers()) {
-				NodeFigure providerFigure = produceNodeFigureFor(provider);
+				NodeFigure<T> providerFigure = produceNodeFigureFor(provider);
 				DependencyFigure nodeDependency = new DependencyFigure(dependentFigure, providerFigure);			
 				dependencyFigures.add(nodeDependency);				
 			}
@@ -175,7 +167,7 @@ public class GraphCanvas<T> extends FigureCanvas implements NodeSizeProvider {
 		_dependencyFigures = dependencyFigures.toArray(_dependencyFigures);
 	}
 
-	private NodeFigure produceNodeFigureFor(Node<T> node) {
+	private NodeFigure<T> produceNodeFigureFor(Node<T> node) {
 		NodeFigure<T> result = _nodeFiguresByNode.get(node);
 		if (result != null) return result;
 		
@@ -205,7 +197,7 @@ public class GraphCanvas<T> extends FigureCanvas implements NodeSizeProvider {
 		_morpher = new GraphMorpher(nodeFigures(), translatedLayout);
 	}
 
-	public FloatRectangle sizeGiven(Node node) {
+	public FloatRectangle sizeGiven(Node<?> node) {
 		Rectangle bounds = _nodeFiguresByNode.get(node).figure().getBounds();
 
 		FloatRectangle result = new FloatRectangle();
@@ -233,6 +225,14 @@ public class GraphCanvas<T> extends FigureCanvas implements NodeSizeProvider {
 			result.keep(nodeName, coordinates.translatedBy(dx, dy));
 		}
 		return result;
+	}
+
+	public void animationStep(int size) {
+		if (_morpher == null) return;
+		_morpher.morphingStep(size);
+		if (_morpher.done()) _morpher = null;
+
+		refreshDependencies();
 	}
 
 }

@@ -24,11 +24,11 @@ public class GraphMorpher {
 		_nodeMorphers.add(new NodeMorpher(node, myTarget));
 	}
 
-	void morphingStep() {
+	void morphingStep(int size) {
 		Iterator<NodeMorpher> it = _nodeMorphers.iterator();
 		while (it.hasNext()) {
 			NodeMorpher morpher = it.next();
-			morpher.morphingStep();
+			morpher.morphingStep(size);
 			if (morpher.onTarget()) it.remove();
 		}
 	}
@@ -39,9 +39,6 @@ public class GraphMorpher {
 
 
 	private static class NodeMorpher {
-
-		private static final int MAX_ANIMATION_STEP_PIXELS = 3;
-		private int returnTheAboveBackTo3;
 
 		private final NodeFigure<?> _figure;
 
@@ -62,10 +59,9 @@ public class GraphMorpher {
 			_targetY = Math.round(target._y);
 		}
 
-		void morphingStep() {
-			int step = MAX_ANIMATION_STEP_PIXELS;
-			int dX = Math.max(Math.min(_targetX - _currentX, step), -step);
-			int dY = Math.max(Math.min(_targetY - _currentY, step), -step);
+		void morphingStep(int size) {
+			int dX = Math.max(Math.min(_targetX - _currentX, size), -size);
+			int dY = Math.max(Math.min(_targetY - _currentY, size), -size);
 
 			_currentX += dX;
 			_currentY += dY;

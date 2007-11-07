@@ -1,11 +1,15 @@
 package byecycle.views.layout.criteria.forces;
 
+import java.util.Random;
+
 import byecycle.views.layout.criteria.Constants;
 import byecycle.views.layout.criteria.GraphElement;
 import byecycle.views.layout.criteria.NodeElement;
 
 
 public class SuperiorityComplex implements Force {
+
+	private static final Random RANDOM = new Random();
 
 	public void applyTo(GraphElement element1, GraphElement element2) {
 
@@ -28,7 +32,9 @@ public class SuperiorityComplex implements Force {
 		double angle = Math.atan2(dY, dX);
 
 		double torque = Constants.DEPENDENCY_TORQUE * (1 + Math.sin(angle)); //From zero when pointing down, through 1 when horizontal, to 2 when pointing up.
-		boolean clockwise = dependent._x < provider._x;
+		boolean clockwise = dependent._x == provider._x
+			? RANDOM.nextBoolean() //Preserve symmetry.
+			: dependent._x < provider._x;
 		if (!clockwise) torque = - torque;
 
 		applyTorque(dependent, provider, torque, angle);
@@ -38,7 +44,9 @@ public class SuperiorityComplex implements Force {
 		float xComponent = -(float)(torque * Math.sin(angle));
 		float yComponent = (float)(torque * Math.cos(angle));
 
-		dependent.addForceComponents(xComponent, yComponent, provider);
+		//dependent.addForceComponents(xComponent, yComponent, provider);
+		dependent.addForceComponents(0, -0.002f, provider);
+		
 	}
 
 }
