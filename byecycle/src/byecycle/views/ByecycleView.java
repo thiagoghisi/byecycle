@@ -137,7 +137,7 @@ public class ByecycleView extends ViewPart implements IByecycleView {
 	}
 
 	public void selectionChanged(IWorkbenchPart ignored, ISelection selectionCandidate) { // FIXME: After the "Show Dependencies" popup menu action, this method is no longer called (Byecycle is no longer notified of selections changes and no longer changes the graph display). If focus is changed to another View and back, for example, everything comes back to normal. Is this an Eclipse bug?
-		IJavaElement newSelection = validadeSelection(selectionCandidate);
+		IJavaElement newSelection = validateSelection(selectionCandidate);
 		if (_paused) {
 			_deferredSelection = newSelection;
 			return;
@@ -146,7 +146,7 @@ public class ByecycleView extends ViewPart implements IByecycleView {
 	}
 
 	public void showDependencies(ISelection selectionCandidate) {
-		showJavaDependencies(validadeSelection(selectionCandidate));
+		showJavaDependencies(validateSelection(selectionCandidate));
 	}
 
 	private void showJavaDependencies(IJavaElement javaElement) {
@@ -182,7 +182,7 @@ public class ByecycleView extends ViewPart implements IByecycleView {
 		(new Job("'" + packageBeingGenerated.getElementName() + "' analysis") {
 			protected IStatus run(IProgressMonitor monitor) {
 				try {
-					Collection<Node<IBinding>> nextGraph = new PackageDependencyAnalysis(compilationUnits, monitor).dependencyGraph();
+					Collection<Node<IBinding>> nextGraph = new PackageDependencyAnalysis(packageBeingGenerated, compilationUnits, monitor).dependencyGraph();
 
 					synchronized (_graphChangeMonitor) {
 						if (packageBeingGenerated != _selectedPackage) return Status.OK_STATUS;
@@ -231,7 +231,7 @@ public class ByecycleView extends ViewPart implements IByecycleView {
 		_layoutJob.schedule();
 	}
 
-	private IJavaElement validadeSelection(ISelection candidate) {
+	private IJavaElement validateSelection(ISelection candidate) {
 		if (!(candidate instanceof IStructuredSelection)) return null;
 
 		Object firstElement = ((IStructuredSelection)candidate).getFirstElement();

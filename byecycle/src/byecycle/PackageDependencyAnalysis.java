@@ -3,7 +3,6 @@
 package byecycle;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -13,6 +12,7 @@ import java.util.regex.Pattern;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jdt.core.ICompilationUnit;
+import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
@@ -41,7 +41,7 @@ public class PackageDependencyAnalysis {
 	private List<Pattern> _excludedClassPattern;
 
 
-	public PackageDependencyAnalysis(ICompilationUnit[] compilationUnits, IProgressMonitor monitor) throws JavaModelException {
+	public PackageDependencyAnalysis(IPackageFragment packageBeingGenerated, ICompilationUnit[] compilationUnits, IProgressMonitor monitor) throws JavaModelException {
 
 		if (null == monitor) {
 			monitor = new NullProgressMonitor();
@@ -49,7 +49,7 @@ public class PackageDependencyAnalysis {
 
 		ASTParser parser = ASTParser.newParser(AST.JLS3);
 
-		DependencyVisitor visitor = new DependencyVisitor();
+		DependencyVisitor visitor = new DependencyVisitor(packageBeingGenerated.getElementName());
 
 		monitor.beginTask("dependency analysis", compilationUnits.length);
 
@@ -88,17 +88,6 @@ public class PackageDependencyAnalysis {
 		return binding.getJavaElement().getElementName();
 	}
 
-	private boolean ignorePackage(String packageName) {
-		return getExcludedPackages().contains(packageName);
-	}
-
-	private List<String> getExcludedPackages() {
-		if (_excludedPackages == null) {
-			_excludedPackages = Arrays.asList(ByecyclePlugin.getDefault().getPreferenceStore().getString(PreferenceConstants.P_PACKAGE_EXCLUDES).split("\\s+"));
-		}
-		return _excludedPackages;
-	}
-
 	private List<Pattern> getClassExcludePattern() {
 		if (_excludedClassPattern == null) {
 			_excludedClassPattern = new ArrayList<Pattern>();
@@ -123,8 +112,14 @@ public class PackageDependencyAnalysis {
 		private Node<IBinding> _currentNode;
 
 		private String _currentPackageName;
+		private String _topLevelPackage;
 
+		public DependencyVisitor(String topLevelPackage)
+		{
+			_topLevelPackage = topLevelPackage;
+		}
 
+		@SuppressWarnings("unchecked")
 		private boolean visit0(AbstractTypeDeclaration node) {
 			Node<IBinding> saved = _currentNode;
 			String savedPackage = _currentPackageName;
@@ -140,7 +135,6 @@ public class PackageDependencyAnalysis {
 			_currentNode = saved;
 			_currentPackageName = savedPackage;
 			return false;
-
 		}
 
 		@Override
@@ -220,7 +214,7 @@ public class PackageDependencyAnalysis {
 			if (type.getQualifiedName().equals("")) return; // TODO: Check why this happens.
 
 			String packageName = type.getPackage().getName();
-			if (ignorePackage(packageName)) return;
+			if (!packageName.startsWith(_topLevelPackage)) return;
 
 			if (isSelectedPackage(packageName)) {
 				if (type.isParameterizedType()) { // if Map<K,V>

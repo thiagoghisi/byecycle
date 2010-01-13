@@ -12,9 +12,9 @@ import java.util.Map;
 import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.FigureCanvas;
 import org.eclipse.draw2d.IFigure;
+import org.eclipse.draw2d.LightweightSystem;
 import org.eclipse.draw2d.MouseEvent;
 import org.eclipse.draw2d.MouseListener;
-import org.eclipse.draw2d.XYLayout;
 import org.eclipse.draw2d.MouseListener.Stub;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
@@ -39,10 +39,9 @@ public class GraphCanvas<T> extends FigureCanvas implements NodeSizeProvider {
 
 
 	public GraphCanvas(Composite parent, Collection<Node<T>> graph, CartesianLayout initialLayout, Listener<T> listener) {
-		super(parent);
-		this.setScrollBarVisibility(FigureCanvas.ALWAYS);
-		
-		_graphFigure.setLayoutManager(new XYLayout());
+		super(parent, new LightweightSystem());
+		setScrollBarVisibility(FigureCanvas.AUTOMATIC);
+
 		this.setContents(_graphFigure);
 
 		if (listener == null) throw new IllegalArgumentException("listener");
@@ -53,7 +52,7 @@ public class GraphCanvas<T> extends FigureCanvas implements NodeSizeProvider {
 		initRootGraphFigure();
 
 		initialLayout(translateToOrigin(initialLayout));
-
+		recomputeGraphFigureSize();
 	}
 
 
@@ -99,8 +98,8 @@ public class GraphCanvas<T> extends FigureCanvas implements NodeSizeProvider {
 	 */
 	private Stub nodeSingleClickListener() {
 		return new MouseListener.Stub() {
-			public void mousePressed(MouseEvent e) {				
-				selectNode((IFigure) e.getSource());				
+			public void mousePressed(MouseEvent e) {
+				selectNode((IFigure) e.getSource());
 				e.consume();
 			}
 		};
@@ -155,11 +154,11 @@ public class GraphCanvas<T> extends FigureCanvas implements NodeSizeProvider {
 
 		for (Node<T> node : nodeGraph) {
 			NodeFigure<T> dependentFigure = produceNodeFigureFor(node);
-						
+
 			for (Node<T> provider : node.providers()) {
 				NodeFigure<T> providerFigure = produceNodeFigureFor(provider);
-				DependencyFigure nodeDependency = new DependencyFigure(dependentFigure, providerFigure);			
-				dependencyFigures.add(nodeDependency);				
+				DependencyFigure nodeDependency = new DependencyFigure(dependentFigure, providerFigure);
+				dependencyFigures.add(nodeDependency);
 			}
 		}
 
@@ -170,15 +169,15 @@ public class GraphCanvas<T> extends FigureCanvas implements NodeSizeProvider {
 	private NodeFigure<T> produceNodeFigureFor(Node<T> node) {
 		NodeFigure<T> result = _nodeFiguresByNode.get(node);
 		if (result != null) return result;
-		
+
 		result = new NodeFigure<T>(node);
 		_nodeFiguresByNode.put(node, result);
 		final IFigure figure = result.figure();
-		
-		if (node.kind2() == JavaType.PACKAGE) {		
-			figure.addMouseListener(_nodeDoubleClickListener);			
+
+		if (node.kind2() == JavaType.PACKAGE) {
+			figure.addMouseListener(_nodeDoubleClickListener);
 		}
-		
+
 		figure.addMouseListener(_nodeSingleClickListener); //tjennings - add a single click (mouse down) listener
 		_nodeByFigure.put(figure, node);
 		return result;
@@ -233,6 +232,22 @@ public class GraphCanvas<T> extends FigureCanvas implements NodeSizeProvider {
 		if (_morpher.done()) _morpher = null;
 
 		refreshDependencies();
+
+		recomputeGraphFigureSize();
+	}
+
+	private void recomputeGraphFigureSize() {
+		// Recompute the size of the _graphFigure so scrolling will work
+		int maxX = 0;
+		int maxY = 0;
+		for (NodeFigure<T> figure : _nodeFiguresByNode.values())
+		{
+			Rectangle figureBounds = figure.figure().getBounds();
+			maxX = Math.max(maxX, figureBounds.x + figureBounds.width);
+			maxY = Math.max(maxY, figureBounds.y + figureBounds.height);
+		}
+		_graphFigure.setSize(maxX, maxY);
+		_graphFigure.setPreferredSize(_graphFigure.getSize());
 	}
 
 }

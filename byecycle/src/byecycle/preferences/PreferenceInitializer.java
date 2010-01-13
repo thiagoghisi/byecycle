@@ -13,7 +13,6 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 
 	public void initializeDefaultPreferences() {
 		IPreferenceStore store = ByecyclePlugin.getDefault().getPreferenceStore();
-		store.setDefault(PreferenceConstants.P_PACKAGE_EXCLUDES, "java.lang java.util");
 		store.setDefault(PreferenceConstants.P_PATTERN_EXCLUDES, ".*Exception$");
 	}
 

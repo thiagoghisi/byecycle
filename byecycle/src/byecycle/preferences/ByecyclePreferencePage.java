@@ -23,7 +23,6 @@ public class ByecyclePreferencePage extends FieldEditorPreferencePage implements
 	 * Creates the package exclude list field editor.
 	 */
 	public void createFieldEditors() {
-		addField(new PackageExcludeListEditor(PreferenceConstants.P_PACKAGE_EXCLUDES, "&Packages e&xcluded from dependency graphs:", getFieldEditorParent()));
 		addField(new PatternExcludeListEditor(PreferenceConstants.P_PATTERN_EXCLUDES, "&Classes excluded from dependency graphs: (regex patterns)", getFieldEditorParent()));
 	}
 
