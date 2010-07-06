@@ -22,7 +22,7 @@ public class RandomAverage<T> extends LayoutAlgorithm<T> {
 	private float _randomAmplitude = INITIAL_RANDOM_AMPLITUDE;
 	private float _ellapsedTime = 0;
 
-	private long t0 = System.currentTimeMillis();
+//	private long t0 = System.currentTimeMillis();
 	
 	public RandomAverage(Iterable<Node<T>> graph, CartesianLayout initialLayout, NodeSizeProvider sizeProvider) {
 		super(graph, initialLayout, sizeProvider);

@@ -88,7 +88,7 @@ public class Node<PayloadType> {
 		_providers.add(provider);
 	}
 
-	public boolean dependsDirectlyOn(Node other) {
+	public boolean dependsDirectlyOn(Node<?> other) {
 		return _providers.contains(other);
 	}
 
@@ -100,7 +100,7 @@ public class Node<PayloadType> {
 		return _payload;
 	}
 
-	private boolean seekProvider(Node target, Set<Node> visited) {
+	private boolean seekProvider(Node<?> target, Set<Node<?>> visited) {
 		if (this == target) return true;
 
 		if (visited.contains(this)) return false;
@@ -112,9 +112,9 @@ public class Node<PayloadType> {
 		return false;
 	}
 
-	public boolean dependsOn(Node node) {
+	public boolean dependsOn(Node<?> node) {
 		if (this == node) return false;
-		Set<Node> visited = new HashSet<Node>();
+		Set<Node<?>> visited = new HashSet<Node<?>>();
 		return this.seekProvider(node, visited);
 	}
 
@@ -125,8 +125,8 @@ public class Node<PayloadType> {
 
 	@Override
 	public boolean equals(Object arg0) {
-		if (!(arg0 instanceof Node)) return false;
-		Node n = (Node)arg0;
+		if (!(arg0 instanceof Node<?>)) return false;
+		Node<?> n = (Node<?>)arg0;
 		return _kind.equals(n._kind) && _name.equals(n._name);
 	}
 

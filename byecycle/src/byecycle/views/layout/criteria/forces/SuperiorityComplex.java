@@ -41,8 +41,8 @@ public class SuperiorityComplex implements Force {
 	}
 
 	private void applyTorque(NodeElement dependent, NodeElement provider, double torque, double angle) {
-		float xComponent = -(float)(torque * Math.sin(angle));
-		float yComponent = (float)(torque * Math.cos(angle));
+//		float xComponent = -(float)(torque * Math.sin(angle));
+//		float yComponent = (float)(torque * Math.cos(angle));
 
 		//dependent.addForceComponents(xComponent, yComponent, provider);
 		dependent.addForceComponents(0, -0.002f, provider);

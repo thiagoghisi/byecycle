@@ -74,13 +74,13 @@ public abstract class LayoutAlgorithm<T> {
 	}
 
 	protected void initGraphElements(Iterable<Node<T>> graph) {
-		Map<Node, NodeElement> nodeElementsByNode = new HashMap<Node, NodeElement>();
+		Map<Node<T>, NodeElement> nodeElementsByNode = new HashMap<Node<T>, NodeElement>();
 		List<DependencyElement> dependencyElements = new ArrayList<DependencyElement>();
 
 		for (Node<T> node : graph) {
 			NodeElement dependentElement = produceElementFor(node, nodeElementsByNode);
 
-			for (Node<?> provider : node.providers()) {
+			for (Node<T> provider : node.providers()) {
 				NodeElement providerElement = produceElementFor(provider, nodeElementsByNode);
 				dependencyElements.add(new DependencyElement(dependentElement, providerElement));
 			}
@@ -93,7 +93,7 @@ public abstract class LayoutAlgorithm<T> {
 		_allElements.addAll(_dependencyElements);
 	}
 
-	private NodeElement produceElementFor(Node node, Map<Node, NodeElement> nodeElementsByNode) {
+	private NodeElement produceElementFor(Node<T> node, Map<Node<T>, NodeElement> nodeElementsByNode) {
 		NodeElement result = nodeElementsByNode.get(node);
 		if (result != null) return result;
 

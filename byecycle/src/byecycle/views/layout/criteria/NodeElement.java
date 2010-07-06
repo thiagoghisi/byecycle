@@ -9,7 +9,7 @@ import byecycle.views.layout.FloatRectangle;
 
 public class NodeElement extends GraphElement {
 
-	public NodeElement(Node node, StressMeter stressMeter) {
+	public NodeElement(Node<?> node, StressMeter stressMeter) {
 		_node = node;
 		_stressMeter = stressMeter;
 
@@ -38,7 +38,7 @@ public class NodeElement extends GraphElement {
 	private final float _auraOffsetY;
 
 
-	public Node node() {
+	public Node<?> node() {
 		return _node;
 	}
 

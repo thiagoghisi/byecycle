@@ -9,7 +9,7 @@ class InertialNode extends NodeElement {
 	private float _velocityX;
 	private float _velocityY;
 
-	public InertialNode(Node node, StressMeter stressMeter) {
+	public InertialNode(Node<?> node, StressMeter stressMeter) {
 		super(node, stressMeter);
 	}
 

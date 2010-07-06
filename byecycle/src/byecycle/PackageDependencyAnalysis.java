@@ -9,6 +9,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
+
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jdt.core.ICompilationUnit;
@@ -29,14 +30,13 @@ import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.SimpleType;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
+
 import byecycle.dependencygraph.Node;
 import byecycle.preferences.PreferenceConstants;
 
 
 public class PackageDependencyAnalysis {
 	private final Map<String, Node<IBinding>> _nodes = new HashMap<String, Node<IBinding>>();
-
-	private List<String> _excludedPackages;
 
 	private List<Pattern> _excludedClassPattern;
 
@@ -161,9 +161,9 @@ public class PackageDependencyAnalysis {
 			return getNode(binding, binding.getQualifiedName(), type);
 		}
 
-		private void visitList(List l) {
-			for (Iterator iter = l.iterator(); iter.hasNext();) {
-				ASTNode child = (ASTNode)iter.next();
+		private void visitList(List<ASTNode> l) {
+			for (Iterator<ASTNode> iter = l.iterator(); iter.hasNext();) {
+				ASTNode child = iter.next();
 				child.accept(this);
 			}
 		}

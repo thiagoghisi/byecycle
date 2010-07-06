@@ -25,7 +25,7 @@ class DependencyFigure extends GraphFigure {
 	private final int NORMAL_WIDTH = 1;
 
 
-	DependencyFigure(NodeFigure dependent, NodeFigure provider) {
+	DependencyFigure(NodeFigure<?> dependent, NodeFigure<?> provider) {
 		_dependent = dependent;
 		_provider = provider;
 		_dependent.addListener(nodeFigureListener());

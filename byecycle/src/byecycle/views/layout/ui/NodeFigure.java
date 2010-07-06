@@ -75,7 +75,7 @@ public class NodeFigure<T> extends GraphFigure {
      // TODO: Change to somekind of ImageProvider pattern.
      // Difference provider for different type of <T>
 	private static <T> Image imageForNode(Node<T> node) {
-		String resourcename = node.kind2().getResourceName();
+//		String resourcename = node.kind2().getResourceName();
 		try {
 //			return JavaUI.getSharedImages().getImage(resourcename);
 			return null;
@@ -92,7 +92,7 @@ public class NodeFigure<T> extends GraphFigure {
 		return new Color(null, r, g, b);
 	}
 
-	Node node() {
+	Node<?> node() {
 		return _node;
 	}	
 	
